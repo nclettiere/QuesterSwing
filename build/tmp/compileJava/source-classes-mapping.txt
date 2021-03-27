@@ -1,2 +1,0 @@
-com/valhalla/application/Quester.java
- com.valhalla.application.Quester
