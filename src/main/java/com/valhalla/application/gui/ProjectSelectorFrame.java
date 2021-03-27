@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.StyleContext;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -96,18 +97,27 @@ public class ProjectSelectorFrame
         }
 
         setJMenuBar(menuBar1);
+        //BoxLayout boxlayout = new BoxLayout(appHeaderPanel, BoxLayout.X_AXIS);
+        //appHeaderPanel.setLayout(boxlayout);
+//
+        //appHeaderPanel.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
+//
+        //logoImage = new ImagePanel("C:\\Users\\Percebe32\\Pictures\\D6jEXm_XkAATUuF.jpg", new Utils.Vector2D(200,200));
+        //JLabel headerTitle = new JLabel();
+        //headerTitle.setText("Allo");
+        //appHeaderPanel.add(headerTitle);
+        //appHeaderPanel.add(logoImage);
+        //this.setPreferredSize(logoImage.getPreferredSize());
 
-        appHeaderPanel.setLayout(new MigLayout(
-                "insets dialog,hidemode 3",
-                "[grow,fill]",
-                ""));
+        JPanel panel = new JPanel();
+        ImagePanel img = new ImagePanel("C:\\Users\\Percebe32\\Pictures\\a.jpg");
+        img.setAlignmentX(Component.CENTER_ALIGNMENT);
+        img.setAlignmentY(Component.TOP_ALIGNMENT);
+        img.setBounds(0,0,100,100);
+        panel.add(img);
 
-        logoImage = new ImagePanel("C:\\Users\\Percebe64\\Pictures\\Chico_Percebe.jpg", new Utils.Vector2D(75, 75));
+        contentPane.add(panel, BorderLayout.NORTH);
 
-        appHeaderPanel.add(logoImage, "cell 0 0");
-        JLabel headerTitle = new JLabel();
-        headerTitle.setText("Allo");
-        appHeaderPanel.add(headerTitle, "cell 0 1");
-        contentPane.add(appHeaderPanel, BorderLayout.CENTER);
+        //contentPane.add(appHeaderPanel, BorderLayout.NORTH);
     }
 }
