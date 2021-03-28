@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class ProjectSelectorFrame
-        extends JFrame
+    extends JFrame
 {
     public ProjectSelectorFrame() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -17,7 +17,7 @@ public class ProjectSelectorFrame
     @Override
     public void dispose() {
         super.dispose();
-
+        //...
     }
 
     private void exitActionPerformed() {
@@ -128,9 +128,14 @@ public class ProjectSelectorFrame
 
         SelectorButton btn = new SelectorButton("New Project", Utils.Icon.plus);
         SelectorButton btn2 = new SelectorButton("Open Project", Utils.Icon.folder);
+        SelectorButton btn3 = new SelectorButton("Settings", Utils.Icon.settings);
+
+        btn.AddSelectorClickListener(() ->
+                JOptionPane.showMessageDialog(this, "Eggs are not supposed to be green."));
 
         panelButtons.add(btn);
         panelButtons.add(btn2);
+        panelButtons.add(btn3);
 
         panel.add(panelButtons);
 

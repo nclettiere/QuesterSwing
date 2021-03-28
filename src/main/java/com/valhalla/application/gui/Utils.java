@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class Utils {
-    public enum Icon { plus, folder};
+    public enum Icon { plus, folder, settings};
 
     public static class Vector2D
     {
@@ -37,6 +37,7 @@ public class Utils {
             URL resource = switch (icon) {
                 case plus -> classLoader.getResource("img/add-24.png");
                 case folder -> classLoader.getResource("img/folder-24.png");
+                case settings -> classLoader.getResource("img/settings-24.png");
             };
 
             if(resource != null)
