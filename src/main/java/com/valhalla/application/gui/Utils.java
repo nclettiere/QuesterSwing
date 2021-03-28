@@ -1,9 +1,13 @@
 package com.valhalla.application.gui;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.InputStream;
+import java.net.URL;
 
 public class Utils {
+    public enum Icon { plus, folder};
+
     public static class Vector2D
     {
         Vector2D(int x, int y) { this.x = x; this.y = y; }
@@ -25,6 +29,22 @@ public class Utils {
         } else {
             return inputStream;
         }
+    }
+
+    public ImageIcon getIcon(Icon icon) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            URL resource = switch (icon) {
+                case plus -> classLoader.getResource("img/add-24.png");
+                case folder -> classLoader.getResource("img/folder-24.png");
+            };
+
+            if(resource != null)
+                return new ImageIcon(resource);
+        }catch (Exception e) {
+            return null;
+        }
+        return null;
     }
 
     public Font getFontFromResource (String fileName) {

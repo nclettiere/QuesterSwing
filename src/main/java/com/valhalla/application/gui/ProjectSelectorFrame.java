@@ -3,6 +3,7 @@ package com.valhalla.application.gui;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class ProjectSelectorFrame
         extends JFrame
@@ -122,12 +123,15 @@ public class ProjectSelectorFrame
         panel.add(lbl);
 
         JPanel panelButtons = new JPanel();
-        BoxLayout lytbtn = new BoxLayout(panelButtons, BoxLayout.X_AXIS);
-        panelButtons.setLayout(lytbtn);
+        panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.Y_AXIS));
+        panelButtons.setBorder(new EmptyBorder(20,150,0,150));
 
-        JButton btn = new JButton();
-        btn.setSize(100, 100);
+        SelectorButton btn = new SelectorButton("New Project", Utils.Icon.plus);
+        SelectorButton btn2 = new SelectorButton("Open Project", Utils.Icon.folder);
+
         panelButtons.add(btn);
+        panelButtons.add(btn2);
+
         panel.add(panelButtons);
 
         contentPane.add(panel, BorderLayout.NORTH);
