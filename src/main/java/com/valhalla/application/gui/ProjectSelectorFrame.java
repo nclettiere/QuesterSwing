@@ -2,16 +2,7 @@ package com.valhalla.application.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.prefs.Preferences;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.StyleContext;
-import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.FlatLaf;
-import net.miginfocom.swing.MigLayout;
 
 public class ProjectSelectorFrame
         extends JFrame
@@ -110,14 +101,35 @@ public class ProjectSelectorFrame
         //this.setPreferredSize(logoImage.getPreferredSize());
 
         JPanel panel = new JPanel();
-        ImagePanel img = new ImagePanel("C:\\Users\\Percebe32\\Pictures\\a.jpg");
+        BoxLayout lyt = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        panel.setLayout(lyt);
+
+        panel.setBorder(BorderFactory.createEmptyBorder(40, 0,0,0));
+
+        ImagePanel img = new ImagePanel("img/dribbbleLogo.png");
         img.setAlignmentX(Component.CENTER_ALIGNMENT);
         img.setAlignmentY(Component.TOP_ALIGNMENT);
-        img.setBounds(0,0,100,100);
         panel.add(img);
 
-        contentPane.add(panel, BorderLayout.NORTH);
+        JLabel lbl = new JLabel("WELCOME TO QUESTER");
+        lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lbl.setAlignmentY(Component.TOP_ALIGNMENT);
+        lbl.setBorder(BorderFactory.createEmptyBorder(10, 0,0,0));
+        Font ibmPlex = new Utils().getFontFromResource("fonts/Rubik-Bold.ttf");
+        if(ibmPlex != null) {
+            lbl.setFont(ibmPlex.deriveFont(14f));
+        }
+        panel.add(lbl);
 
-        //contentPane.add(appHeaderPanel, BorderLayout.NORTH);
+        JPanel panelButtons = new JPanel();
+        BoxLayout lytbtn = new BoxLayout(panelButtons, BoxLayout.X_AXIS);
+        panelButtons.setLayout(lytbtn);
+
+        JButton btn = new JButton();
+        btn.setSize(100, 100);
+        panelButtons.add(btn);
+        panel.add(panelButtons);
+
+        contentPane.add(panel, BorderLayout.NORTH);
     }
 }

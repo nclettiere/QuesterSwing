@@ -1,9 +1,9 @@
 com/valhalla/application/gui/Utils.java
  com.valhalla.application.gui.Utils
  com.valhalla.application.gui.Utils$Vector2D
-com/valhalla/application/gui/ProjectSelectorFrame.java
- com.valhalla.application.gui.ProjectSelectorFrame
 com/valhalla/application/gui/ImagePanel.java
  com.valhalla.application.gui.ImagePanel
+com/valhalla/application/gui/ProjectSelectorFrame.java
+ com.valhalla.application.gui.ProjectSelectorFrame
 com/valhalla/application/Quester.java
  com.valhalla.application.Quester

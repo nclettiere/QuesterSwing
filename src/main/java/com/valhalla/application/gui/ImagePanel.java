@@ -3,6 +3,7 @@ package com.valhalla.application.gui;
 import java.awt.*;
 import javax.swing.*;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import javax.imageio.ImageIO;
 
@@ -13,7 +14,9 @@ public class ImagePanel extends JPanel{
     public ImagePanel(String filename) {
         try  {
             java.io.File f = new File(filename);
-            img  = ImageIO.read(f);
+            URL url = getClass().getClassLoader().getResource(filename);
+            InputStream is = new Utils().getFileFromResourceAsStream(filename);
+            img  = ImageIO.read(is);
         } catch (Exception e)  {
             e.printStackTrace();
         }
