@@ -1,7 +1,5 @@
 package com.valhalla.application;
 
-import java.awt.Dimension;
-import javax.swing.*;
 import javax.swing.SwingUtilities;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatDarculaLaf;

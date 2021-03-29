@@ -21,8 +21,12 @@ public class ImagePanel extends JPanel{
             e.printStackTrace();
         }
 
-        setLayout(new BorderLayout (5,5));
+        setLayout(new BorderLayout());
+        setBackground(new Color(0,0,0,0));
+
         JLabel lbl = new JLabel(new ImageIcon(img));
+        lbl.setHorizontalAlignment(SwingConstants.LEFT);
+        lbl.setVerticalAlignment(SwingConstants.TOP);
         add(lbl);
     }
 

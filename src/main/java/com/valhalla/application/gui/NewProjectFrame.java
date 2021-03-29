@@ -4,10 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 
 public class NewProjectFrame
-        extends JFrame
+        extends JDialog
 {
     public NewProjectFrame() {
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         initComponents();
     }

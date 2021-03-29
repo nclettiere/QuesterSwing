@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'application'
 }
 
 group 'com.valhalla'
@@ -21,8 +21,11 @@ dependencies {
     implementation 'com.formdev:flatlaf:1.1'
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-swing
     implementation group: 'com.miglayout', name: 'miglayout-swing', version: '5.2'
+}
 
-
+application {
+    mainModule = 'com.valhalla.application'
+    mainClass = 'com.valhalla.application.Quester'
 }
 
 tasks {
