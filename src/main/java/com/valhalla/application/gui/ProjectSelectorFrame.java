@@ -156,6 +156,7 @@ public class ProjectSelectorFrame
 
         panel.add(new JLabel(""));
         panel.add(panelButtons, "w 200!, gaptop 20");
+        panel.add(new Dial());
 
         contentPane.add(panel, BorderLayout.NORTH);
     }

@@ -1,10 +1,3 @@
-com/valhalla/application/gui/Utils.java
- com.valhalla.application.gui.Utils
- com.valhalla.application.gui.Utils$1
- com.valhalla.application.gui.Utils$Icon
- com.valhalla.application.gui.Utils$Vector2D
-com/valhalla/application/gui/RoundedBorder.java
- com.valhalla.application.gui.RoundedBorder
 com/valhalla/application/gui/SelectorButton.java
  com.valhalla.application.gui.SelectorButton
  com.valhalla.application.gui.SelectorButton$1
@@ -15,9 +8,24 @@ com/valhalla/application/gui/SelectorButton.java
  com.valhalla.application.gui.SelectorClickListener
 com/valhalla/application/gui/ImagePanel.java
  com.valhalla.application.gui.ImagePanel
-com/valhalla/application/gui/ProjectSelectorFrame.java
- com.valhalla.application.gui.ProjectSelectorFrame
+com/valhalla/application/gui/Utils.java
+ com.valhalla.application.gui.Utils
+ com.valhalla.application.gui.Utils$1
+ com.valhalla.application.gui.Utils$Icon
+ com.valhalla.application.gui.Utils$Vector2D
 com/valhalla/application/Quester.java
  com.valhalla.application.Quester
 com/valhalla/application/gui/NewProjectFrame.java
  com.valhalla.application.gui.NewProjectFrame
+com/valhalla/application/gui/RoundedBorder.java
+ com.valhalla.application.gui.RoundedBorder
+com/valhalla/application/gui/ProjectSelectorFrame.java
+ com.valhalla.application.gui.ProjectSelectorFrame
+com/valhalla/application/gui/Dial.java
+ com.valhalla.application.gui.Dial
+ com.valhalla.application.gui.Dial$1
+ com.valhalla.application.gui.Dial$2
+com/valhalla/application/gui/DialListener.java
+ com.valhalla.application.gui.DialListener
+com/valhalla/application/gui/DialEvent.java
+ com.valhalla.application.gui.DialEvent
