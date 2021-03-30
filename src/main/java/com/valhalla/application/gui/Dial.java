@@ -1,26 +1,45 @@
 package com.valhalla.application.gui;
 
+import net.miginfocom.swing.MigLayout;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.*;
-import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 
-public class  Dial extends JComponent {
-    int minValue, value, maxValue, radius;
-
-    int[] properties = {1,2,3,4,5};
+public class  Dial extends JPanel {
+    NodeProperty[] properties;
+    JPanel panel;
     int[] connectors = {1,2,3};
-    int[] input = {10, 20};
+    int[] input = {10, 20, 30};
     int[] output = {10};
     boolean repainted = false;
 
-    public Dial( ) { this(0, 100, 0); }
+    public Dial(NodeProperty[] properties) {
+        this.properties = properties;
+        this.setLayout(new MigLayout("", "[grow]", "0[grow]0"));
+        this.setBorder(BorderFactory.createEmptyBorder(51, 9, 0, 11));
+
+        boolean strippedBg = true;
+        for(NodeProperty prop : properties) {
+            JPanel panel = new JPanel(new MigLayout("fill","[grow]", "[grow]"));
+            panel.setBorder(new MatteBorder(0, 0, 1, 0, new Color(255,255,255,30)));
+            boolean finalStrippedBg = strippedBg;
+            EventQueue.invokeLater(() -> {
+                panel.add(prop.GetControl());
+                if(finalStrippedBg)
+                    panel.setBackground(new Color(255,255,255, 10));
+                else
+                    panel.setBackground(new Color(0,0,0, 0));
+                add(panel, "grow, wrap");
+                prop.SetPaintedAreaHeight(panel.getPreferredSize().height);
+            });
+            strippedBg = !strippedBg;
+        }
+    }
 
     public Dial(int minValue, int maxValue, int value) {
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.value = value;
         setForeground(Color.lightGray);
 
         addMouseListener(new MouseAdapter( ) {
@@ -32,16 +51,16 @@ public class  Dial extends JComponent {
     }
 
     protected void spin(MouseEvent e) {
-        int y = e.getY( );
-        int x = e.getX( );
-        double th = Math.atan((1.0 * y - radius) / (x - radius));
-        int value=((int)(th / (2 * Math.PI) * (maxValue - minValue)));
-        if (x < radius)
-            setValue(value + maxValue / 2);
-        else if (y < radius)
-            setValue(value + maxValue);
-        else
-            setValue(value);
+        //int y = e.getY( );
+        //int x = e.getX( );
+        //double th = Math.atan((1.0 * y - radius) / (x - radius));
+        //int value=((int)(th / (2 * Math.PI) * (maxValue - minValue)));
+        //if (x < radius)
+        //    setValue(value + maxValue / 2);
+        //else if (y < radius)
+        //    setValue(value + maxValue);
+        //else
+        //    setValue(value);
     }
 
     public void paintComponent(Graphics g) {
@@ -108,66 +127,26 @@ public class  Dial extends JComponent {
         //drawConnections(graphics);
     }
 
-    // Connector
-        // -- inputs -> ARRAY
-        // -- control
-        // -- outputs -> ARRAY
     private void drawIO(Graphics2D graphics) {
         boolean strippedBg = true;
 
-        int lastY = 70;
+        int lastY = 51;
 
-        for (int con : properties) {
+        for (NodeProperty prop : properties) {
             int connectorWidth = 13;
-            
-            int height =
-                    (input.length > output.length) ?
-                            (25 * input.length) : (25 * output.length);
-
-            if(strippedBg) {
-
-                graphics.setColor(new Color(255, 255, 255, 10));
-                graphics.fillRect(
-                        16,
-                        lastY,
-                        getPreferredSize().width - 34,
-                        height);
-            }
-
+            System.out.println(prop.GetPaintedAreaHeight());
+            int nextY = lastY;
             for (int i : input) {
                 graphics.setColor(new Color(255, 255, 255, 40));
-                graphics.fillOval(9, lastY, connectorWidth, connectorWidth);
+                graphics.fillOval(9, nextY + 5, connectorWidth, connectorWidth);
 
                 graphics.setColor(new Color(255, 255, 255, 200));
-                graphics.fillOval(10, lastY + 1, connectorWidth - 2, connectorWidth - 2);
-                lastY += connectorWidth + 10;
+                graphics.fillOval(10, nextY + 6, connectorWidth - 2, connectorWidth - 2);
+                nextY += connectorWidth + 5;
             }
 
-            lastY -= connectorWidth + 10;
-            for (int i : output) {
-                graphics.setColor(new Color(255, 255, 255, 40));
-                graphics.fillOval(getPreferredSize().width - 24, lastY, connectorWidth, connectorWidth);
-
-                graphics.setColor(new Color(255, 255, 255, 200));
-                graphics.fillOval(getPreferredSize().width - 23, lastY + 1, connectorWidth - 2, connectorWidth - 2);
-                lastY += connectorWidth + 10;
-            }
-
-            //graphics.setColor(new Color(255, 0, 0));
-            //graphics.drawLine(
-            //        16,
-            //        lastY - connectorWidth,
-            //        getPreferredSize().width-19,
-            //        lastY - connectorWidth);
-//
-            //nextY += height;
-            strippedBg = !strippedBg;
+            lastY += prop.GetPaintedAreaHeight();
         }
-
-        //if(!repainted) {
-        //    repaint();
-        //    repainted = true;
-        //}
     }
 
     private void draw3DCircle( Graphics g, int x, int y,
@@ -185,7 +164,7 @@ public class  Dial extends JComponent {
 
     public Dimension getPreferredSize( ) {
         int accumulatedHeight = 51;
-        for (int con : properties) {
+        for (NodeProperty prop : properties) {
             int height =
                 (input.length > output.length) ?
                     (25 * input.length) : (25 * output.length);
@@ -197,29 +176,30 @@ public class  Dial extends JComponent {
     }
 
     public void setValue(int value) {
-        firePropertyChange( "value", this.value, value );
-        this.value = value;
-        repaint( );
-        fireEvent( );
+        //firePropertyChange( "value", this.value, value );
+        //this.value = value;
+        //repaint( );
+        //fireEvent( );
     }
-    public int getValue( )  { return value; }
-    public void setMinimum(int minValue)  { this.minValue = minValue; }
-    public int getMinimum( )  { return minValue; }
-    public void setMaximum(int maxValue)  { this.maxValue = maxValue; }
-    public int getMaximum( )  { return maxValue; }
+
+    //public int getValue( )  { return value; }
+    //public void setMinimum(int minValue)  { this.minValue = minValue; }
+    //public int getMinimum( )  { return minValue; }
+    //public void setMaximum(int maxValue)  { this.maxValue = maxValue; }
+    //public int getMaximum( )  { return maxValue; }
 
     public void addDialListener(DialListener listener) {
-        listenerList.add( DialListener.class, listener );
+        //listenerList.add( DialListener.class, listener );
     }
     public void removeDialListener(DialListener listener) {
-        listenerList.remove( DialListener.class, listener );
+        //listenerList.remove( DialListener.class, listener );
     }
 
     void fireEvent( ) {
-        Object[] listeners = listenerList.getListenerList( );
-        for ( int i = 0; i < listeners.length; i += 2 )
-            if ( listeners[i] == DialListener.class )
-                ((DialListener)listeners[i + 1]).dialAdjusted(
-                        new DialEvent(this, value) );
+        //Object[] listeners = listenerList.getListenerList( );
+        //for ( int i = 0; i < listeners.length; i += 2 )
+        //    if ( listeners[i] == DialListener.class )
+        //        ((DialListener)listeners[i + 1]).dialAdjusted(
+        //                new DialEvent(this, value) );
     }
 }
