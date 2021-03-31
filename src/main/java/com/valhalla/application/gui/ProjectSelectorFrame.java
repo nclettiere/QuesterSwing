@@ -42,7 +42,8 @@ public class ProjectSelectorFrame
         //======== this ========
         setTitle("Quester");
         Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
+        //contentPane.setLayout(new BorderLayout());
+        contentPane.setLayout(new MigLayout("", "[grow]", "[grow]"));
 
         {
             //======== fileMenu ========
@@ -103,63 +104,66 @@ public class ProjectSelectorFrame
         //appHeaderPanel.add(logoImage);
         //this.setPreferredSize(logoImage.getPreferredSize());
 
-        JPanel panel = new JPanel();
-        //BoxLayout lyt = new BoxLayout(panel, BoxLayout.Y_AXIS);
-        MigLayout lyt = new MigLayout("", "[grow][20][grow]", "[grow]");
-        panel.setLayout(lyt);
-        JPanel headerPanel = new JPanel(new MigLayout("","[shrink]", "[grow]"));
+        //JPanel panel = new JPanel();
+        ////BoxLayout lyt = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        //MigLayout lyt = new MigLayout("", "[grow][20][grow]", "[grow]");
+        //panel.setLayout(lyt);
+        //JPanel headerPanel = new JPanel(new MigLayout("","[shrink]", "[grow]"));
+//
+        //headerPanel.setBackground(new Color(0,0,0,30));
+        //headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5,5,0));
+//
+        //ImagePanel img = new ImagePanel("img/dribbbleLogo.png");
+        //img.setAlignmentX(Component.LEFT_ALIGNMENT);
+        //img.setAlignmentY(Component.TOP_ALIGNMENT);
+        //headerPanel.add(img, "west, shrink");
+//
+        //JLabel titleLabel = new JLabel("WELCOME TO QUESTER");
+        //titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        //titleLabel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+        //titleLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+        //titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 10,0,0));
+        //Font ibmPlex = new Utils().getFontFromResource("fonts/Rubik-Bold.ttf");
+        //if(ibmPlex != null) {
+        //    titleLabel.setFont(ibmPlex.deriveFont(14f));
+        //}
+        //JLabel subtitleLabel = new JLabel("Select or Create Project");
+        //subtitleLabel.setBorder(BorderFactory.createEmptyBorder(0, 10,0,0));
+//
+        //headerPanel.add(titleLabel, "growx, wrap");
+        //headerPanel.add(subtitleLabel);
+        //panel.add(headerPanel, "dock north, shrink 0, wrap 1");
+//
+        //JPanel panelButtons = new JPanel();
+        //panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.Y_AXIS));
+        //panelButtons.setBorder(new EmptyBorder(0,0,0,0));
+//
+        //SelectorButton btn = new SelectorButton("New Project", Utils.Icon.plus);
+        //SelectorButton btn2 = new SelectorButton("Open Project", Utils.Icon.folder);
+        //SelectorButton btn3 = new SelectorButton("Settings", Utils.Icon.settings);
+//
+        //btn.AddSelectorClickListener(() -> {
+        //    NewProjectFrame newProject = new NewProjectFrame();
+        //    //final JDialog frame = new JDialog(newProject, "New Project", true);
+        //    //newProject.getContentPane().add(panel);
+        //    this.setVisible(false);
+        //    newProject.pack();
+        //    newProject.setVisible(true);
+        //});
+//
+        //panelButtons.add(btn);
+        //panelButtons.add(btn2);
+        //panelButtons.add(btn3);
+//
+        //panel.add(new JLabel(""));
+        //panel.add(panelButtons, "w 200!, gaptop 20");
+        //NodeProperty[] props = {new ImageProperty()};
+        //panel.add(new ImageNode());
+        //panel.add(new JTextPane());
 
-        headerPanel.setBackground(new Color(0,0,0,30));
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5,5,0));
+        //contentPane.add(panel, BorderLayout.NORTH);
 
-        ImagePanel img = new ImagePanel("img/dribbbleLogo.png");
-        img.setAlignmentX(Component.LEFT_ALIGNMENT);
-        img.setAlignmentY(Component.TOP_ALIGNMENT);
-        headerPanel.add(img, "west, shrink");
 
-        JLabel titleLabel = new JLabel("WELCOME TO QUESTER");
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-        titleLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 10,0,0));
-        Font ibmPlex = new Utils().getFontFromResource("fonts/Rubik-Bold.ttf");
-        if(ibmPlex != null) {
-            titleLabel.setFont(ibmPlex.deriveFont(14f));
-        }
-        JLabel subtitleLabel = new JLabel("Select or Create Project");
-        subtitleLabel.setBorder(BorderFactory.createEmptyBorder(0, 10,0,0));
-
-        headerPanel.add(titleLabel, "growx, wrap");
-        headerPanel.add(subtitleLabel);
-        panel.add(headerPanel, "dock north, shrink 0, wrap 1");
-
-        JPanel panelButtons = new JPanel();
-        panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.Y_AXIS));
-        panelButtons.setBorder(new EmptyBorder(0,0,0,0));
-
-        SelectorButton btn = new SelectorButton("New Project", Utils.Icon.plus);
-        SelectorButton btn2 = new SelectorButton("Open Project", Utils.Icon.folder);
-        SelectorButton btn3 = new SelectorButton("Settings", Utils.Icon.settings);
-
-        btn.AddSelectorClickListener(() -> {
-            NewProjectFrame newProject = new NewProjectFrame();
-            //final JDialog frame = new JDialog(newProject, "New Project", true);
-            //newProject.getContentPane().add(panel);
-            this.setVisible(false);
-            newProject.pack();
-            newProject.setVisible(true);
-        });
-
-        panelButtons.add(btn);
-        panelButtons.add(btn2);
-        panelButtons.add(btn3);
-
-        panel.add(new JLabel(""));
-        panel.add(panelButtons, "w 200!, gaptop 20");
-        NodeProperty[] props = {new ImageProperty()};
-        panel.add(new ImageNode());
-        panel.add(new JTextPane());
-
-        contentPane.add(panel, BorderLayout.NORTH);
+        contentPane.add(new NodeEditor(), "grow");
     }
 }
