@@ -11,7 +11,13 @@ public class ImagePanel extends JPanel{
 
     Image img;
 
+    public ImagePanel() { img = null; }
+
     public ImagePanel(String filename) {
+        addImage(filename);
+    }
+
+    public void addImage(String filename) {
         try  {
             java.io.File f = new File(filename);
             URL url = getClass().getClassLoader().getResource(filename);
@@ -32,6 +38,9 @@ public class ImagePanel extends JPanel{
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(img.getWidth(this), img.getHeight(this));
+        if(img != null)
+            return new Dimension(img.getWidth(this), img.getHeight(this));
+        else
+            return new Dimension(0,0);
     }
 }

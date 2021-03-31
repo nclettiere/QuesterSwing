@@ -1,19 +1,23 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Ref;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
 
 public class PropertyPanel extends JPanel {
 
     private NodeProperty prop;
 
-    public PropertyPanel(NodeProperty prop) {
+    public PropertyPanel(NodeProperty prop, Node node) {
         this.prop = prop;
-        setLayout(new MigLayout("debug, fillx","2[][max][]2", "[grow]"));
+        setLayout(new MigLayout("fillx","2[14][grow][14]0", ""));
+        setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
         setOpaque(false);
 
         JPanel inputPanel = new JPanel(new MigLayout("", "0[grow]0"));
@@ -21,33 +25,53 @@ public class PropertyPanel extends JPanel {
         inputPanel.setOpaque(false);
 
         JPanel controlPanel = new JPanel(new MigLayout("", "[max]"));
-        //controlPanel.setBorder(new EmptyBorder(0,0,0,0));
         controlPanel.setOpaque(false);
-        controlPanel.setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
 
         JPanel outputPanel = new JPanel(new MigLayout("fillx", "0[grow]0"));
-        outputPanel.setBorder(new EmptyBorder(0,0,0,0));
+
         outputPanel.setOpaque(false);
 
         add(inputPanel);
         add(controlPanel);
         add(outputPanel);
 
-        for (int i = 0; i < prop.GetInputCount(); i++) {
-            inputPanel.add(new NodeConnector(), "grow, w 14!, h 14!, wrap");
+        for (NodeData nData : prop.GetInputs()) {
+            inputPanel.add(new NodeConnector(nData.GetDisplayName(), nData.GetDataColor()), "grow, w 14!, h 14!, wrap");
         }
 
-        if(prop.GetControl() != null) {
-            JComponent control = prop.GetControl();
-            //control.setMaximumSize(new Dimension(controlPanel.getWidth(), 99999));
-            //control.setPreferredSize(new Dimension(1000, control.getPreferredSize().height));
-            controlPanel.add(control, "grow, wrap");
+        // Ensure a 'white space' on the input lane
+        // Preventing control to get in
+        if(prop.GetOutputCount() == 0)
+            outputPanel.add(new JLabel(""), "grow, w 14!, h 14!, wrap");
+
+        if(prop.Control() != null) {
+            prop.AddOnControlUpdateListener(new NodeEventListener() {
+                @Override
+                public void OnControlUpdate() {
+                    node.repaint();
+                }
+
+                @Override
+                public void OnConnect() {
+                    node.repaint();
+                }
+
+                @Override
+                public void OnDisconnect() {
+                    node.repaint();
+                }
+            });
+            controlPanel.add(prop.Control().get(), "grow, wrap");
         }
 
-        for (int i = 0; i < prop.GetOutputCount(); i++) {
-            outputPanel.add(new NodeConnector(), "grow, w 14!, h 14!, wrap");
+        for (NodeData nData : prop.GetOutputs()) {
+            outputPanel.add(new NodeConnector(nData.GetDisplayName(), nData.GetDataColor()), "grow, w 14!, h 14!, wrap");
         }
 
+        // Ensure a 'white space' on the output lane
+        // Preventing control to get in
+        if(prop.GetOutputCount() == 0)
+            outputPanel.add(new JLabel(""), "grow, w 14!, h 14!, wrap");
     }
 
     public void paintComponent(Graphics g) {

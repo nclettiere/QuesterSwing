@@ -11,7 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
-public class ButtonProperty implements NodeProperty {
+public class ImageProperty implements NodeProperty {
 
     private ArrayList<NodeData> inputs;
     private ArrayList<NodeData> outputs;
@@ -29,12 +29,31 @@ public class ButtonProperty implements NodeProperty {
         }
     }
 
-    ButtonProperty() {
-        component = new Ref<>(new JButton("Button Property"));
+    ImageProperty() {
+        component = new Ref<>(new ImagePanel());
         inputs = new ArrayList<>();
         outputs = new ArrayList<>();
 
         AddInput(new ImageData());
+        AddInput(new ImageData());
+        AddOutput(new ImageData());
+
+        component.get().addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                FireControlUpdateEvent();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
     }
     @Override
     public Ref<JComponent> Control() {

@@ -5,6 +5,13 @@ plugins {
 group 'com.valhalla'
 version '1.0-SNAPSHOT'
 
+configurations {
+    provided
+    // Make compile extend from our provided configuration so that things added to bundled end up on the compile classpath
+    compile.extendsFrom(provided)
+}
+
+
 repositories {
     mavenCentral()
     maven {
@@ -18,9 +25,9 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     // https://mvnrepository.com/artifact/com.formdev/flatlaf
     runtimeOnly group: 'com.formdev', name: 'flatlaf', version: '1.1'
-    implementation 'com.formdev:flatlaf:1.1'
+    provided 'com.formdev:flatlaf:1.1'
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-swing
-    implementation group: 'com.miglayout', name: 'miglayout-swing', version: '5.2'
+    provided group: 'com.miglayout', name: 'miglayout-swing', version: '5.2'
 }
 
 application {
@@ -28,21 +35,21 @@ application {
     mainClass = 'com.valhalla.application.Quester'
 }
 
-tasks {
     jar {
         manifest {
-            attributes "Main-Class": "com.valhalla.application.Quester"
+            attributes(
+                    "Main-Class": "com.valhalla.application.Quester"
+            )
         }
 
         from {
-            configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+            configurations.provided.asFileTree.files.collect { zipTree(it) }
         }
 
         from 'resources', {
             into 'resources'
         }
     }
-}
 
 test {
     useJUnitPlatform()
