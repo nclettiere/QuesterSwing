@@ -1,24 +1,31 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.INodeProperty;
 import net.miginfocom.swing.MigLayout;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.*;
-import javax.swing.border.MatteBorder;
+import javax.swing.event.EventListenerList;
 
-public class  Node extends JPanel {
-
+public class Node extends JComponent {
     String                   NodeName;
     String                   NodeSubtitle;
     Color                    NodeColor;
-    NodeProperty[]           properties;
+    INodeProperty[]           properties;
     JPanel                   content;
     ArrayList<PropertyPanel> panelList;
 
-    public Node(NodeProperty[] properties) {
+    protected EventListenerList listenerList = new EventListenerList();
+
+    public void AddOnBoundsListener(IBoundsListener listener) {
+        listenerList.add(IBoundsListener.class, listener);
+    }
+    public void RemoveOnBoundsListener(IBoundsListener listener) {
+        listenerList.remove(IBoundsListener.class, listener);
+    }
+
+    public Node(INodeProperty[] properties) {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
         this.properties = properties;
@@ -45,7 +52,7 @@ public class  Node extends JPanel {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
         panelList = new ArrayList<>();
-        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
+        this.setLayout(new MigLayout("debug", "0[grow]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
         this.setBackground(new Color(0,0,0,0));
         this.setOpaque(false);
@@ -60,7 +67,7 @@ public class  Node extends JPanel {
     }
 
     public void CreateNodeStructure() {
-        for (NodeProperty prop : properties) {
+        for (INodeProperty prop : properties) {
 
             PropertyPanel panel = new PropertyPanel(prop, this);
             content.add(panel, "grow, wrap");
@@ -171,31 +178,4 @@ public class  Node extends JPanel {
         return new Dimension(200, 350);
     }
 
-    public void setValue(int value) {
-        //firePropertyChange( "value", this.value, value );
-        //this.value = value;
-        //repaint( );
-        //fireEvent( );
-    }
-
-    //public int getValue( )  { return value; }
-    //public void setMinimum(int minValue)  { this.minValue = minValue; }
-    //public int getMinimum( )  { return minValue; }
-    //public void setMaximum(int maxValue)  { this.maxValue = maxValue; }
-    //public int getMaximum( )  { return maxValue; }
-
-    public void addDialListener(DialListener listener) {
-        //listenerList.add( DialListener.class, listener );
-    }
-    public void removeDialListener(DialListener listener) {
-        //listenerList.remove( DialListener.class, listener );
-    }
-
-    void fireEvent( ) {
-        //Object[] listeners = listenerList.getListenerList( );
-        //for ( int i = 0; i < listeners.length; i += 2 )
-        //    if ( listeners[i] == DialListener.class )
-        //        ((DialListener)listeners[i + 1]).dialAdjusted(
-        //                new DialEvent(this, value) );
-    }
 }

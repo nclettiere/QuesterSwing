@@ -1,20 +1,20 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.core.Ref;
+import com.valhalla.core.Node.INodeData;
+import com.valhalla.core.Node.NodeEventListener;
+import com.valhalla.core.Node.INodeProperty;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
 
 public class PropertyPanel extends JPanel {
 
-    private NodeProperty prop;
+    private INodeProperty prop;
 
-    public PropertyPanel(NodeProperty prop, Node node) {
+    public PropertyPanel(INodeProperty prop, Node node) {
         this.prop = prop;
         setLayout(new MigLayout("fillx","2[14][grow][14]0", ""));
         setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
@@ -35,7 +35,7 @@ public class PropertyPanel extends JPanel {
         add(controlPanel);
         add(outputPanel);
 
-        for (NodeData nData : prop.GetInputs()) {
+        for (INodeData nData : prop.GetInputs()) {
             inputPanel.add(new NodeConnector(nData.GetDisplayName(), nData.GetDataColor()), "grow, w 14!, h 14!, wrap");
         }
 
@@ -64,7 +64,7 @@ public class PropertyPanel extends JPanel {
             controlPanel.add(prop.Control().get(), "grow, wrap");
         }
 
-        for (NodeData nData : prop.GetOutputs()) {
+        for (INodeData nData : prop.GetOutputs()) {
             outputPanel.add(new NodeConnector(nData.GetDisplayName(), nData.GetDataColor()), "grow, w 14!, h 14!, wrap");
         }
 

@@ -1,9 +1,11 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.INodeProperty;
+
 import java.awt.*;
 
 public class ImageNode extends Node {
-    public ImageNode(NodeProperty[] properties) {
+    public ImageNode(INodeProperty[] properties) {
         super(properties);
 
     }
@@ -12,7 +14,7 @@ public class ImageNode extends Node {
         super();
         this.NodeName = "Image Node";
         this.NodeSubtitle = "Creates Custom Image";
-        this.properties = new NodeProperty[]{new ImageProperty(), new ButtonProperty()};
+        this.properties = new INodeProperty[]{new ImagePropertyI(), new ButtonPropertyI()};
         this.NodeColor = new Color(10, 100, 70);
         CreateNodeStructure();
     }

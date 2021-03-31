@@ -1,5 +1,7 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.INodeData;
+
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Type;
@@ -7,7 +9,7 @@ import java.util.UUID;
 
 import java.util.Random;
 
-public class ImageData implements NodeData {
+public class ImageDataI implements INodeData {
 
     private UUID uuid;
     private String name;
@@ -15,7 +17,7 @@ public class ImageData implements NodeData {
     private Object data;
     private Color dataColor;
 
-    public ImageData() {
+    public ImageDataI() {
         uuid = UUID.randomUUID();
         SetName("Image");
         SetDisplayName("Image Object");

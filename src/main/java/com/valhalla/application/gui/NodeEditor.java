@@ -1,5 +1,7 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.INodeData;
+
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
@@ -9,7 +11,6 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -22,7 +23,7 @@ class ColorPair {
         Constructor<?> constructor = dataClass.getConstructors()[0];
         try {
             Object data = constructor.newInstance();
-            if(!(data instanceof NodeData)) {
+            if(!(data instanceof INodeData)) {
                 throw new NullPointerException();
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -33,21 +34,27 @@ class ColorPair {
         this.color = color;
     }
 
-    NodeData GetNodeData() {
+    INodeData GetNodeData() {
         Constructor<?> constructor = key.getConstructors()[0];
         try {
             Object data = constructor.newInstance();
-            if(!(data instanceof NodeData)) {
+            if(!(data instanceof INodeData)) {
                 throw new NullPointerException();
             }
-            return (NodeData) data;
+            return (INodeData) data;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new NullPointerException();
         }
     }
 }
 
-public class NodeEditor extends JPanel implements MouseWheelListener, MouseMotionListener, MouseInputListener {
+public class NodeEditor
+    extends JPanel
+    implements
+    MouseWheelListener,
+    MouseMotionListener,
+    MouseInputListener,
+    IBoundsListener {
 
     /*
         -- Components
@@ -57,7 +64,7 @@ public class NodeEditor extends JPanel implements MouseWheelListener, MouseMotio
             - EditorBar -> Multiple tools (compile, simulate, etc)
      */
 
-    private ArrayList<NodeData> dataTypes;
+    private ArrayList<INodeData> dataTypes;
     private ArrayList<ColorPair> dataColors;
 
     double zoom = 1.0;
@@ -67,13 +74,28 @@ public class NodeEditor extends JPanel implements MouseWheelListener, MouseMotio
     private boolean wheelPressed;
 
     public NodeEditor() {
-        this.setLayout(new GridLayout(1,1));
+        this.setLayout(null);
         this.addMouseWheelListener(this);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
         this.setOpaque(true);
-        this.wheelPressed = false;
-        //this.setBackground(Color.GREEN);
+
+        CompTest test = new CompTest();
+        //test.setSize(test.getPreferredSize());
+
+        ImageNode node = new ImageNode();
+
+        node.AddOnBoundsListener(this);
+
+        node.setLocation(70,70);
+        node.setSize(node.getPreferredSize());
+        this.add(test);
+        this.add(node);
+        node.repaint();
+
+        SwingUtilities.invokeLater( () -> {
+            node.repaint();
+        });
     }
 
     public NodeEditor(Component c) {
@@ -83,10 +105,10 @@ public class NodeEditor extends JPanel implements MouseWheelListener, MouseMotio
         add(c);
     }
 
-    void RegisterDataTypes(NodeData[] dataTypes) {
+    void RegisterDataTypes(INodeData[] dataTypes) {
         this.dataTypes.addAll(Arrays.asList(dataTypes));
 
-        for (NodeData nData : dataTypes) {
+        for (INodeData nData : dataTypes) {
             Random rand = new Random();
             float r = rand.nextFloat();
             float g = rand.nextFloat();
@@ -176,5 +198,16 @@ public class NodeEditor extends JPanel implements MouseWheelListener, MouseMotio
     @Override
     public void mouseExited(MouseEvent e) {
 
+    }
+
+    @Override
+    public Dimension OnSizeChanged(JComponent component) {
+        System.out.println("AAAAAAAAAAA");
+        return null;
+    }
+
+    @Override
+    public Point OnPositionChanged(JComponent component) {
+        return null;
     }
 }

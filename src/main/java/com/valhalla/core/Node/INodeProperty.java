@@ -1,27 +1,20 @@
-package com.valhalla.application.gui;
+package com.valhalla.core.Node;
 
 import com.valhalla.core.Ref;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.EventListener;
 
-interface NodeEventListener extends EventListener {
-    void OnControlUpdate();
-    void OnConnect();
-    void OnDisconnect();
-}
-
-public interface NodeProperty extends EventListener {
+public interface INodeProperty extends EventListener {
     Ref<JComponent> Control();
 
-    ArrayList<NodeData> GetInputs();
-    ArrayList<NodeData> GetOutputs();
+    ArrayList<INodeData> GetInputs();
+    ArrayList<INodeData> GetOutputs();
 
-    void AddInput(NodeData nodeData);
+    void AddInput(INodeData INodeData);
     void RemoveInput(int index);
-    void AddOutput(NodeData nodeData);
+    void AddOutput(INodeData INodeData);
     void RemoveOutput(int index);
 
     int GetInputCount();

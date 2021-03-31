@@ -1,10 +1,10 @@
-package com.valhalla.application.gui;
+package com.valhalla.core.Node;
 
 import java.awt.*;
 import java.lang.reflect.Type;
 import java.util.UUID;
 
-public interface NodeData {
+public interface INodeData {
     void SetUUID(UUID uuid);
     UUID GetUUID();
     String GetName();

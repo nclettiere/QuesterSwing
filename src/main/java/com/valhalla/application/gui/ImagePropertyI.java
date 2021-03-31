@@ -1,20 +1,20 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.INodeData;
+import com.valhalla.core.Node.NodeEventListener;
+import com.valhalla.core.Node.INodeProperty;
 import com.valhalla.core.Ref;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
-import java.awt.*;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
-public class ImageProperty implements NodeProperty {
+public class ImagePropertyI implements INodeProperty {
 
-    private ArrayList<NodeData> inputs;
-    private ArrayList<NodeData> outputs;
+    private ArrayList<INodeData> inputs;
+    private ArrayList<INodeData> outputs;
 
     private Ref<JComponent> component;
 
@@ -29,14 +29,14 @@ public class ImageProperty implements NodeProperty {
         }
     }
 
-    ImageProperty() {
-        component = new Ref<>(new ImagePanel());
+    ImagePropertyI() {
+        component = new Ref<>(new JTextArea());
         inputs = new ArrayList<>();
         outputs = new ArrayList<>();
 
-        AddInput(new ImageData());
-        AddInput(new ImageData());
-        AddOutput(new ImageData());
+        AddInput(new ImageDataI());
+        AddInput(new ImageDataI());
+        AddOutput(new ImageDataI());
 
         component.get().addKeyListener(new KeyListener() {
             @Override
@@ -61,18 +61,18 @@ public class ImageProperty implements NodeProperty {
     }
 
     @Override
-    public ArrayList<NodeData> GetInputs() {
+    public ArrayList<INodeData> GetInputs() {
         return inputs;
     }
 
     @Override
-    public ArrayList<NodeData> GetOutputs() {
+    public ArrayList<INodeData> GetOutputs() {
         return outputs;
     }
 
     @Override
-    public void AddInput(NodeData nodeData) {
-        inputs.add(nodeData);
+    public void AddInput(INodeData INodeData) {
+        inputs.add(INodeData);
     }
 
     @Override
@@ -81,8 +81,8 @@ public class ImageProperty implements NodeProperty {
     }
 
     @Override
-    public void AddOutput(NodeData nodeData) {
-        outputs.add(nodeData);
+    public void AddOutput(INodeData INodeData) {
+        outputs.add(INodeData);
     }
 
     @Override
