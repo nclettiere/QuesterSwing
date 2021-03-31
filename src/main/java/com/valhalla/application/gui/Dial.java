@@ -4,6 +4,7 @@ import net.miginfocom.swing.MigLayout;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -16,27 +17,30 @@ public class  Dial extends JPanel {
     int[] output = {10};
     boolean repainted = false;
 
+    ArrayList<PropertyPanel> panelList;
+
     public Dial(NodeProperty[] properties) {
         this.properties = properties;
-        this.setLayout(new MigLayout("", "[grow]", "0[grow]0"));
-        this.setBorder(BorderFactory.createEmptyBorder(51, 9, 0, 11));
+        panelList = new ArrayList<>();
+        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
+        this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
+        this.setBackground(new Color(0,0,0,0));
+        this.setOpaque(false);
 
-        boolean strippedBg = true;
-        for(NodeProperty prop : properties) {
-            JPanel panel = new JPanel(new MigLayout("fill","[grow]", "[grow]"));
-            panel.setBorder(new MatteBorder(0, 0, 1, 0, new Color(255,255,255,30)));
-            boolean finalStrippedBg = strippedBg;
-            EventQueue.invokeLater(() -> {
-                panel.add(prop.GetControl());
-                if(finalStrippedBg)
-                    panel.setBackground(new Color(255,255,255, 10));
-                else
-                    panel.setBackground(new Color(0,0,0, 0));
-                add(panel, "grow, wrap");
-                prop.SetPaintedAreaHeight(panel.getPreferredSize().height);
-            });
-            strippedBg = !strippedBg;
+        JPanel pan2 = new JPanel(new MigLayout("", "grow"));
+        pan2.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        pan2.setOpaque(false);
+
+        for (NodeProperty prop : properties) {
+
+            PropertyPanel panel = new PropertyPanel(prop);
+            pan2.add(panel, "grow, wrap");
+            panelList.add(panel);
         }
+
+        repaint();
+
+        add(pan2, "grow");
     }
 
     public Dial(int minValue, int maxValue, int value) {
@@ -69,13 +73,23 @@ public class  Dial extends JPanel {
 
         Dimension arcs = new Dimension(10, 10);
 
+        int accumulatedHeight = 0;
+        for(PropertyPanel panel : panelList) {
+            accumulatedHeight += panel.getHeight();
+        }
+
+        System.out.println("Accu -> "+ accumulatedHeight);
+
+        // header size + panels size + additional paddings
+        int height = 51 + accumulatedHeight + 20 + 2;
+
         /* -- Node Base -- */
         graphics.setColor(new Color(255,255,255, 30));
         graphics.fillRoundRect(
                 15,
                 0,
                 getPreferredSize().width-32,
-                getPreferredSize().height,
+                height,
                 arcs.width,
                 arcs.height);
         //graphics.setColor(new Color(0,0,255, 100));
@@ -91,7 +105,7 @@ public class  Dial extends JPanel {
                 16,
                 1,
                 getPreferredSize().width-34,
-                getPreferredSize().height-2,
+                height-2,
                 arcs.width,
                 arcs.height);
 
@@ -122,7 +136,46 @@ public class  Dial extends JPanel {
         graphics.setColor(new Color(255,255,255, 150));
         graphics.drawString("Node subtitle", 35, 40);
 
-        drawIO(graphics);
+        /* -- Node Connectors Sections -- */
+        /* -- Input Section -- */
+        graphics.setColor(new Color(50,50,50));
+        graphics.fillRect(
+                16,
+                51,
+                20,
+                height-61);
+        graphics.fillRoundRect(
+                16,
+                height-21,
+                20,
+                20,
+                arcs.width,
+                arcs.height);
+        graphics.fillRect(
+                26,
+                height-21,
+                10,
+                20);
+        /* -- Output Section -- */
+        graphics.fillRect(
+                getPreferredSize().width-38,
+                51,
+                20,
+                height-61);
+        graphics.fillRoundRect(
+                getPreferredSize().width-38,
+                height-21,
+                20,
+                20,
+                arcs.width,
+                arcs.height);
+        graphics.fillRect(
+                getPreferredSize().width-38,
+                height-21,
+                10,
+                20);
+
+        //drawIO(graphics);
         //drawComponents(graphics);
         //drawConnections(graphics);
     }

@@ -11,9 +11,9 @@ public class IntegerProperty implements NodeProperty {
 
     IntegerProperty() {
         AreaHeight = 0;
-        component = new JTextField();
-        component.setPreferredSize(new Dimension(90,10));
-        inputCount = 2;
+        component = new JTextArea();
+        //component.setPreferredSize(new Dimension(150,10));
+        inputCount = 3;
         outputCount = 1;
     }
     @Override

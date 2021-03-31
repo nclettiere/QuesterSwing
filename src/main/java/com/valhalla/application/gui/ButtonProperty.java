@@ -27,7 +27,7 @@ public class ButtonProperty implements NodeProperty{
 
     @Override
     public int GetInputCount() {
-        return 0;
+        return 1;
     }
 
     @Override

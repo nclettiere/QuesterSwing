@@ -156,7 +156,7 @@ public class ProjectSelectorFrame
 
         panel.add(new JLabel(""));
         panel.add(panelButtons, "w 200!, gaptop 20");
-        NodeProperty[] props = {new IntegerProperty(), new ButtonProperty(), new IntegerProperty(),new IntegerProperty(), new IntegerProperty()};
+        NodeProperty[] props = {new IntegerProperty()};
         panel.add(new Dial(props));
         panel.add(new JTextPane());
 
