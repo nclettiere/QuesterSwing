@@ -12,8 +12,8 @@ public interface INode extends Serializable {
     String GetDescription();
     void   SetDescription(String description);
 
-    List<Class<?>> GetProperties();
-    void   SetProperties(List<Class<?>> properties);
-    void AddProperty(Class<?> propertyClass);
+    List<PropertyBase> GetProperties();
+    void   SetProperties(List<PropertyBase> properties);
+    void AddProperty(PropertyBase propertyClass);
 
 }

@@ -1,6 +1,8 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.DisplayImageNode;
 import com.valhalla.core.Node.INodeData;
+import com.valhalla.core.Node.ImageNodePanel;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
@@ -83,9 +85,9 @@ public class NodeEditor
         CompTest test = new CompTest();
         //test.setSize(test.getPreferredSize());
 
-        ImageNode node = new ImageNode();
+        ImageNodePanel node = new ImageNodePanel();
 
-        node.AddOnBoundsListener(this);
+        //node.AddOnBoundsListener(this);
 
         node.setLocation(70,70);
         node.setSize(node.getPreferredSize());

@@ -10,7 +10,7 @@ public class NodeBase implements INode {
     private UUID uuid;
     private String name;
     private String description;
-    private List<Class<?>> properties;
+    private List<PropertyBase> properties;
 
     NodeBase() {
         this.properties = new ArrayList<>();
@@ -47,25 +47,17 @@ public class NodeBase implements INode {
     }
 
     @Override
-    public List<Class<?>> GetProperties() {
+    public List<PropertyBase> GetProperties() {
         return properties;
     }
 
     @Override
-    public void SetProperties(List<Class<?>> properties) {
+    public void SetProperties(List<PropertyBase> properties) {
         this.properties = properties;
     }
 
     @Override
-    public void AddProperty(Class<?> propertyClass) {
-        Constructor<?> constructor = propertyClass.getConstructors()[0];
-        try {
-            Object data = constructor.newInstance();
-            if(!(data instanceof INodeProperty))
-                throw new NullPointerException();
-            properties.add(propertyClass);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new NullPointerException();
-        }
+    public void AddProperty(PropertyBase propertyClass) {
+        properties.add(propertyClass);
     }
 }

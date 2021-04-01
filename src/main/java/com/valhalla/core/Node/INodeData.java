@@ -11,8 +11,8 @@ public interface INodeData {
     void SetName(String name);
     String GetDisplayName();
     void SetDisplayName(String displayName);
-    void SetData(Object data);
-    Object GetData();
+    void SetData(Class<?> data);
+    Class<?> GetData();
     Type GetDataType();
     Color GetDataColor();
     void SetDataColor(Color color);

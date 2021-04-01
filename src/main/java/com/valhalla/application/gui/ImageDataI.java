@@ -14,14 +14,14 @@ public class ImageDataI implements INodeData {
     private UUID uuid;
     private String name;
     private String displayName;
-    private Object data;
+    private Class data;
     private Color dataColor;
 
     public ImageDataI() {
         uuid = UUID.randomUUID();
         SetName("Image");
         SetDisplayName("Image Object");
-        SetData(new ImageIcon());
+        SetData(ImageIcon.class);
 
         Random rand = new Random();
         float r = rand.nextFloat();
@@ -61,12 +61,12 @@ public class ImageDataI implements INodeData {
     }
 
     @Override
-    public void SetData(Object data) {
+    public void SetData(Class<?> data) {
         this.data = data;
     }
 
     @Override
-    public Object GetData() {
+    public Class<?> GetData() {
         return data;
     }
 

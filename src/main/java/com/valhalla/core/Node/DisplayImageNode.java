@@ -1,9 +1,10 @@
 package com.valhalla.core.Node;
 
 public class DisplayImageNode extends NodeBase {
-    DisplayImageNode() {
+    public DisplayImageNode() {
         super();
-
-        AddProperty(DisplayImageNode.class);
+        SetName("Display Image");
+        SetDescription("Displays an InputStream as Image");
+        AddProperty(new DisplayImageProperty());
     }
 }

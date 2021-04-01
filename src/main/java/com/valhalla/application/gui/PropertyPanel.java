@@ -3,6 +3,7 @@ package com.valhalla.application.gui;
 import com.valhalla.core.Node.INodeData;
 import com.valhalla.core.Node.NodeEventListener;
 import com.valhalla.core.Node.INodeProperty;
+import com.valhalla.core.Node.NodePanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ public class PropertyPanel extends JPanel {
 
     private INodeProperty prop;
 
-    public PropertyPanel(INodeProperty prop, Node node) {
+    public PropertyPanel(INodeProperty prop, NodePanel node) {
         this.prop = prop;
         setLayout(new MigLayout("fillx","2[14][grow][14]0", ""));
         setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
@@ -44,7 +45,7 @@ public class PropertyPanel extends JPanel {
         if(prop.GetOutputCount() == 0)
             outputPanel.add(new JLabel(""), "grow, w 14!, h 14!, wrap");
 
-        if(prop.Control() != null) {
+        if(prop.GetControl() != null) {
             prop.AddOnControlUpdateListener(new NodeEventListener() {
                 @Override
                 public void OnControlUpdate() {
@@ -61,7 +62,7 @@ public class PropertyPanel extends JPanel {
                     node.repaint();
                 }
             });
-            controlPanel.add(prop.Control().get(), "grow, wrap");
+            controlPanel.add(prop.GetControl().get(), "grow, wrap");
         }
 
         for (INodeData nData : prop.GetOutputs()) {

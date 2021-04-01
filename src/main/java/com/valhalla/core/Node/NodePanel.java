@@ -1,77 +1,63 @@
-package com.valhalla.application.gui;
+package com.valhalla.core.Node;
 
-import com.valhalla.core.Node.INodeProperty;
+import com.valhalla.application.gui.PropertyPanel;
 import net.miginfocom.swing.MigLayout;
 
-import java.awt.*;
-import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.event.EventListenerList;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragGestureRecognizer;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
-public class Node extends JComponent {
+public class NodePanel extends JComponent implements MouseInputListener {
+
+    NodeBase                 Node;
     String                   NodeName;
     String                   NodeSubtitle;
     Color                    NodeColor;
-    INodeProperty[]           properties;
-    JPanel                   content;
+    JPanel                   Content;
     ArrayList<PropertyPanel> panelList;
 
-    protected EventListenerList listenerList = new EventListenerList();
+    // Dd
+    boolean isMousePressed;
+    Point mouseOriginPoint;
 
-    public void AddOnBoundsListener(IBoundsListener listener) {
-        listenerList.add(IBoundsListener.class, listener);
-    }
-    public void RemoveOnBoundsListener(IBoundsListener listener) {
-        listenerList.remove(IBoundsListener.class, listener);
-    }
-
-    public Node(INodeProperty[] properties) {
+    NodePanel() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
-        this.properties = properties;
-        this.panelList = new ArrayList<>();
-        this.NodeColor = new Color(255, 100, 70);
 
-        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
-        this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
-        this.setBackground(new Color(0,0,0,0));
-        this.setOpaque(false);
+        this.addMouseListener(this);
+        this.addMouseMotionListener(this);
 
-        content = new JPanel(new MigLayout("", "grow"));
-        content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        content.setOpaque(false);
 
-        CreateNodeStructure();
-
-        add(content, "grow");
-
-        repaint();
-    }
-
-    public Node() {
-        this.NodeName = "Default";
-        this.NodeSubtitle = "Default";
         panelList = new ArrayList<>();
         this.setLayout(new MigLayout("debug", "0[grow]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
         this.setBackground(new Color(0,0,0,0));
         this.setOpaque(false);
 
-        content = new JPanel(new MigLayout("", "grow"));
-        content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        content.setOpaque(false);
+        Content = new JPanel(new MigLayout("", "grow"));
+        Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        Content.setOpaque(false);
 
-        add(content, "grow");
+        add(Content, "grow");
 
         repaint();
     }
 
     public void CreateNodeStructure() {
-        for (INodeProperty prop : properties) {
-
-            //PropertyPanel panel = new PropertyPanel(prop, this);
-            //content.add(panel, "grow, wrap");
-            //panelList.add(panel);
+        for (PropertyBase prop : Node.GetProperties()) {
+            PropertyPanel panel = new PropertyPanel(prop, this);
+            Content.add(panel, "grow, wrap");
+            panelList.add(panel);
         }
     }
 
@@ -88,15 +74,15 @@ public class Node extends JComponent {
 
         // header size + panels size + additional paddings
         int height = 51 + accumulatedHeight + 20 + 2;
-        // header size + panels size + additional paddings
-        int width = this.getWidth() + 2;
+
+        this.setSize(this.getWidth(), height);
 
         /* -- Node Base -- */
         graphics.setColor(new Color(255,255,255, 30));
         graphics.fillRoundRect(
                 15,
                 0,
-                width-32,
+                this.getWidth()-32,
                 height,
                 arcs.width,
                 arcs.height);
@@ -104,7 +90,7 @@ public class Node extends JComponent {
         graphics.fillRoundRect(
                 16,
                 1,
-                width-34,
+                this.getWidth()-34,
                 height-2,
                 arcs.width,
                 arcs.height);
@@ -113,7 +99,7 @@ public class Node extends JComponent {
         graphics.fillRoundRect(
                 16,
                 1,
-                width-34,
+                this.getWidth()-34,
                 50,
                 arcs.width,
                 arcs.height);
@@ -121,13 +107,13 @@ public class Node extends JComponent {
         graphics.fillRect(
                 16,
                 41,
-                width-34,
+                this.getWidth()-34,
                 10);
         graphics.setColor(new Color(255,255,255, 30));
         graphics.drawLine(
                 16,
                 49,
-                width-19,
+                this.getWidth()-19,
                 49);
         /* -- Node Connectors Sections -- */
         /* -- Input Section -- */
@@ -151,19 +137,19 @@ public class Node extends JComponent {
                 20);
         /* -- Output Section -- */
         graphics.fillRect(
-                width-38,
+                this.getWidth()-38,
                 51,
                 20,
                 height-61);
         graphics.fillRoundRect(
-                width-38,
+                this.getWidth()-38,
                 height-21,
                 20,
                 20,
                 arcs.width,
                 arcs.height);
         graphics.fillRect(
-                width-38,
+                this.getWidth()-38,
                 height-21,
                 10,
                 20);
@@ -178,4 +164,44 @@ public class Node extends JComponent {
         return new Dimension(200, 350);
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        this.mouseOriginPoint = e.getPoint();
+
+        // If dragging node from header (51px height)
+        if(mouseOriginPoint.y > 0 && mouseOriginPoint.y < 52)
+            this.isMousePressed = true;
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        this.isMousePressed = false;
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if(isMousePressed) {
+            this.setLocation(getMousePosition(true));
+            System.out.println(e.getPoint().toString());
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
+    }
 }
