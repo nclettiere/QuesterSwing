@@ -4,7 +4,7 @@ public class DisplayImageProperty extends PropertyBase {
 
     DisplayImageProperty() {
         super();
-
-        AddInput(ImageData.class);
+        SetContr
+        AddInput(new ImageData());
     }
 }

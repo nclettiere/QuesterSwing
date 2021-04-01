@@ -30,8 +30,13 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public Ref<JComponent> Control() {
+    public Ref<JComponent> GetControl() {
         return control;
+    }
+
+    @Override
+    public void SetControl(Ref<JComponent> control) {
+        this.control = control;
     }
 
     @Override

@@ -8,7 +8,8 @@ import java.util.EventListener;
 import java.util.List;
 
 public interface INodeProperty extends EventListener {
-    Ref<JComponent> Control();
+    Ref<JComponent> GetControl();
+    void SetControl(Ref<JComponent> control);
 
     List<INodeData> GetInputs();
     List<INodeData> GetOutputs();

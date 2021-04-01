@@ -35,8 +35,13 @@ public class ButtonPropertyI implements INodeProperty {
         AddInput(new ImageDataI());
     }
     @Override
-    public Ref<JComponent> Control() {
+    public Ref<JComponent> GetControl() {
         return component;
+    }
+
+    @Override
+    public void SetControl(Ref<JComponent> control) {
+        this.component = control;
     }
 
     @Override
