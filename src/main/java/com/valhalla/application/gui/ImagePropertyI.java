@@ -81,8 +81,8 @@ public class ImagePropertyI implements INodeProperty {
     }
 
     @Override
-    public void AddOutput(INodeData INodeData) {
-        outputs.add(INodeData);
+    public void AddOutput(INodeData output) {
+        outputs.add(output);
     }
 
     @Override
