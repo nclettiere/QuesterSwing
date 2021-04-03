@@ -13,7 +13,7 @@ public class DisplayImageProperty extends PropertyBase {
         super();
 
         Ref<JComponent> ref = new Ref<>(new ImagePanel());
-        ref.get().setPreferredSize(new Dimension(200,200));
+        ((ImagePanel)ref.get()).SetCustomSize(new Dimension(100,100));
 
         ref.get().addKeyListener(new KeyListener() {
             @Override
@@ -33,7 +33,30 @@ public class DisplayImageProperty extends PropertyBase {
         });
 
         SetControl(ref);
-        AddInput(new ImageData());
-        AddOutput(new ImageData());
+
+        ImageData id = new ImageData();
+        id.SetMode(ConnectorMode.INPUT);
+        id.AddOnBindingEventListener(new BindingEventListener() {
+            @Override
+            public void OnBindingDataChanged(Object data) {
+                UpdateBindings();
+            }
+
+            @Override
+            public void OnBindingReleased() {
+
+            }
+        });
+        AddInput(id);
+        FireControlUpdateEvent();
+    }
+
+    @Override
+    public void UpdateBindings() {
+        super.UpdateBindings();
+
+        ((ImagePanel)GetControl().get()).addImage(
+                (String)GetInputs().get(0).GetData());
+        FireControlUpdateEvent();
     }
 }

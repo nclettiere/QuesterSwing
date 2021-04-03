@@ -1,5 +1,8 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.application.gui.NodeEditor;
+
+import javax.swing.event.EventListenerList;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -7,10 +10,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class NodeBase implements INode {
-    private UUID uuid;
-    private String name;
-    private String description;
-    private List<PropertyBase> properties;
+    protected UUID uuid;
+    protected String name;
+    protected String description;
+    protected List<PropertyBase> properties;
 
     NodeBase() {
         this.properties = new ArrayList<>();

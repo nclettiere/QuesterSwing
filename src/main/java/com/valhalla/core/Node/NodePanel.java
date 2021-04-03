@@ -1,9 +1,11 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.application.gui.NodeEditor;
 import com.valhalla.application.gui.PropertyPanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import javax.swing.event.EventListenerList;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.dnd.DnDConstants;
@@ -16,29 +18,30 @@ import java.awt.event.MouseEvent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class NodePanel extends JComponent implements MouseInputListener {
+    protected NodeBase                 Node;
+    protected String                   NodeName;
+    protected String                   NodeSubtitle;
+    protected Color                    NodeColor;
+    protected JPanel                   Content;
+    protected ArrayList<PropertyPanel> propPanelList;
+    protected NodeEditor               editorParent;
 
-    NodeBase                 Node;
-    String                   NodeName;
-    String                   NodeSubtitle;
-    Color                    NodeColor;
-    JPanel                   Content;
-    ArrayList<PropertyPanel> panelList;
-
-    // Dd
-    boolean isMousePressed;
-    Point mouseOriginPoint;
+    // Mouse vars
+    protected boolean isMousePressed;
+    protected Point   mouseOriginPoint;
 
     NodePanel() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
 
+        this.listenerList = new EventListenerList();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
 
-
-        panelList = new ArrayList<>();
+        propPanelList = new ArrayList<>();
         this.setLayout(new MigLayout("debug", "0[grow]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
         this.setBackground(new Color(0,0,0,0));
@@ -57,7 +60,29 @@ public class NodePanel extends JComponent implements MouseInputListener {
         for (PropertyBase prop : Node.GetProperties()) {
             PropertyPanel panel = new PropertyPanel(prop, this);
             Content.add(panel, "grow, wrap");
-            panelList.add(panel);
+            propPanelList.add(panel);
+        }
+    }
+
+    public void SetParentEditor(NodeEditor editor) {
+        this.editorParent = editor;
+    }
+
+    void FireNodeOnDraggedEvent() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == NodeEventListener.class) {
+                ((NodeEventListener) listeners[i+1]).OnNodePanelDrag(this);
+            }
+        }
+    }
+
+    void FireNodeOnDragStopEvent() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == NodeEventListener.class) {
+                ((NodeEventListener) listeners[i+1]).OnNodePanelDragStop(this);
+            }
         }
     }
 
@@ -68,14 +93,17 @@ public class NodePanel extends JComponent implements MouseInputListener {
         Dimension arcs = new Dimension(10, 10);
 
         int accumulatedHeight = 0;
-        for(PropertyPanel panel : panelList) {
+        int width = 0;
+        for(PropertyPanel panel : propPanelList) {
             accumulatedHeight += panel.getHeight();
+            if(panel.getWidth() > width)
+                width = panel.getWidth() + 34;
         }
 
         // header size + panels size + additional paddings
         int height = 51 + accumulatedHeight + 20 + 2;
 
-        this.setSize(this.getWidth(), height);
+        this.setSize(getWidth(), height);
 
         /* -- Node Base -- */
         graphics.setColor(new Color(255,255,255, 30));
@@ -170,10 +198,9 @@ public class NodePanel extends JComponent implements MouseInputListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        this.mouseOriginPoint = e.getPoint();
-
+        FireNodeOnDraggedEvent();
         // If dragging node from header (51px height)
-        if(mouseOriginPoint.y > 0 && mouseOriginPoint.y < 52)
+        if(e.getPoint().y > 0 && e.getPoint().y < 52 && e.getPoint().x > 15 && e.getPoint().x < getWidth() - 15)
             this.isMousePressed = true;
     }
 
@@ -194,14 +221,44 @@ public class NodePanel extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if(isMousePressed) {
-            this.setLocation(getMousePosition(true));
-            System.out.println(e.getPoint().toString());
+        if(this.isMousePressed) {
+            int x = (int) this.getLocation().getX() + (e.getX()) - (this.getSize().width / 2);
+            int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
+            setLocation(x,y);
         }
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        mouseOriginPoint = e.getPoint();
+    }
 
+    public void AddOnNodeEventListener(NodeEventListener listener) {
+        listenerList.add(NodeEventListener.class, listener);
+    }
+
+    public void RemoveOnNodeEventListener(NodeEventListener listener) {
+        listenerList.remove(NodeEventListener.class, listener);
+    }
+
+    public INodeData GetConnector(UUID uuid) {
+        for (PropertyBase prop :  Node.GetProperties()) {
+            for (INodeData nData : prop.GetInputs()) {
+                if(nData.GetUUID() == uuid)
+                    return nData;
+            }
+        }
+        return null;
+    }
+
+    public void NotifyConnectorClick(INodeData nData) {
+        editorParent.OnConnectorClick(nData);
+    }
+
+    public void UpdateData() {
+        for (PropertyBase prop :  Node.GetProperties()) {
+            prop.UpdateBindings();
+        }
+        repaint();
     }
 }

@@ -1,15 +1,11 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.application.gui.ButtonPropertyI;
-import com.valhalla.application.gui.ImagePropertyI;
-
 import java.awt.*;
 
-public class ImageNodePanel extends NodePanel {
+public class DisplayImageNodePanel extends NodePanel {
 
-    public ImageNodePanel() {
+    public DisplayImageNodePanel() {
         super();
-        //this.properties = new INodeProperty[]{new DisplayImageProperty()};
         this.Node = new DisplayImageNode();
         this.NodeName = "Display Image";
         this.NodeSubtitle = "Displays Custom Image";

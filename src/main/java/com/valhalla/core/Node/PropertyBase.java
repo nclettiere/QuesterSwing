@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PropertyBase implements INodeProperty {
-
     protected Ref<JComponent>   control;
     protected List<INodeData>   inputs;
     protected List<INodeData>   outputs;
@@ -20,11 +19,12 @@ public class PropertyBase implements INodeProperty {
         listenerList = new EventListenerList();
     }
 
-    void FireControlUpdateEvent() {
+    @Override
+    public void FireControlUpdateEvent() {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == NodeEventListener.class) {
-                ((NodeEventListener) listeners[i+1]).OnControlUpdate();
+            if (listeners[i] == PropertyEventListener.class) {
+                ((PropertyEventListener) listeners[i+1]).OnControlUpdate();
             }
         }
     }
@@ -80,12 +80,14 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public void AddOnControlUpdateListener(NodeEventListener listener) {
-        listenerList.add(NodeEventListener.class, listener);
+    public void AddOnControlUpdateListener(PropertyEventListener listener) {
+        listenerList.add(PropertyEventListener.class, listener);
     }
 
     @Override
-    public void RemoveOnControlUpdateListener(NodeEventListener listener) {
-        listenerList.remove(NodeEventListener.class, listener);
+    public void RemoveOnControlUpdateListener(PropertyEventListener listener) {
+        listenerList.remove(PropertyEventListener.class, listener);
     }
+
+    public void UpdateBindings() { }
 }

@@ -1,8 +1,8 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.core.Node.DisplayImageNode;
-import com.valhalla.core.Node.INodeData;
-import com.valhalla.core.Node.ImageNodePanel;
+import com.valhalla.core.Node.*;
+import com.valhalla.core.Node.DisplayImageNodePanel;
+import com.valhalla.core.Node.NodePanel;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ class ColorPair {
 }
 
 public class NodeEditor
-    extends JPanel
+    extends JLayeredPane
     implements
     MouseWheelListener,
     MouseMotionListener,
@@ -66,8 +67,10 @@ public class NodeEditor
             - EditorBar -> Multiple tools (compile, simulate, etc)
      */
 
-    private ArrayList<INodeData> dataTypes;
-    private ArrayList<ColorPair> dataColors;
+    private ArrayList<NodePanel>   nodePanels;
+    private ArrayList<INodeData>   dataTypes;
+    private ArrayList<ColorPair>   dataColors;
+    private ArrayList<DataBinding> bindings;
 
     double zoom = 1.0;
     private int spacing;
@@ -81,22 +84,59 @@ public class NodeEditor
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
         this.setOpaque(true);
+        this.nodePanels = new ArrayList<>();
+        this.bindings = new ArrayList<>();
 
-        CompTest test = new CompTest();
-        //test.setSize(test.getPreferredSize());
 
-        ImageNodePanel node = new ImageNodePanel();
+        SelectImageNodePanel nodeSelect = new SelectImageNodePanel();
+        DisplayImageNodePanel nodeDisplay = new DisplayImageNodePanel();
+
+        nodePanels.add(nodeSelect);
+        nodePanels.add(nodeDisplay);
 
         //node.AddOnBoundsListener(this);
+        nodeSelect.SetParentEditor(this);
+        nodeSelect.setLocation(70,70);
+        nodeSelect.setSize(nodeSelect.getPreferredSize());
 
-        node.setLocation(70,70);
-        node.setSize(node.getPreferredSize());
-        this.add(test);
-        this.add(node);
-        node.repaint();
+        nodeDisplay.SetParentEditor(this);
+        nodeDisplay.setLocation(300,70);
+        nodeDisplay.setSize(nodeDisplay.getPreferredSize());
 
-        SwingUtilities.invokeLater( () -> {
-            node.repaint();
+        setPosition(nodeSelect, 0);
+        setPosition(nodeDisplay, 0);
+
+        this.add(nodeSelect);
+        this.add(nodeDisplay);
+
+        nodeSelect.AddOnNodeEventListener(new NodeEventListener() {
+            @Override
+            public void OnNodePanelDrag(NodePanel nodePanel) {
+                if(nodePanel != null) {
+                    //for (NodePanel nPanel : nodePanels)
+                    //    get().moveToBack(nPanel);
+                    get().moveToFront(nodePanel);
+                }
+            }
+
+            @Override
+            public void OnNodePanelDragStop(NodePanel nodePanel) {
+
+            }
+        });
+
+        nodeDisplay.AddOnNodeEventListener(new NodeEventListener() {
+            @Override
+            public void OnNodePanelDrag(NodePanel nodePanel) {
+                if(nodePanel != null) {
+                    get().moveToFront(nodePanel);
+                }
+            }
+
+            @Override
+            public void OnNodePanelDragStop(NodePanel nodePanel) {
+
+            }
         });
     }
 
@@ -106,6 +146,8 @@ public class NodeEditor
         //this.setBackground(Color.GREEN);
         add(c);
     }
+
+    private NodeEditor get() {return this;};
 
     void RegisterDataTypes(INodeData[] dataTypes) {
         this.dataTypes.addAll(Arrays.asList(dataTypes));
@@ -120,18 +162,44 @@ public class NodeEditor
         }
     }
 
+    public Point RequestMousePosition() {
+        return mousePt;
+    }
+
+    INodeData nodeData;
+    public void OnConnectorClick(INodeData nData) {
+        if(nodeData == null) {
+            nodeData = nData;
+        }else {
+            if(nodeData.GetMode() == ConnectorMode.OUTPUT)
+                nData.SetBinding(nodeData);
+            else
+                nodeData.SetBinding(nData);
+            UpdateNodes();
+
+            // Reset for new bindings
+            nodeData = null;
+        }
+    }
+
+    public void UpdateNodes() {
+        for (NodePanel nPanel : nodePanels) {
+            nPanel.UpdateData();
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D graphics = (Graphics2D) g;
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        //graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         graphics.drawLine(0, origin.y, getWidth(), origin.y);
         graphics.drawLine(origin.x, 0, origin.x, getHeight());
         // set up grid
         int x = 0;
         int y = 0;
-        graphics.setColor(new Color(220, 220, 220));
+        graphics.setColor(new Color(100, 100, 100));
         while (x < getWidth()) {
             graphics.drawLine(origin.x + x, 0, origin.x + x, getHeight());
             x += 20;
@@ -165,6 +233,7 @@ public class NodeEditor
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        this.mousePt = e.getPoint();
         if(wheelPressed)
             System.out.println("MEEEP");
     }

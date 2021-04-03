@@ -3,7 +3,6 @@ package com.valhalla.core.Node;
 import com.valhalla.core.Ref;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
@@ -22,6 +21,8 @@ public interface INodeProperty extends EventListener {
     int GetInputCount();
     int GetOutputCount();
 
-    void AddOnControlUpdateListener(NodeEventListener listener);
-    void RemoveOnControlUpdateListener(NodeEventListener listener);
+    void AddOnControlUpdateListener(PropertyEventListener listener);
+    void RemoveOnControlUpdateListener(PropertyEventListener listener);
+
+    void FireControlUpdateEvent();
 }

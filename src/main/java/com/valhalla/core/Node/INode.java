@@ -13,7 +13,6 @@ public interface INode extends Serializable {
     void   SetDescription(String description);
 
     List<PropertyBase> GetProperties();
-    void   SetProperties(List<PropertyBase> properties);
+    void SetProperties(List<PropertyBase> properties);
     void AddProperty(PropertyBase propertyClass);
-
 }
