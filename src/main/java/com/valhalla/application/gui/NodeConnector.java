@@ -3,6 +3,7 @@ package com.valhalla.application.gui;
 import com.valhalla.core.Node.*;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.awt.event.*;
@@ -37,7 +38,8 @@ public class NodeConnector
         this.addMouseMotionListener(this);
 
         setToolTipText(nData.GetDisplayName());
-        setPreferredSize(new Dimension(14,14));
+        //setBorder(new EmptyBorder(0,10,0,0));
+        setPreferredSize(new Dimension(15,15));
     }
 
     public void AddOnControlUpdateListener(ConnectorEventListener listener) {
@@ -114,10 +116,11 @@ public class NodeConnector
                         nData.GetDataColor().getBlue() + 20, 255));
                 graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
             } else {
+                Color cDarker = nData.GetDataColor().darker().darker();
                 graphics.setColor(new Color(
-                        nData.GetDataColor().getRed(),
-                        nData.GetDataColor().getGreen(),
-                        nData.GetDataColor().getBlue(), 40));
+                        cDarker.getRed(),
+                        cDarker.getGreen(),
+                        cDarker.getBlue()));
                 graphics.fillOval(0, 0, connectorWidth, connectorWidth);
 
                 graphics.setColor(new Color(

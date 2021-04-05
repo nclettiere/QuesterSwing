@@ -28,7 +28,7 @@ public class PropertyPanel extends JPanel {
         this.node = node;
         this.connectorList = new ArrayList<>();
 
-        setLayout(new MigLayout("fillx","2[14][grow][14]0", ""));
+        setLayout(new MigLayout("","2[15][grow][15]2", ""));
         setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
         setOpaque(false);
 
@@ -39,7 +39,8 @@ public class PropertyPanel extends JPanel {
         controlPanel = new JPanel(new MigLayout("", "[max]", ""));
         controlPanel.setOpaque(false);
 
-        outputPanel = new JPanel(new MigLayout("fillx", "0[grow]2"));
+        outputPanel = new JPanel(new MigLayout("fillx", "0[grow]0"));
+        outputPanel.setBorder(new EmptyBorder(0,0,0,0));
         outputPanel.setOpaque(false);
 
         add(inputPanel);
@@ -70,7 +71,7 @@ public class PropertyPanel extends JPanel {
                     node.NotifyConnectorDragStop(nData);
                 }
             });
-            inputPanel.add(nodeConnector, "grow, w 14!, h 14!, wrap");
+            inputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
         if(prop.GetControl() != null) {
             prop.AddOnControlUpdateListener(new PropertyEventListener() {
@@ -111,15 +112,15 @@ public class PropertyPanel extends JPanel {
                     node.NotifyConnectorDragStop(nData);
                 }
             });
-            outputPanel.add(nodeConnector, "grow, w 14!, h 14!, wrap");
+            outputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
 
         // Ensure a 'white space' on the input/output lane
         // Preventing control to get in
         if(prop.GetOutputCount() == 0)
-            outputPanel.add(new JLabel(""), "grow, w 14!, h 14!, wrap");
+            outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         if(prop.GetInputCount() == 0)
-            inputPanel.add(new JLabel(""), "grow, w 14!, h 14!, wrap");
+            inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
     }
 
     public void paintComponent(Graphics g) {

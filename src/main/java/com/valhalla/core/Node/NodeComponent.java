@@ -2,6 +2,7 @@ package com.valhalla.core.Node;
 
 import com.valhalla.application.gui.NodeEditor;
 import com.valhalla.application.gui.PropertyPanel;
+import com.valhalla.core.NodeIcons;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -15,6 +16,12 @@ import java.awt.dnd.DragGestureRecognizer;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -43,9 +50,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
         propPanelList = new ArrayList<>();
         this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
-        this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
-        this.setBackground(new Color(0,0,0,0));
-        this.setOpaque(false);
+        this.setBorder(BorderFactory.createEmptyBorder(51 + 22, 10, 2, 12));
+        this.setBackground(new Color(0,255,0,0));
+        //this.setOpaque(false);
 
         Content = new JPanel(new MigLayout("", "grow"));
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -101,7 +108,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         }
 
         // header size + panels size + additional paddings
-        int height = 51 + accumulatedHeight + 20 + 2;
+        int height = 51 + 24 + accumulatedHeight + 20 + 2;
 
         this.setSize(getWidth(), height);
 
@@ -109,17 +116,17 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         graphics.setColor(new Color(255,255,255, 30));
         graphics.fillRoundRect(
                 15,
-                0,
+                12,
                 this.getWidth()-32,
-                height,
+                height - 24,
                 arcs.width,
                 arcs.height);
         graphics.setColor(new Color(30,30,30));
         graphics.fillRoundRect(
                 16,
-                1,
+                12 + 1,
                 this.getWidth()-34,
-                height-2,
+                height - 2 - 24,
                 arcs.width,
                 arcs.height);
         /* -- Node Header -- */
@@ -133,65 +140,98 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         graphics.setPaint(headerColor);
         graphics.fillRoundRect(
                 16,
-                1,
+                12 + 1,
                 this.getWidth()-34,
                 50,
                 arcs.width,
                 arcs.height);
         graphics.fillRect(
                 16,
-                41,
+                12+41,
                 this.getWidth()-34,
                 10);
         graphics.setColor(new Color(255,255,255, 30));
         graphics.drawLine(
                 16,
-                49,
+                12+49,
                 this.getWidth()-19,
-                49);
-        /* -- Node Connectors Sections -- */
-        /* -- Input Section -- */
+                12+49);
+        /* -- Node Kind Indicator (Top-Left) -- */
+        Color cKindIndicator = new Color(176,0,159);
+        Color cKindIndicatorDarker = cKindIndicator.darker();
+        Color cKindIndicatorLighter = cKindIndicator.brighter().brighter();
+        graphics.setColor(new Color(
+                cKindIndicatorDarker.getRed(),
+                cKindIndicatorDarker.getGreen(),
+                cKindIndicatorDarker.getBlue()));
+        graphics.fillOval(this.getWidth() - 19 - 16, 5, 24, 24);
+
+        Point center = new Point(this.getWidth() - 19, 5);
+        float radius = 24;
+        float[] dist = { 0f, 1f};
+        Color[] colors = { cKindIndicatorLighter, cKindIndicator};
+        RadialGradientPaint p =
+                new RadialGradientPaint(center, radius, dist, colors);
+        graphics.setPaintMode();
+        graphics.setPaint(p);
+        graphics.fillOval(this.getWidth() - 19 - 16 + 1, 5 + 1, 24 - 2, 24 - 2);
+        ///* -- Node Connectors Sections -- */
+        ///* -- Input Section -- */
         graphics.setColor(new Color(50,50,50));
         graphics.fillRect(
                 16,
-                51,
+                12+51,
                 20,
-                height-61);
+                height-61-24);
         graphics.fillRoundRect(
                 16,
-                height-21,
+                height-21-12,
                 20,
                 20,
                 arcs.width,
                 arcs.height);
         graphics.fillRect(
                 26,
-                height-21,
+                height-21-12,
                 10,
                 20);
-        /* -- Output Section -- */
+        ///* -- Output Section -- */
         graphics.fillRect(
                 this.getWidth()-38,
-                51,
+                51+24-12,
                 20,
-                height-61);
+                height-61-24);
         graphics.fillRoundRect(
                 this.getWidth()-38,
-                height-21,
+                height-21-12,
                 20,
                 20,
                 arcs.width,
                 arcs.height);
         graphics.fillRect(
                 this.getWidth()-38,
-                height-21,
+                height-21-12,
                 10,
                 20);
         /* -- Node Title -- */
         graphics.setColor(new Color(255,255,255, 200));
-        graphics.drawString(this.NodeName, 25, 20);
+        graphics.drawString(this.NodeName, 25, 20+12);
         graphics.setColor(new Color(255,255,255, 150));
-        graphics.drawString(this.NodeSubtitle, 25, 40);
+        graphics.drawString(this.NodeSubtitle, 25, 40+12);
+
+        BufferedImage icon = null;
+        try {
+            icon = NodeIcons.GetIcon(new File("C:\\Users\\Percebe64\\Downloads\\formula.svg"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+        //String s = "f";
+        //Font font = new Font("Serif", Font.PLAIN, 50);
+        //FontRenderContext frc = graphics.getFontRenderContext();
+//
+        //GlyphVector gv = font.createGlyphVector(frc, s);
+        //graphics.drawGlyphVector(gv, 40, 60);
     }
 
     public Dimension getPreferredSize( ) {
@@ -206,7 +246,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     public void mousePressed(MouseEvent e) {
         FireNodeOnDraggedEvent();
         // If dragging node from header (51px height)
-        if(e.getPoint().y > 0 && e.getPoint().y < 52 && e.getPoint().x > 15 && e.getPoint().x < getWidth() - 15)
+        if(e.getPoint().y > 12 && e.getPoint().y < 52 + 12 && e.getPoint().x > 15 && e.getPoint().x < getWidth() - 15)
             this.isMousePressed = true;
     }
 

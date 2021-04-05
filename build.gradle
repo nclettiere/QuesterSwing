@@ -28,6 +28,8 @@ dependencies {
     provided 'com.formdev:flatlaf:1.1'
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-swing
     provided group: 'com.miglayout', name: 'miglayout-swing', version: '5.2'
+    // https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-transcoder
+    provided group: 'org.apache.xmlgraphics', name: 'batik-transcoder', version: '1.14'
 }
 
 application {
