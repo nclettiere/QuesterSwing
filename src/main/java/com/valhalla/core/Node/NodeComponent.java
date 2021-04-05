@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class NodePanel extends JComponent implements MouseInputListener {
+public class NodeComponent extends JComponent implements MouseInputListener {
     protected NodeBase                 Node;
     protected String                   NodeName;
     protected String                   NodeSubtitle;
@@ -33,7 +33,7 @@ public class NodePanel extends JComponent implements MouseInputListener {
     protected boolean isMousePressed;
     protected Point   mouseOriginPoint;
 
-    NodePanel() {
+    NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
 
@@ -42,7 +42,7 @@ public class NodePanel extends JComponent implements MouseInputListener {
         this.addMouseMotionListener(this);
 
         propPanelList = new ArrayList<>();
-        this.setLayout(new MigLayout("debug", "0[grow]0", "0[grow]0"));
+        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51, 10, 2, 12));
         this.setBackground(new Color(0,0,0,0));
         this.setOpaque(false);
@@ -123,7 +123,14 @@ public class NodePanel extends JComponent implements MouseInputListener {
                 arcs.width,
                 arcs.height);
         /* -- Node Header -- */
-        graphics.setColor(NodeColor);
+        Color lightColor = new Color(
+                NodeColor.getRed() + 80,
+                NodeColor.getGreen() + 80,
+                NodeColor.getBlue() + 80);
+        GradientPaint headerColor = new GradientPaint(
+                0,0, NodeColor,
+                400,400, lightColor);
+        graphics.setPaint(headerColor);
         graphics.fillRoundRect(
                 16,
                 1,
@@ -131,7 +138,6 @@ public class NodePanel extends JComponent implements MouseInputListener {
                 50,
                 arcs.width,
                 arcs.height);
-        graphics.setColor(NodeColor);
         graphics.fillRect(
                 16,
                 41,
@@ -255,10 +261,33 @@ public class NodePanel extends JComponent implements MouseInputListener {
         editorParent.OnConnectorClick(nData);
     }
 
+    public void NotifyConnectorDrag(INodeData nData, Component connector) {
+        editorParent.OnConnectorDrag(nData, connector);
+    }
+
+    public void NotifyConnectorDragStop(INodeData nData) {
+        editorParent.OnConnectorDragStop(nData);
+    }
+
     public void UpdateData() {
         for (PropertyBase prop :  Node.GetProperties()) {
             prop.UpdateBindings();
         }
         repaint();
+    }
+
+    public void MatchConnectorType(Class<? extends INodeData> dataType) {
+        for(PropertyPanel prop : propPanelList)
+            prop.UpdateConnectorsMatch(dataType);
+    }
+
+    public void ResetDataTypesState() {
+        for(PropertyPanel prop : propPanelList)
+            prop.ResetConnectorMatch();
+    }
+
+    public void ConnectorDropped(INodeData nodeData) {
+        for(PropertyPanel prop : propPanelList)
+            prop.ConnectorDropped(nodeData);
     }
 }

@@ -24,9 +24,12 @@ public class SelectImageProperty extends PropertyBase {
         SetControl(ref);
 
         ImageData id = new ImageData();
+        IntegerData integerData = new IntegerData();
         id.SetMode(ConnectorMode.OUTPUT);
+        integerData.SetMode(ConnectorMode.OUTPUT);
 
         AddOutput(id);
+        AddOutput(integerData);
     }
 
     private void openActionPerformed(Component parent) {

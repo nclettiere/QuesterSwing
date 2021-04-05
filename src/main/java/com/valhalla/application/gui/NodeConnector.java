@@ -14,15 +14,19 @@ public class NodeConnector
     implements
     ActionListener,
     FocusListener,
-    MouseListener {
+    MouseListener,
+    MouseMotionListener {
 
-    protected NodePanel node;
+    protected NodeComponent node;
     protected boolean mouseEntered;
+    protected boolean dragNotified;
     protected INodeData nData;
+
+    protected boolean disabled;
 
     protected EventListenerList listenerList;
 
-    NodeConnector(INodeData nData, NodePanel node) {
+    NodeConnector(INodeData nData, NodeComponent node) {
         this.nData = nData;
         this.node = node;
 
@@ -30,6 +34,7 @@ public class NodeConnector
 
         this.addFocusListener(this);
         this.addMouseListener(this);
+        this.addMouseMotionListener(this);
 
         setToolTipText(nData.GetDisplayName());
         setPreferredSize(new Dimension(14,14));
@@ -52,6 +57,42 @@ public class NodeConnector
         }
     }
 
+    void FireOnConnectorDragEvent() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == ConnectorEventListener.class) {
+                ((ConnectorEventListener) listeners[i+1]).OnConnectorDrag(this.nData.GetUUID(), this);
+            }
+        }
+    }
+
+    void FireOnConnectorDragStopEvent() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == ConnectorEventListener.class) {
+                ((ConnectorEventListener) listeners[i+1]).OnConnectorDragStop(this.nData.GetUUID());
+            }
+        }
+    }
+
+    void MatchType(Class<? extends INodeData> dataClass) {
+        // If not from the same class disable the connector
+        if(!this.nData.getClass().isAssignableFrom(dataClass)) {
+            SetDisabled(true);
+            return;
+        }
+        SetDisabled(false);
+    }
+
+    void SetDisabled(boolean disabled) {
+        this.disabled = disabled;
+        repaint();
+    }
+
+    boolean GetDisabled() {
+        return this.disabled;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
@@ -59,29 +100,43 @@ public class NodeConnector
 
         int connectorWidth = 15;
 
-        if(mouseEntered) {
-            graphics.setColor(new Color(
-                    nData.GetDataColor().getRed() + 20,
-                    nData.GetDataColor().getGreen() + 20,
-                    nData.GetDataColor().getBlue() + 20, 70));
-            graphics.fillOval(0, 0, connectorWidth, connectorWidth);
+        if(!GetDisabled()) {
+            if (mouseEntered) {
+                graphics.setColor(new Color(
+                        nData.GetDataColor().getRed() + 20,
+                        nData.GetDataColor().getGreen() + 20,
+                        nData.GetDataColor().getBlue() + 20, 70));
+                graphics.fillOval(0, 0, connectorWidth, connectorWidth);
 
-            graphics.setColor(new Color(
-                    nData.GetDataColor().getRed() + 20,
-                    nData.GetDataColor().getGreen() + 20,
-                    nData.GetDataColor().getBlue() + 20, 255));
-            graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
+                graphics.setColor(new Color(
+                        nData.GetDataColor().getRed() + 20,
+                        nData.GetDataColor().getGreen() + 20,
+                        nData.GetDataColor().getBlue() + 20, 255));
+                graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
+            } else {
+                graphics.setColor(new Color(
+                        nData.GetDataColor().getRed(),
+                        nData.GetDataColor().getGreen(),
+                        nData.GetDataColor().getBlue(), 40));
+                graphics.fillOval(0, 0, connectorWidth, connectorWidth);
+
+                graphics.setColor(new Color(
+                        nData.GetDataColor().getRed(),
+                        nData.GetDataColor().getGreen(),
+                        nData.GetDataColor().getBlue(), 200));
+                graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
+            }
         }else {
             graphics.setColor(new Color(
                     nData.GetDataColor().getRed(),
                     nData.GetDataColor().getGreen(),
-                    nData.GetDataColor().getBlue(), 40));
+                    nData.GetDataColor().getBlue(), 10));
             graphics.fillOval(0, 0, connectorWidth, connectorWidth);
 
             graphics.setColor(new Color(
                     nData.GetDataColor().getRed(),
                     nData.GetDataColor().getGreen(),
-                    nData.GetDataColor().getBlue(), 200));
+                    nData.GetDataColor().getBlue(), 80));
             graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
         }
     }
@@ -103,7 +158,8 @@ public class NodeConnector
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        FireOnConnectorClickEvent();
+        if(!GetDisabled())
+            FireOnConnectorClickEvent();
     }
 
     @Override
@@ -113,18 +169,51 @@ public class NodeConnector
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
+        dragNotified = false;
+        FireOnConnectorDragStopEvent();
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        this.mouseEntered = true;
-        repaint();
+        if(!GetDisabled()) {
+            this.mouseEntered = true;
+            repaint();
+        }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        this.mouseEntered = false;
-        repaint();
+        if(!GetDisabled()) {
+            this.mouseEntered = false;
+            repaint();
+        }
+    }
+
+    public void ResetMatch() {
+        this.SetDisabled(false);
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if(!GetDisabled()) {
+            FireOnConnectorDragEvent();
+            if(!dragNotified) {
+                dragNotified = true;
+            }
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
+    }
+
+    public void ConnectorDropped(INodeData nodeData) {
+        if(!GetDisabled()) {
+            if(mouseEntered) {
+                if(nData.getClass().isAssignableFrom(nodeData.getClass()))
+                    nData.SetBinding(nodeData);
+            }
+        }
     }
 }

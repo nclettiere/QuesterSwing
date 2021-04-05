@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class PropertyPanel extends JPanel {
@@ -15,15 +16,17 @@ public class PropertyPanel extends JPanel {
     protected INodeProperty prop;
     protected EventListenerList listenerList;
 
-    protected NodePanel node;
+    protected NodeComponent node;
+    protected ArrayList<NodeConnector> connectorList;
 
     protected JPanel inputPanel;
     protected JPanel controlPanel;
     protected JPanel outputPanel;
 
-    public PropertyPanel(INodeProperty prop, NodePanel node) {
+    public PropertyPanel(INodeProperty prop, NodeComponent node) {
         this.prop = prop;
         this.node = node;
+        this.connectorList = new ArrayList<>();
 
         setLayout(new MigLayout("fillx","2[14][grow][14]0", ""));
         setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
@@ -36,7 +39,7 @@ public class PropertyPanel extends JPanel {
         controlPanel = new JPanel(new MigLayout("", "[max]", ""));
         controlPanel.setOpaque(false);
 
-        outputPanel = new JPanel(new MigLayout("fillx", "0[grow]0"));
+        outputPanel = new JPanel(new MigLayout("fillx", "0[grow]2"));
         outputPanel.setOpaque(false);
 
         add(inputPanel);
@@ -50,6 +53,7 @@ public class PropertyPanel extends JPanel {
     private void AddProperties() {
         for (INodeData nData : prop.GetInputs()) {
             NodeConnector nodeConnector = new NodeConnector(nData, node);
+            connectorList.add(nodeConnector);
             nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
                 @Override
                 public void OnConnectorClick(UUID uuid) {
@@ -57,8 +61,13 @@ public class PropertyPanel extends JPanel {
                 }
 
                 @Override
-                public void OnConnectorDrag(UUID uuid) {
+                public void OnConnectorDrag(UUID uuid, Component connector) {
+                    node.NotifyConnectorDrag(nData, connector);
+                }
 
+                @Override
+                public void OnConnectorDragStop(UUID uuid) {
+                    node.NotifyConnectorDragStop(nData);
                 }
             });
             inputPanel.add(nodeConnector, "grow, w 14!, h 14!, wrap");
@@ -85,20 +94,21 @@ public class PropertyPanel extends JPanel {
 
         for (INodeData nData : prop.GetOutputs()) {
             NodeConnector nodeConnector = new NodeConnector(nData, node);
+            connectorList.add(nodeConnector);
             nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
                 @Override
                 public void OnConnectorClick(UUID uuid) {
                     node.NotifyConnectorClick(nData);
-                    // GET EDITOR
-                    // EDITOR CHECKS IN INPUT/OUTPUT LIST UUID
-                    // EDITOR VALIDATES CONNECTION
-                    // CONNECT AND BIND VALUES
-                    // UPDATE UI
                 }
 
                 @Override
-                public void OnConnectorDrag(UUID uuid) {
+                public void OnConnectorDrag(UUID uuid, Component connector) {
+                    node.NotifyConnectorDrag(nData, connector);
+                }
 
+                @Override
+                public void OnConnectorDragStop(UUID uuid) {
+                    node.NotifyConnectorDragStop(nData);
                 }
             });
             outputPanel.add(nodeConnector, "grow, w 14!, h 14!, wrap");
@@ -115,5 +125,20 @@ public class PropertyPanel extends JPanel {
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    }
+
+    public void UpdateConnectorsMatch(Class<? extends INodeData> dataType) {
+        for (NodeConnector connector : connectorList)
+            connector.MatchType(dataType);
+    }
+
+    public void ResetConnectorMatch() {
+        for (NodeConnector connector : connectorList)
+            connector.ResetMatch();
+    }
+
+    public void ConnectorDropped(INodeData nodeData) {
+        for (NodeConnector connector : connectorList)
+            connector.ConnectorDropped(nodeData);
     }
 }

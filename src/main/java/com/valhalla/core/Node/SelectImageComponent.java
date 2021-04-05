@@ -2,9 +2,9 @@ package com.valhalla.core.Node;
 
 import java.awt.*;
 
-public class SelectImageNodePanel extends NodePanel {
+public class SelectImageComponent extends NodeComponent {
 
-    public SelectImageNodePanel() {
+    public SelectImageComponent() {
         super();
         this.Node = new SelectImageNode();
         this.NodeName = "Select Image";
