@@ -60,16 +60,14 @@ public class PropertyPanel extends JPanel {
                 public void OnConnectorClick(UUID uuid) {
                     node.NotifyConnectorClick(nData);
                 }
-
                 @Override
-                public void OnConnectorDrag(UUID uuid, Component connector) {
-                    node.NotifyConnectorDrag(nData, connector);
-                }
-
+                public void OnConnectorDrag(UUID uuid, Component connector) { node.NotifyConnectorDrag(nData, connector); }
                 @Override
                 public void OnConnectorDragStop(UUID uuid) {
                     node.NotifyConnectorDragStop(nData);
                 }
+                @Override
+                public void OnConnectionCreated(UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(uuid1, uuid2); }
             });
             inputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
@@ -101,16 +99,14 @@ public class PropertyPanel extends JPanel {
                 public void OnConnectorClick(UUID uuid) {
                     node.NotifyConnectorClick(nData);
                 }
-
                 @Override
-                public void OnConnectorDrag(UUID uuid, Component connector) {
-                    node.NotifyConnectorDrag(nData, connector);
-                }
-
+                public void OnConnectorDrag(UUID uuid, Component connector) { node.NotifyConnectorDrag(nData, connector); }
                 @Override
                 public void OnConnectorDragStop(UUID uuid) {
                     node.NotifyConnectorDragStop(nData);
                 }
+                @Override
+                public void OnConnectionCreated(UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(uuid1, uuid2); }
             });
             outputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }

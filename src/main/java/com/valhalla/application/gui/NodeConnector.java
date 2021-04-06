@@ -27,6 +27,8 @@ public class NodeConnector
 
     protected EventListenerList listenerList;
 
+    protected INodeData lastConnection;
+
     NodeConnector(INodeData nData, NodeComponent node) {
         this.nData = nData;
         this.node = node;
@@ -73,6 +75,15 @@ public class NodeConnector
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == ConnectorEventListener.class) {
                 ((ConnectorEventListener) listeners[i+1]).OnConnectorDragStop(this.nData.GetUUID());
+            }
+        }
+    }
+
+    void FireOnConnectionCreated() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == ConnectorEventListener.class) {
+                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this.nData.GetUUID(), lastConnection.GetUUID());
             }
         }
     }
@@ -214,8 +225,11 @@ public class NodeConnector
     public void ConnectorDropped(INodeData nodeData) {
         if(!GetDisabled()) {
             if(mouseEntered) {
-                if(nData.getClass().isAssignableFrom(nodeData.getClass()))
+                if(nData.getClass().isAssignableFrom(nodeData.getClass())) {
                     nData.SetBinding(nodeData);
+                    lastConnection = nodeData;
+                    FireOnConnectionCreated();
+                }
             }
         }
     }

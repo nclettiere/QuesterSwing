@@ -19,6 +19,8 @@ import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -121,115 +123,102 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 height - 24,
                 arcs.width,
                 arcs.height);
+        /* -- Node Connectors Section -- */
+        graphics.setColor(new Color(50,50,50, 190));
+        graphics.fillRoundRect(
+                15+1,
+                12 + 1,
+                this.getWidth()-32-2,
+                height - 24 - 2,
+                arcs.width,
+                arcs.height);
+        /* -- Node Control Section -- */
         graphics.setColor(new Color(30,30,30));
         graphics.fillRoundRect(
-                16,
+                16+20,
                 12 + 1,
-                this.getWidth()-34,
+                this.getWidth()-34-40,
                 height - 2 - 24,
                 arcs.width,
                 arcs.height);
+        graphics.fillRect(
+                16+20,
+                height-17,
+                4,
+                4);
+        graphics.fillRect(
+                this.getWidth()-34-8,
+                height-17,
+                4,
+                4);
         /* -- Node Header -- */
-        Color lightColor = new Color(
-                NodeColor.getRed() + 80,
-                NodeColor.getGreen() + 80,
-                NodeColor.getBlue() + 80);
-        GradientPaint headerColor = new GradientPaint(
-                0,0, NodeColor,
-                400,400, lightColor);
-        graphics.setPaint(headerColor);
-        graphics.fillRoundRect(
-                16,
-                12 + 1,
-                this.getWidth()-34,
-                50,
-                arcs.width,
-                arcs.height);
-        graphics.fillRect(
-                16,
-                12+41,
-                this.getWidth()-34,
-                10);
-        graphics.setColor(new Color(255,255,255, 30));
-        graphics.drawLine(
-                16,
-                12+49,
-                this.getWidth()-19,
-                12+49);
-        /* -- Node Kind Indicator (Top-Left) -- */
-        Color cKindIndicator = new Color(176,0,159);
-        Color cKindIndicatorDarker = cKindIndicator.darker();
-        Color cKindIndicatorLighter = cKindIndicator.brighter().brighter();
-        graphics.setColor(new Color(
-                cKindIndicatorDarker.getRed(),
-                cKindIndicatorDarker.getGreen(),
-                cKindIndicatorDarker.getBlue()));
-        graphics.fillOval(this.getWidth() - 19 - 16, 5, 24, 24);
+         Color lightColor = new Color(
+                 NodeColor.getRed() + 80,
+                 NodeColor.getGreen() + 80,
+                 NodeColor.getBlue() + 80);
+         GradientPaint headerColor = new GradientPaint(
+                 0,0, NodeColor,
+                 400,400, lightColor);
+         graphics.setPaint(headerColor);
+         graphics.fillRoundRect(
+                 16,
+                 12 + 1,
+                 this.getWidth()-34,
+                 50,
+                 arcs.width,
+                 arcs.height);
+         graphics.fillRect(
+                 16,
+                 12+41,
+                 this.getWidth()-34,
+                 10);
+         graphics.setColor(new Color(255,255,255, 30));
+         graphics.drawLine(
+                 16,
+                 12+49,
+                 this.getWidth()-19,
+                 12+49);
+         /* -- Node Kind Indicator (Top-Left) -- */
+         Color cKindIndicator = new Color(176,0,159);
+         Color cKindIndicatorDarker = cKindIndicator.darker();
+         Color cKindIndicatorLighter = cKindIndicator.brighter().brighter();
+         graphics.setColor(new Color(
+                 cKindIndicatorDarker.getRed(),
+                 cKindIndicatorDarker.getGreen(),
+                 cKindIndicatorDarker.getBlue()));
+         graphics.fillOval(this.getWidth() - 19 - 16, 5, 24, 24);
 
-        Point center = new Point(this.getWidth() - 19, 5);
-        float radius = 24;
-        float[] dist = { 0f, 1f};
-        Color[] colors = { cKindIndicatorLighter, cKindIndicator};
-        RadialGradientPaint p =
-                new RadialGradientPaint(center, radius, dist, colors);
-        graphics.setPaintMode();
-        graphics.setPaint(p);
-        graphics.fillOval(this.getWidth() - 19 - 16 + 1, 5 + 1, 24 - 2, 24 - 2);
-        ///* -- Node Connectors Sections -- */
-        ///* -- Input Section -- */
-        graphics.setColor(new Color(50,50,50));
-        graphics.fillRect(
-                16,
-                12+51,
-                20,
-                height-61-24);
-        graphics.fillRoundRect(
-                16,
-                height-21-12,
-                20,
-                20,
-                arcs.width,
-                arcs.height);
-        graphics.fillRect(
-                26,
-                height-21-12,
-                10,
-                20);
-        ///* -- Output Section -- */
-        graphics.fillRect(
-                this.getWidth()-38,
-                51+24-12,
-                20,
-                height-61-24);
-        graphics.fillRoundRect(
-                this.getWidth()-38,
-                height-21-12,
-                20,
-                20,
-                arcs.width,
-                arcs.height);
-        graphics.fillRect(
-                this.getWidth()-38,
-                height-21-12,
-                10,
-                20);
-        /* -- Node Title -- */
-        graphics.setColor(new Color(255,255,255, 200));
-        graphics.drawString(this.NodeName, 25, 20+12);
-        graphics.setColor(new Color(255,255,255, 150));
-        graphics.drawString(this.NodeSubtitle, 25, 40+12);
+         Point center = new Point(this.getWidth() - 19, 5);
+         float radius = 24;
+         float[] dist = { 0f, 1f};
+         Color[] colors = { cKindIndicatorLighter, cKindIndicator};
+         RadialGradientPaint p =
+                 new RadialGradientPaint(center, radius, dist, colors);
+         graphics.setPaintMode();
+         graphics.setPaint(p);
+         graphics.fillOval(this.getWidth() - 19 - 16 + 1, 5 + 1, 24 - 2, 24 - 2);
+         /* -- Node Title -- */
+         graphics.setColor(new Color(255,255,255, 200));
+         graphics.drawString(this.NodeName, 25, 20+12);
+         graphics.setColor(new Color(255,255,255, 150));
+         graphics.drawString(this.NodeSubtitle, 25, 40+12);
 
-        BufferedImage icon = null;
-        try {
-            icon = NodeIcons.GetIcon(new File("C:\\Users\\Percebe64\\Downloads\\formula.svg"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-        }
-        //String s = "f";
-        //Font font = new Font("Serif", Font.PLAIN, 50);
-        //FontRenderContext frc = graphics.getFontRenderContext();
-//
+         //BufferedImage icon = null;
+         //try {
+         //    icon = NodeIcons.GetIcon(new File("C:\\Users\\Percebe64\\Downloads\\formula.svg"));
+         //} catch (IOException e) {
+         //    e.printStackTrace();
+         //    System.out.println(e.getMessage());
+         //}
+
+        //graphics.setClip(null);
+        //graphics.clipRect(100, 10, 50, 100);
+        //graphics.draw(new Rectangle2D.Double(100, 10, 95, 30));
+
+       //String s = "f";
+       //Font font = new Font("Serif", Font.PLAIN, 50);
+       //FontRenderContext frc = graphics.getFontRenderContext();
+
         //GlyphVector gv = font.createGlyphVector(frc, s);
         //graphics.drawGlyphVector(gv, 40, 60);
     }
@@ -329,5 +318,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     public void ConnectorDropped(INodeData nodeData) {
         for(PropertyPanel prop : propPanelList)
             prop.ConnectorDropped(nodeData);
+    }
+
+    public void NotifyConnectionCreated(UUID uuid1, UUID uuid2) {
+        editorParent.CreateConnection(uuid1, uuid2);
     }
 }

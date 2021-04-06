@@ -8,4 +8,5 @@ public interface ConnectorEventListener extends EventListener {
     void OnConnectorClick(UUID uuid);
     void OnConnectorDrag(UUID uuid, Component connector);
     void OnConnectorDragStop(UUID uuid);
+    void OnConnectionCreated(UUID uuid1, UUID uuid2);
 }

@@ -12,11 +12,13 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.UUID;
 
 class ColorPair {
     private Class<?> key;
@@ -51,6 +53,37 @@ class ColorPair {
     }
 }
 
+class NodeConnectionPoints {
+    private UUID uuid1;
+    private UUID uuid2;
+    private Point p1;
+    private Point p2;
+
+    public NodeConnectionPoints(UUID uuid1, Point p1, UUID uuid2, Point p2) {
+        this.p1 = p1;
+        this.uuid1 = uuid1;
+        this.p2 = p2;
+        this.uuid2 = uuid2;
+    }
+
+    public Point GetPoint1() {
+        return p1;
+    }
+
+    public Point GetPoint2() {
+        return p1;
+    }
+
+    public Point GetPoint(UUID uuid) {
+        if(uuid == this.uuid1)
+            return p1;
+        else if(uuid == this.uuid2)
+            return p2;
+        else
+            return null;
+    }
+}
+
 public class NodeEditor
     extends JLayeredPane
     implements
@@ -71,12 +104,14 @@ public class NodeEditor
     private ArrayList<INodeData>   dataTypes;
     private ArrayList<ColorPair>   dataColors;
     private ArrayList<DataBinding> bindings;
+    private ArrayList<NodeConnectionPoints> connectionPoints;
 
     double zoom = 1.0;
     private int spacing;
     private Point origin = new Point(0,0);
     private Point mousePt;
     private boolean wheelPressed;
+    private boolean debugPaint;
 
     protected boolean draggingConnector;
     protected Point dragOrigin;
@@ -89,7 +124,8 @@ public class NodeEditor
         this.setOpaque(true);
         this.nodeComponents = new ArrayList<>();
         this.bindings = new ArrayList<>();
-
+        this.connectionPoints = new ArrayList<>();
+        this.debugPaint = false;
 
         SelectImageComponent nodeSelect = new SelectImageComponent();
         DisplayImageComponent nodeDisplay = new DisplayImageComponent();
@@ -116,8 +152,6 @@ public class NodeEditor
             @Override
             public void OnNodePanelDrag(NodeComponent nodeComponent) {
                 if(nodeComponent != null) {
-                    //for (NodePanel nPanel : nodePanels)
-                    //    get().moveToBack(nPanel);
                     get().moveToFront(nodeComponent);
                 }
             }
@@ -143,14 +177,14 @@ public class NodeEditor
         });
     }
 
-    public NodeEditor(Component c) {
-        this();
-        c.addMouseWheelListener(this);
-        //this.setBackground(Color.GREEN);
-        add(c);
-    }
+    private NodeEditor get() {return this;}
 
-    private NodeEditor get() {return this;};
+    public void SetDebugPaint(boolean debugPaint) {
+        this.debugPaint = debugPaint;
+    }
+    public boolean GetDebugPaint() {
+        return this.debugPaint;
+    }
 
     void RegisterDataTypes(INodeData[] dataTypes) {
         this.dataTypes.addAll(Arrays.asList(dataTypes));
@@ -190,42 +224,31 @@ public class NodeEditor
         }
     }
 
+    boolean needsReset;
     ConnectionLine cLine;
     public void OnConnectorDrag(INodeData nData, Component connector) {
         if(!draggingConnector) {
+            needsReset = false;
             this.nodeData = nData;
             this.draggingConnector = true;
             this.dragOrigin = getMousePosition(true);
             System.out.println("ORIGIN: "+ origin.toString());
 
-            //Point spot = new Point();
-            //while ( connector != null && connector != this ) {
-            //    Point relativeLocation = connector.getLocation();
-            //    spot.translate( relativeLocation.x, relativeLocation.y );
-            //    connector = connector.getParent();
-            //}
-//
-            //cLine = new ConnectionLine(spot, mousePt);
-            //cLine.setLocation(origin);
-            //cLine.setSize(200, 200);
-            //add(cLine);
             ShowDataType(nData.getClass());
-        }else {
-            //cLine.UpdatePoints(getMousePosition(true));
         }
         repaint();
     }
 
+    Point dropPoint;
     public void OnConnectorDragStop(INodeData nData) {
         NotifyConnectorsDrop();
         // Reset for new bindings
         ResetDataTypesState();
-        this.nodeData = null;
+        needsReset = true;
         this.draggingConnector = false;
-        remove(cLine);
-        cLine = null;
-
+        dropPoint = getMousePosition();
         UpdateNodes();
+        repaint();
     }
 
     public void UpdateNodes() {
@@ -238,6 +261,12 @@ public class NodeEditor
         for (NodeComponent nPanel : nodeComponents) {
             nPanel.ConnectorDropped(nodeData);
         }
+    }
+
+    public void CreateConnection(UUID uuid1, UUID uuid2) {
+        Point drop = getMousePosition();
+        connectionPoints.add(new NodeConnectionPoints(uuid1, dragOrigin, uuid2, drop));
+        repaint();
     }
 
     // OnConnector Click/Drag disables all
@@ -279,36 +308,126 @@ public class NodeEditor
         }
 
         if(draggingConnector) {
-            graphics.setColor(Color.GREEN);
-            graphics.setStroke(new BasicStroke(3.0f));
-            //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
-
-            CubicCurve2D c = new CubicCurve2D.Double();
-            ////// draw CubicCurve2D.Double with set coordinates
-            //int ctrl1 = 200 * ()
-
-            //double i = (getMousePosition().x - dragOrigin.x) / (dragOrigin.x - (dragOrigin.x + 200));
-
-            float i = ((float)(getMousePosition().x) / (float)(dragOrigin.x)) - 1.0f;
-
-            System.out.println(i);
-
-            c.setCurve(
-                    dragOrigin.x,
-                    dragOrigin.y,
-                    (dragOrigin.x + 30) + (50 * i),
-                    dragOrigin.y + (50 * i),
-                    (getMousePosition().x - 30) - (50 * i),
-                    getMousePosition().y - (50 * i),
-                    getMousePosition().x,
-                    getMousePosition().y);
-            graphics.draw(c);
-
-            graphics.setColor(Color.RED);
-            graphics.drawOval((int)((getMousePosition().x - 30) - (50 * i)), (int)(getMousePosition().y - (50 * i)), 10, 10);
-            graphics.drawOval((int)((dragOrigin.x + 30) + (50 * i)), (int)(dragOrigin.y + (50 * i)), 10, 10);
+            DrawConnection(graphics);
         }
 
+        for (NodeConnectionPoints points : connectionPoints) {
+            DrawConnection(graphics, points);
+        }
+
+    }
+
+    private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
+        graphics.setColor(Color.GREEN);
+        graphics.setStroke(new BasicStroke(3.0f));
+        //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
+
+        CubicCurve2D c = new CubicCurve2D.Double();
+
+        Point curveOrigin = points.GetPoint1();
+        Point curveEnd = points.GetPoint2();
+
+        Point curveOriginCtrl = new Point();
+        Point curveEndCtrl = new Point();
+
+        float delta = ((float)(curveEnd.x) / (float)(curveOrigin.x)) - 1.0f;
+
+        if(delta < 0) {
+            if(curveEnd.y < curveOrigin.y) {
+
+                curveOriginCtrl.x = curveOrigin.x + 400;
+                curveOriginCtrl.y = curveOrigin.y - 200;
+                curveEndCtrl.x    = curveEnd.x - 300;
+                curveEndCtrl.y    = curveEnd.y - 300;
+            }else {
+                curveOriginCtrl.x = curveOrigin.x + 400;
+                curveOriginCtrl.y = curveOrigin.y + 200;
+                curveEndCtrl.x    = curveEnd.x - 300;
+                curveEndCtrl.y    = curveEnd.y + 300;
+            }
+        }else {
+            curveOriginCtrl.x = (int)((curveOrigin.x + 30) + (50 * delta));
+            curveOriginCtrl.y = (int)(curveOrigin.y + (50 * delta));
+            curveEndCtrl.x    = (int)((curveEnd.x - 30) - (50 * delta));
+            curveEndCtrl.y    = (int)(curveEnd.y - (50 * delta));
+        }
+
+        c.setCurve(
+                curveOrigin.x,
+                curveOrigin.y,
+                curveOriginCtrl.x,
+                curveOriginCtrl.y,
+                curveEndCtrl.x,
+                curveEndCtrl.y,
+                curveEnd.x,
+                curveEnd.y);
+
+        graphics.draw(c);
+
+        if(GetDebugPaint()) {
+            graphics.setColor(Color.RED);
+            //ctrlOrigin
+            graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+            //ctrlEND
+            graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        }
+    }
+
+    // Dragging
+    private void DrawConnection(Graphics2D graphics) {
+        graphics.setColor(Color.GREEN);
+        graphics.setStroke(new BasicStroke(3.0f));
+        //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
+
+        CubicCurve2D c = new CubicCurve2D.Double();
+
+        Point curveOrigin = dragOrigin;
+        Point curveEnd = getMousePosition();
+
+        Point curveOriginCtrl = new Point();
+        Point curveEndCtrl = new Point();
+
+        float delta = ((float)(curveEnd.x) / (float)(curveOrigin.x)) - 1.0f;
+
+        if(delta < 0) {
+            if(curveEnd.y < curveOrigin.y) {
+
+                curveOriginCtrl.x = curveOrigin.x + 400;
+                curveOriginCtrl.y = curveOrigin.y - 200;
+                curveEndCtrl.x    = curveEnd.x - 300;
+                curveEndCtrl.y    = curveEnd.y - 300;
+            }else {
+                curveOriginCtrl.x = curveOrigin.x + 400;
+                curveOriginCtrl.y = curveOrigin.y + 200;
+                curveEndCtrl.x    = curveEnd.x - 300;
+                curveEndCtrl.y    = curveEnd.y + 300;
+            }
+        }else {
+            curveOriginCtrl.x = (int)((curveOrigin.x + 30) + (50 * delta));
+            curveOriginCtrl.y = (int)(curveOrigin.y + (50 * delta));
+            curveEndCtrl.x    = (int)((curveEnd.x - 30) - (50 * delta));
+            curveEndCtrl.y    = (int)(curveEnd.y - (50 * delta));
+        }
+
+        c.setCurve(
+                curveOrigin.x,
+                curveOrigin.y,
+                curveOriginCtrl.x,
+                curveOriginCtrl.y,
+                curveEndCtrl.x,
+                curveEndCtrl.y,
+                curveEnd.x,
+                curveEnd.y);
+
+        graphics.draw(c);
+
+        if(GetDebugPaint()) {
+            graphics.setColor(Color.RED);
+            //ctrlOrigin
+            graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+            //ctrlEND
+            graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        }
     }
 
     public void paintChildren(Graphics g) {
