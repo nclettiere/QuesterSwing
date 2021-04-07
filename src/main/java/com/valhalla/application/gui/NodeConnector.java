@@ -102,6 +102,8 @@ public class NodeConnector
         repaint();
     }
 
+    public INodeData GetNodeData() {return this.nData;};
+
     boolean GetDisabled() {
         return this.disabled;
     }

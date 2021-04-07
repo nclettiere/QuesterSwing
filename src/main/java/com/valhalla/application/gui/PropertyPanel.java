@@ -138,4 +138,13 @@ public class PropertyPanel extends JPanel {
         for (NodeConnector connector : connectorList)
             connector.ConnectorDropped(nodeData);
     }
+
+    public Point GetConnectorLocation(UUID uuid) {
+        for (NodeConnector connector : connectorList) {
+            if(connector.GetNodeData().GetUUID() == uuid) {
+                return connector.getLocation();
+            }
+        }
+        return null;
+    }
 }

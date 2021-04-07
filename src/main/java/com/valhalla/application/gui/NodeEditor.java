@@ -54,24 +54,28 @@ class ColorPair {
 }
 
 class NodeConnectionPoints {
+    private UUID nodeUUID;
     private UUID uuid1;
     private UUID uuid2;
     private Point p1;
     private Point p2;
 
-    public NodeConnectionPoints(UUID uuid1, Point p1, UUID uuid2, Point p2) {
+    public NodeConnectionPoints(UUID nodeUUID, UUID uuid1, Point p1, UUID uuid2, Point p2) {
+        this.nodeUUID = nodeUUID;
         this.p1 = p1;
         this.uuid1 = uuid1;
         this.p2 = p2;
         this.uuid2 = uuid2;
     }
 
-    public Point GetPoint1() {
-        return p1;
+    public UUID GetNodeUUID() {
+        return nodeUUID;
     }
 
+    public Point GetPoint1() { return p1; }
+
     public Point GetPoint2() {
-        return p1;
+        return p2;
     }
 
     public Point GetPoint(UUID uuid) {
@@ -81,6 +85,13 @@ class NodeConnectionPoints {
             return p2;
         else
             return null;
+    }
+
+    public UUID GetUUID1() {
+        return this.uuid1;
+    }
+    public UUID GetUUID2() {
+        return this.uuid2;
     }
 }
 
@@ -153,6 +164,16 @@ public class NodeEditor
             public void OnNodePanelDrag(NodeComponent nodeComponent) {
                 if(nodeComponent != null) {
                     get().moveToFront(nodeComponent);
+                    for (NodeConnectionPoints connection : connectionPoints) {
+                        if(connection.GetNodeUUID() == nodeComponent.GetNode().GetUUID()) {
+                            Point connectorPoint1 = nodeComponent.GetConnectorLocation(connection.GetUUID1());
+                            if(connectorPoint1 != null) {
+                                System.out.println("GOTCHA: " + connectorPoint1);
+                            }else {
+                                System.out.println("NOP");
+                            }
+                        }
+                    }
                 }
             }
 
@@ -263,9 +284,9 @@ public class NodeEditor
         }
     }
 
-    public void CreateConnection(UUID uuid1, UUID uuid2) {
+    public void CreateConnection(UUID nodeUUID, UUID uuid1, UUID uuid2) {
         Point drop = getMousePosition();
-        connectionPoints.add(new NodeConnectionPoints(uuid1, dragOrigin, uuid2, drop));
+        connectionPoints.add(new NodeConnectionPoints(nodeUUID, uuid1, dragOrigin, uuid2, drop));
         repaint();
     }
 

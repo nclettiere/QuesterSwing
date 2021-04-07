@@ -223,6 +223,8 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //graphics.drawGlyphVector(gv, 40, 60);
     }
 
+    public NodeBase GetNode() {return Node;}
+
     public Dimension getPreferredSize( ) {
         return new Dimension(200, 350);
     }
@@ -321,6 +323,15 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyConnectionCreated(UUID uuid1, UUID uuid2) {
-        editorParent.CreateConnection(uuid1, uuid2);
+        editorParent.CreateConnection(this.Node.GetUUID(), uuid1, uuid2);
+    }
+
+    public Point GetConnectorLocation(UUID uuid) {
+        for (PropertyPanel propPanel : propPanelList) {
+            Point p =  propPanel.GetConnectorLocation(uuid);
+            if(p != null)
+                return p;
+        }
+        return null;
     }
 }
