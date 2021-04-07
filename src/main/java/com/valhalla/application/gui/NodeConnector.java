@@ -28,6 +28,7 @@ public class NodeConnector
     protected EventListenerList listenerList;
 
     protected INodeData lastConnection;
+    protected NodeConnector lastConnectionComp;
 
     NodeConnector(INodeData nData, NodeComponent node) {
         this.nData = nData;
@@ -83,7 +84,7 @@ public class NodeConnector
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == ConnectorEventListener.class) {
-                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this.nData.GetUUID(), lastConnection.GetUUID());
+                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this, lastConnectionComp, this.nData.GetUUID(), lastConnection.GetUUID());
             }
         }
     }
@@ -103,6 +104,7 @@ public class NodeConnector
     }
 
     public INodeData GetNodeData() {return this.nData;};
+    public NodeComponent GetNode() {return this.node;};
 
     boolean GetDisabled() {
         return this.disabled;
@@ -155,6 +157,19 @@ public class NodeConnector
                     nData.GetDataColor().getBlue(), 80));
             graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
         }
+    }
+
+    public Point GetRelativePosition() {
+        //Get "absolute" coordinates of root pane
+        Point editorAbsPos = node.GetEditor().getRootPane().getContentPane().getLocationOnScreen();
+        //Get "absolute" coordinates of myComp2
+        Point connectorAbsPos = this.getLocationOnScreen();
+        //Subtract coordinates to get relative coordinates
+        Point connectorRelPos = new Point(
+                (int) (connectorAbsPos.getX() - editorAbsPos.getX()),
+                (int) (connectorAbsPos.getY() - editorAbsPos.getY()));
+
+        return connectorRelPos;
     }
 
     @Override
@@ -224,12 +239,13 @@ public class NodeConnector
 
     }
 
-    public void ConnectorDropped(INodeData nodeData) {
+    public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
         if(!GetDisabled()) {
             if(mouseEntered) {
                 if(nData.getClass().isAssignableFrom(nodeData.getClass())) {
                     nData.SetBinding(nodeData);
                     lastConnection = nodeData;
+                    lastConnectionComp = draggingConnector;
                     FireOnConnectionCreated();
                 }
             }

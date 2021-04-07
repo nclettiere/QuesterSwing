@@ -17,6 +17,7 @@ public class NodeBase implements INode {
 
     NodeBase() {
         this.properties = new ArrayList<>();
+        SetUUID(UUID.randomUUID());
     }
 
     @Override

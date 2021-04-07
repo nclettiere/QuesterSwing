@@ -61,13 +61,13 @@ public class PropertyPanel extends JPanel {
                     node.NotifyConnectorClick(nData);
                 }
                 @Override
-                public void OnConnectorDrag(UUID uuid, Component connector) { node.NotifyConnectorDrag(nData, connector); }
+                public void OnConnectorDrag(UUID uuid, NodeConnector connector) { node.NotifyConnectorDrag(nData, connector); }
                 @Override
                 public void OnConnectorDragStop(UUID uuid) {
                     node.NotifyConnectorDragStop(nData);
                 }
                 @Override
-                public void OnConnectionCreated(UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(uuid1, uuid2); }
+                public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
             });
             inputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
@@ -100,13 +100,13 @@ public class PropertyPanel extends JPanel {
                     node.NotifyConnectorClick(nData);
                 }
                 @Override
-                public void OnConnectorDrag(UUID uuid, Component connector) { node.NotifyConnectorDrag(nData, connector); }
+                public void OnConnectorDrag(UUID uuid, NodeConnector connector) { node.NotifyConnectorDrag(nData, connector); }
                 @Override
                 public void OnConnectorDragStop(UUID uuid) {
                     node.NotifyConnectorDragStop(nData);
                 }
                 @Override
-                public void OnConnectionCreated(UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(uuid1, uuid2); }
+                public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
             });
             outputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
@@ -134,15 +134,15 @@ public class PropertyPanel extends JPanel {
             connector.ResetMatch();
     }
 
-    public void ConnectorDropped(INodeData nodeData) {
+    public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
         for (NodeConnector connector : connectorList)
-            connector.ConnectorDropped(nodeData);
+            connector.ConnectorDropped(draggingConnector, nodeData);
     }
 
     public Point GetConnectorLocation(UUID uuid) {
         for (NodeConnector connector : connectorList) {
             if(connector.GetNodeData().GetUUID() == uuid) {
-                return connector.getLocation();
+                return connector.GetRelativePosition();
             }
         }
         return null;

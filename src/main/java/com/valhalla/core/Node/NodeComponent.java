@@ -1,31 +1,16 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.application.gui.NodeConnector;
 import com.valhalla.application.gui.NodeEditor;
 import com.valhalla.application.gui.PropertyPanel;
-import com.valhalla.core.NodeIcons;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragGestureRecognizer;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -37,6 +22,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
     protected NodeEditor               editorParent;
+    protected boolean                  selected;
+
+    protected double zoomFactor = 1.0f;
 
     // Mouse vars
     protected boolean isMousePressed;
@@ -51,7 +39,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         this.addMouseMotionListener(this);
 
         propPanelList = new ArrayList<>();
-        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
+        this.setLayout(new MigLayout("debug", "0[grow]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51 + 22, 10, 2, 12));
         this.setBackground(new Color(0,255,0,0));
         //this.setOpaque(false);
@@ -81,7 +69,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == NodeEventListener.class) {
-                ((NodeEventListener) listeners[i+1]).OnNodePanelDrag(this);
+                ((NodeEventListener) listeners[i+1]).OnNodeComponentDrag(this);
             }
         }
     }
@@ -90,7 +78,16 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == NodeEventListener.class) {
-                ((NodeEventListener) listeners[i+1]).OnNodePanelDragStop(this);
+                ((NodeEventListener) listeners[i+1]).OnNodeComponentDragStop(this);
+            }
+        }
+    }
+
+    void FireNodeOnClickEvent() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == NodeEventListener.class) {
+                ((NodeEventListener) listeners[i+1]).OnNodeComponentClick(this);
             }
         }
     }
@@ -98,6 +95,10 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        //graphics.scale(zoomFactor, zoomFactor);
+        AffineTransform at = new AffineTransform();
+        at.setToScale(2.5, 2.5);
 
         Dimension arcs = new Dimension(10, 10);
 
@@ -115,7 +116,19 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         this.setSize(getWidth(), height);
 
         /* -- Node Base -- */
-        graphics.setColor(new Color(255,255,255, 30));
+        if(selected) {
+            graphics.setColor(new Color(242,176,18));
+            graphics.drawRoundRect(
+                    15,
+                    12,
+                    this.getWidth()-32,
+                    height - 23,
+                    arcs.width,
+                    arcs.height);
+            graphics.setColor(new Color(242,176,18, 50));
+        }else {
+            graphics.setColor(new Color(255,255,255, 30));
+        }
         graphics.fillRoundRect(
                 15,
                 12,
@@ -133,7 +146,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 arcs.width,
                 arcs.height);
         /* -- Node Control Section -- */
-        graphics.setColor(new Color(30,30,30));
+        graphics.setColor(new Color(35,35,35));
         graphics.fillRoundRect(
                 16+20,
                 12 + 1,
@@ -202,25 +215,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
          graphics.drawString(this.NodeName, 25, 20+12);
          graphics.setColor(new Color(255,255,255, 150));
          graphics.drawString(this.NodeSubtitle, 25, 40+12);
-
-         //BufferedImage icon = null;
-         //try {
-         //    icon = NodeIcons.GetIcon(new File("C:\\Users\\Percebe64\\Downloads\\formula.svg"));
-         //} catch (IOException e) {
-         //    e.printStackTrace();
-         //    System.out.println(e.getMessage());
-         //}
-
-        //graphics.setClip(null);
-        //graphics.clipRect(100, 10, 50, 100);
-        //graphics.draw(new Rectangle2D.Double(100, 10, 95, 30));
-
-       //String s = "f";
-       //Font font = new Font("Serif", Font.PLAIN, 50);
-       //FontRenderContext frc = graphics.getFontRenderContext();
-
-        //GlyphVector gv = font.createGlyphVector(frc, s);
-        //graphics.drawGlyphVector(gv, 40, 60);
     }
 
     public NodeBase GetNode() {return Node;}
@@ -231,11 +225,13 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        FireNodeOnClickEvent();
+        Select();
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        FireNodeOnDraggedEvent();
+        //FireNodeOnDraggedEvent();
         // If dragging node from header (51px height)
         if(e.getPoint().y > 12 && e.getPoint().y < 52 + 12 && e.getPoint().x > 15 && e.getPoint().x < getWidth() - 15)
             this.isMousePressed = true;
@@ -244,6 +240,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     @Override
     public void mouseReleased(MouseEvent e) {
         this.isMousePressed = false;
+        FireNodeOnDragStopEvent();
     }
 
     @Override
@@ -263,6 +260,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
             int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
             setLocation(x,y);
         }
+        FireNodeOnDraggedEvent();
     }
 
     @Override
@@ -292,12 +290,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         editorParent.OnConnectorClick(nData);
     }
 
-    public void NotifyConnectorDrag(INodeData nData, Component connector) {
-        editorParent.OnConnectorDrag(nData, connector);
+    public void NotifyConnectorDrag(INodeData nData, NodeConnector connector) {
+        editorParent.OnConnectorDrag(this, nData, connector);
     }
 
     public void NotifyConnectorDragStop(INodeData nData) {
-        editorParent.OnConnectorDragStop(nData);
+        editorParent.OnConnectorDragStop( nData);
     }
 
     public void UpdateData() {
@@ -317,13 +315,13 @@ public class NodeComponent extends JComponent implements MouseInputListener {
             prop.ResetConnectorMatch();
     }
 
-    public void ConnectorDropped(INodeData nodeData) {
+    public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
         for(PropertyPanel prop : propPanelList)
-            prop.ConnectorDropped(nodeData);
+            prop.ConnectorDropped(draggingConnector, nodeData);
     }
 
-    public void NotifyConnectionCreated(UUID uuid1, UUID uuid2) {
-        editorParent.CreateConnection(this.Node.GetUUID(), uuid1, uuid2);
+    public void NotifyConnectionCreated(NodeConnector connectorDropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) {
+        editorParent.CreateConnection(initialConnector, connectorDropped, this.Node.GetUUID(), connectorDropped.GetNode().GetNode().GetUUID(), uuid1, uuid2);
     }
 
     public Point GetConnectorLocation(UUID uuid) {
@@ -333,5 +331,33 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 return p;
         }
         return null;
+    }
+
+    public NodeEditor GetEditor() {
+        return editorParent;
+    }
+
+    public void Select() {
+        this.selected = true;
+        repaint();
+    }
+
+    public void Unselect() {
+        this.selected = false;
+        repaint();
+    }
+
+    public void SetZoomFactor(double zoomFactor) {
+        this.zoomFactor = zoomFactor;
+        //setLocation(
+        //        (int)(getLocation().x * zoomFactor),
+        //        (int)(getLocation().y * zoomFactor)
+        //);
+        //setSize(new Dimension(
+        //        (int)(getSize().width * zoomFactor - 10),
+        //        (int)(getSize().height * zoomFactor)));
+        //setPreferredSize(new Dimension(
+        //        (int)(getSize().width * zoomFactor),
+        //        (int)(getSize().height * zoomFactor)));
     }
 }

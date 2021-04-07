@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
@@ -53,48 +54,6 @@ class ColorPair {
     }
 }
 
-class NodeConnectionPoints {
-    private UUID nodeUUID;
-    private UUID uuid1;
-    private UUID uuid2;
-    private Point p1;
-    private Point p2;
-
-    public NodeConnectionPoints(UUID nodeUUID, UUID uuid1, Point p1, UUID uuid2, Point p2) {
-        this.nodeUUID = nodeUUID;
-        this.p1 = p1;
-        this.uuid1 = uuid1;
-        this.p2 = p2;
-        this.uuid2 = uuid2;
-    }
-
-    public UUID GetNodeUUID() {
-        return nodeUUID;
-    }
-
-    public Point GetPoint1() { return p1; }
-
-    public Point GetPoint2() {
-        return p2;
-    }
-
-    public Point GetPoint(UUID uuid) {
-        if(uuid == this.uuid1)
-            return p1;
-        else if(uuid == this.uuid2)
-            return p2;
-        else
-            return null;
-    }
-
-    public UUID GetUUID1() {
-        return this.uuid1;
-    }
-    public UUID GetUUID2() {
-        return this.uuid2;
-    }
-}
-
 public class NodeEditor
     extends JLayeredPane
     implements
@@ -117,14 +76,20 @@ public class NodeEditor
     private ArrayList<DataBinding> bindings;
     private ArrayList<NodeConnectionPoints> connectionPoints;
 
-    double zoom = 1.0;
+    private double zoomFactor = 1;
+    private double prevZoomFactor = 1;
+    private boolean zoomer;
+
     private int spacing;
     private Point origin = new Point(0,0);
     private Point mousePt;
     private boolean wheelPressed;
     private boolean debugPaint;
 
-    protected boolean draggingConnector;
+    protected NodeComponent nodeDragging;
+    protected NodeConnector draggingConnector;
+    protected NodeComponent draggingConnectorNode;
+    protected NodeComponent selectedNode;
     protected Point dragOrigin;
 
     public NodeEditor() {
@@ -161,39 +126,55 @@ public class NodeEditor
 
         nodeSelect.AddOnNodeEventListener(new NodeEventListener() {
             @Override
-            public void OnNodePanelDrag(NodeComponent nodeComponent) {
+            public void OnNodeComponentDrag(NodeComponent nodeComponent) {
                 if(nodeComponent != null) {
                     get().moveToFront(nodeComponent);
-                    for (NodeConnectionPoints connection : connectionPoints) {
-                        if(connection.GetNodeUUID() == nodeComponent.GetNode().GetUUID()) {
-                            Point connectorPoint1 = nodeComponent.GetConnectorLocation(connection.GetUUID1());
-                            if(connectorPoint1 != null) {
-                                System.out.println("GOTCHA: " + connectorPoint1);
-                            }else {
-                                System.out.println("NOP");
-                            }
-                        }
-                    }
+                    nodeDragging = nodeComponent;
+                    repaint();
                 }
             }
 
             @Override
-            public void OnNodePanelDragStop(NodeComponent nodeComponent) {
+            public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
+                nodeDragging = null;
+            }
 
+            @Override
+            public void OnNodeComponentClick(NodeComponent nodeComponent) {
+                for (NodeComponent nComp: nodeComponents)
+                    nComp.Unselect();
+                if(nodeComponent != null) {
+                    get().moveToFront(nodeComponent);
+                    selectedNode = nodeComponent;
+                }
+                repaint();
             }
         });
 
         nodeDisplay.AddOnNodeEventListener(new NodeEventListener() {
             @Override
-            public void OnNodePanelDrag(NodeComponent nodeComponent) {
+            public void OnNodeComponentDrag(NodeComponent nodeComponent) {
                 if(nodeComponent != null) {
                     get().moveToFront(nodeComponent);
+                    nodeDragging = nodeComponent;
+                    repaint();
                 }
             }
 
             @Override
-            public void OnNodePanelDragStop(NodeComponent nodeComponent) {
+            public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
+                nodeDragging = null;
+            }
 
+            @Override
+            public void OnNodeComponentClick(NodeComponent nodeComponent) {
+                for (NodeComponent nComp: nodeComponents)
+                    nComp.Unselect();
+                if(nodeComponent != null) {
+                    get().moveToFront(nodeComponent);
+                    selectedNode = nodeComponent;
+                }
+                repaint();
             }
         });
     }
@@ -247,11 +228,12 @@ public class NodeEditor
 
     boolean needsReset;
     ConnectionLine cLine;
-    public void OnConnectorDrag(INodeData nData, Component connector) {
-        if(!draggingConnector) {
+    public void OnConnectorDrag(NodeComponent nodeComponent, INodeData nData, NodeConnector connector) {
+        if(draggingConnector == null) {
             needsReset = false;
             this.nodeData = nData;
-            this.draggingConnector = true;
+            this.draggingConnectorNode = nodeComponent;
+            this.draggingConnector = connector;
             this.dragOrigin = getMousePosition(true);
             System.out.println("ORIGIN: "+ origin.toString());
 
@@ -266,7 +248,8 @@ public class NodeEditor
         // Reset for new bindings
         ResetDataTypesState();
         needsReset = true;
-        this.draggingConnector = false;
+        this.draggingConnectorNode = null;
+        this.draggingConnector = null;
         dropPoint = getMousePosition();
         UpdateNodes();
         repaint();
@@ -280,13 +263,18 @@ public class NodeEditor
 
     public void NotifyConnectorsDrop() {
         for (NodeComponent nPanel : nodeComponents) {
-            nPanel.ConnectorDropped(nodeData);
+            nPanel.ConnectorDropped(draggingConnector, nodeData);
         }
     }
 
-    public void CreateConnection(UUID nodeUUID, UUID uuid1, UUID uuid2) {
-        Point drop = getMousePosition();
-        connectionPoints.add(new NodeConnectionPoints(nodeUUID, uuid1, dragOrigin, uuid2, drop));
+    public void CreateConnection(NodeConnector initialConnector, NodeConnector connectorDropped, UUID nodeUUID1, UUID nodeUUID2, UUID dataUUID1, UUID dataUUID2) {
+        connectionPoints.add(new NodeConnectionPoints(
+                initialConnector.node.GetNode().GetUUID(),
+                connectorDropped.node.GetNode().GetUUID(),
+                dataUUID2,
+                initialConnector.GetRelativePosition(),
+                dataUUID1,
+                connectorDropped.GetRelativePosition()));
         repaint();
     }
 
@@ -327,26 +315,61 @@ public class NodeEditor
             graphics.drawLine(0, origin.y + y, getWidth(), origin.y + y);
             y += 20;
         }
+    }
 
-        if(draggingConnector) {
+    public void paintChildren(Graphics g) {
+        Graphics2D graphics = (Graphics2D) g;
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+        if (zoomer) {
+            AffineTransform at = new AffineTransform();
+            at.scale(zoomFactor, zoomFactor);
+            prevZoomFactor = zoomFactor;
+            graphics.transform(at);
+            zoomer = false;
+        }
+
+        if(draggingConnector != null) {
             DrawConnection(graphics);
         }
 
-        for (NodeConnectionPoints points : connectionPoints) {
-            DrawConnection(graphics, points);
+        for (NodeConnectionPoints connectionPoints : connectionPoints) {
+            if(nodeDragging != null) {
+                if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
+                    Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
+                    connectionPoints.SetPoint1(connectorPoint1);
+                }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
+                    Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
+                    connectionPoints.SetPoint2(connectorPoint2);
+                }
+            }
+            DrawConnection(graphics, connectionPoints);
         }
 
+        super.paintChildren(graphics);
     }
 
     private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
-        graphics.setColor(Color.GREEN);
-        graphics.setStroke(new BasicStroke(3.0f));
-        //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
+        if(selectedNode != null) {
+            if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
+                    points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
+                graphics.setColor(new Color(240, 175, 50));
+            else
+                graphics.setColor(new Color(255, 255, 255, 180));
+        }else {
+            graphics.setColor(new Color(255, 255, 255, 180));
+        }
+
+        graphics.setStroke(new BasicStroke(1.3f));
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
         Point curveOrigin = points.GetPoint1();
         Point curveEnd = points.GetPoint2();
+
+        if(curveOrigin == null || curveEnd == null)
+            return;
 
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
@@ -396,13 +419,13 @@ public class NodeEditor
 
     // Dragging
     private void DrawConnection(Graphics2D graphics) {
-        graphics.setColor(Color.GREEN);
-        graphics.setStroke(new BasicStroke(3.0f));
+        graphics.setColor(new Color(255,255,255, 180));
+        graphics.setStroke(new BasicStroke(1.3f));
         //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point curveOrigin = dragOrigin;
+        Point curveOrigin = draggingConnector.GetRelativePosition();
         Point curveEnd = getMousePosition();
 
         Point curveOriginCtrl = new Point();
@@ -451,19 +474,20 @@ public class NodeEditor
         }
     }
 
-    public void paintChildren(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        g2.scale(zoom, zoom);
-        super.paintChildren(g2);
-    }
-
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        int ticks = e.getWheelRotation();
-        zoom *= Math.pow(1.2, ticks);
+        zoomer = true;
 
-        //System.out.println("xd");
-
+        //Zoom in
+        if (e.getWheelRotation() < 0) {
+            zoomFactor *= 1.1;
+        }
+        //Zoom out
+        if (e.getWheelRotation() > 0) {
+            zoomFactor /= 1.1;
+        }
+        for (NodeComponent nComp: nodeComponents)
+            nComp.SetZoomFactor(zoomFactor);
         repaint();
     }
 
@@ -487,7 +511,18 @@ public class NodeEditor
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        ResetDataTypesState();
+        if(e.getButton() == MouseEvent.BUTTON3) {
+            ImagePanel nsp = new ImagePanel();
+            nsp.addImage("C:\\Users\\Percebe64\\Pictures\\5f7b5e35cd151.jpg");
+            //nsp.setPreferredSize(new Dimension(300, 300));
+            add(nsp);
+        }else {
+            for (NodeComponent nComp: nodeComponents)
+                nComp.Unselect();
+            selectedNode = null;
+            ResetDataTypesState();
+        }
+        repaint();
     }
 
     @Override
