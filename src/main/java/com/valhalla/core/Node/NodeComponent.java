@@ -2,6 +2,7 @@ package com.valhalla.core.Node;
 
 import com.valhalla.application.gui.NodeConnector;
 import com.valhalla.application.gui.NodeEditor;
+import com.valhalla.application.gui.NodeEditor;
 import com.valhalla.application.gui.PropertyPanel;
 import net.miginfocom.swing.MigLayout;
 
@@ -10,6 +11,8 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -21,10 +24,13 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected Color                    NodeColor;
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
-    protected NodeEditor               editorParent;
+    protected NodeEditor             editorParent;
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
+    private double prevZoomFactor = 1;
+    private boolean zoomer;
+    int width = 0;
 
     // Mouse vars
     protected boolean isMousePressed;
@@ -92,28 +98,43 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         }
     }
 
+    double m_scale = 1.0d;
+    public void setScale(double p_newScale) {
+        m_scale = p_newScale;
+        int width = (int) (getPreferredSize().width * m_scale);
+        int height = (int) (getPreferredSize().height * m_scale);
+
+        int x = (int) (getLocation().x * m_scale);
+        int y = (int) (getLocation().y * m_scale);
+
+        setSize(new Dimension(width, height));
+        setLocation(x, y);
+
+        repaint();
+        revalidate();
+    }
+
+    private AffineTransform m_zoom;
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        //graphics.scale(zoomFactor, zoomFactor);
-        AffineTransform at = new AffineTransform();
-        at.setToScale(2.5, 2.5);
-
         Dimension arcs = new Dimension(10, 10);
 
+        m_zoom = graphics.getTransform();
+        m_zoom.scale(m_scale, m_scale);
+        graphics.transform(m_zoom);
+
         int accumulatedHeight = 0;
-        int width = 0;
         for(PropertyPanel panel : propPanelList) {
             accumulatedHeight += panel.getHeight();
-            if(panel.getWidth() > width)
-                width = panel.getWidth() + 34;
         }
 
         // header size + panels size + additional paddings
-        int height = 51 + 24 + accumulatedHeight + 20 + 2;
+        //int height = (51 + 24 + accumulatedHeight + 20 + 2);
+        int height = getHeight();
 
-        this.setSize(getWidth(), height);
+        this.setSize(getPreferredSize().width, getPreferredSize().height);
 
         /* -- Node Base -- */
         if(selected) {

@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import javax.imageio.ImageIO;
 
-public class ImagePanel extends JPanel{
+public class ImagePanel extends JPanel {
 
     protected Object img;
     protected boolean useCustomSize;

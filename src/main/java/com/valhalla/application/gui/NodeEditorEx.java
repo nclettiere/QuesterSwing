@@ -1,74 +1,32 @@
 package com.valhalla.application.gui;
 
 import com.valhalla.core.Node.*;
-import com.valhalla.core.Node.DisplayImageComponent;
-import com.valhalla.core.Node.NodeComponent;
+import org.piccolo2d.PCanvas;
+import org.piccolo2d.PLayer;
+import org.piccolo2d.event.*;
+import org.piccolo2d.extras.event.PNotificationCenter;
+import org.piccolo2d.extras.event.PSelectionEventHandler;
+import org.piccolo2d.extras.pswing.PSwing;
+import org.piccolo2d.extras.pswing.PSwingCanvas;
+import org.piccolo2d.nodes.PPath;
+import org.piccolo2d.nodes.PText;
+import org.piccolo2d.util.PBounds;
 
-import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
 
-class ColorPair {
-    private Class<?> key;
-    private Color color;
-
-    public ColorPair(Class<?> dataClass, Color color) {
-        Constructor<?> constructor = dataClass.getConstructors()[0];
-        try {
-            Object data = constructor.newInstance();
-            if(!(data instanceof INodeData)) {
-                throw new NullPointerException();
-            }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new NullPointerException();
-        }
-
-        this.key = dataClass;
-        this.color = color;
-    }
-
-    INodeData GetNodeData() {
-        Constructor<?> constructor = key.getConstructors()[0];
-        try {
-            Object data = constructor.newInstance();
-            if(!(data instanceof INodeData)) {
-                throw new NullPointerException();
-            }
-            return (INodeData) data;
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new NullPointerException();
-        }
-    }
-}
-
-public class NodeEditor
-    extends JLayeredPane
-    implements
-    MouseWheelListener,
-    MouseMotionListener,
-    MouseInputListener,
-    IBoundsListener {
-
-    /*
-        -- Components
-            - GridCanvas -> Where nodes are placed
-            - NodeInfoOverlay -> Displays node information and editing features
-            - NodeShowcase -> Displays the registered nodes to drag'n'drop
-            - EditorBar -> Multiple tools (compile, simulate, etc)
-     */
+public class NodeEditorEx
+        extends PSwingCanvas
+        implements
+        MouseInputListener {
 
     private ArrayList<NodeComponent> nodeComponents;
     private ArrayList<INodeData>   dataTypes;
@@ -92,46 +50,59 @@ public class NodeEditor
     protected NodeComponent selectedNode;
     protected Point dragOrigin;
 
-    public NodeEditor() {
-        this.setLayout(null);
-        this.addMouseWheelListener(this);
-        this.addMouseMotionListener(this);
-        this.addMouseListener(this);
-        this.setOpaque(true);
-        setBackground(Color.GREEN);
+    PSwing ps;
+
+    protected NodeEditorSelectionHandler neSelectionHandler;
+
+    public NodeEditorEx() {
         this.nodeComponents = new ArrayList<>();
         this.bindings = new ArrayList<>();
         this.connectionPoints = new ArrayList<>();
         this.debugPaint = false;
 
-        SelectImageComponent nodeSelect = new SelectImageComponent();
-        DisplayImageComponent nodeDisplay = new DisplayImageComponent();
+        // uninstall default zoom event handler
+        removeInputEventListener(getZoomEventHandler());
 
-        nodeComponents.add(nodeSelect);
-        nodeComponents.add(nodeDisplay);
+        // install mouse wheel zoom event handler
+        final PMouseWheelZoomEventHandler mouseWheelZoomEventHandler = new PMouseWheelZoomEventHandler();
+        addInputEventListener(mouseWheelZoomEventHandler);
+        mouseWheelZoomEventHandler.zoomAboutMouse();
 
-        //node.AddOnBoundsListener(this);
-        nodeSelect.SetParentEditor(this);
-        nodeSelect.setLocation(70,70);
-        nodeSelect.setSize(nodeSelect.getPreferredSize());
+        // Create a new event handler the creates new rectangles on
+        // mouse pressed, dragged, release.
+        //final PBasicInputEventHandler rectEventHandler = createRectangleEventHandler(this);
+//
+        //// Make the event handler only work with BUTTON1 events, so that it does
+        //// not conflict with the zoom event handler that is installed by
+        //// default.
+        //rectEventHandler.setEventFilter(new PInputEventFilter(InputEvent.BUTTON1_MASK));
+//
+        //// Remove the pan event handler that is installed by default so that it
+        //// does not conflict with our new rectangle creation event handler.
+        //removeInputEventListener(getPanEventHandler());
+//
+        //// Register our new event handler.
+        //addInputEventListener(rectEventHandler);
 
-        nodeDisplay.SetParentEditor(this);
-        nodeDisplay.setLocation(300,70);
-        nodeDisplay.setSize(nodeDisplay.getPreferredSize());
+        // Create a selection event handler
+        neSelectionHandler = new NodeEditorSelectionHandler(getLayer(), getLayer(), this);
+        addInputEventListener(neSelectionHandler);
+        getRoot().getDefaultInputManager().setKeyboardFocus(neSelectionHandler);
 
-        setPosition(nodeSelect, 0);
-        setPosition(nodeDisplay, 0);
+        PNotificationCenter.defaultCenter().addListener(this, "selectionChanged",
+                PSelectionEventHandler.SELECTION_CHANGED_NOTIFICATION, neSelectionHandler);
 
-        this.add(nodeSelect);
-        this.add(nodeDisplay);
-
-        nodeSelect.AddOnNodeEventListener(new NodeEventListener() {
+        DisplayImageComponent igp = new DisplayImageComponent();
+        SelectImageComponent igp2 = new SelectImageComponent();
+        //igp.SetParentEditor(this);
+        //igp2.SetParentEditor(this);
+        igp.AddOnNodeEventListener(new NodeEventListener() {
             @Override
             public void OnNodeComponentDrag(NodeComponent nodeComponent) {
                 if(nodeComponent != null) {
-                    get().moveToFront(nodeComponent);
+                    //get().moveToFront(nodeComponent);
                     nodeDragging = nodeComponent;
-                    repaint();
+                    //repaint();
                 }
             }
 
@@ -145,65 +116,27 @@ public class NodeEditor
                 for (NodeComponent nComp: nodeComponents)
                     nComp.Unselect();
                 if(nodeComponent != null) {
-                    get().moveToFront(nodeComponent);
+                    //get().moveToFront(nodeComponent);
                     selectedNode = nodeComponent;
                 }
                 repaint();
             }
         });
 
-        nodeDisplay.AddOnNodeEventListener(new NodeEventListener() {
-            @Override
-            public void OnNodeComponentDrag(NodeComponent nodeComponent) {
-                if(nodeComponent != null) {
-                    get().moveToFront(nodeComponent);
-                    nodeDragging = nodeComponent;
-                    repaint();
-                }
-            }
-
-            @Override
-            public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
-                nodeDragging = null;
-            }
-
-            @Override
-            public void OnNodeComponentClick(NodeComponent nodeComponent) {
-                for (NodeComponent nComp: nodeComponents)
-                    nComp.Unselect();
-                if(nodeComponent != null) {
-                    get().moveToFront(nodeComponent);
-                    selectedNode = nodeComponent;
-                }
-                repaint();
-            }
-        });
+        ps = new PSwing(igp);
+        ps.setBounds(300,100, 200, 61);
+        getLayer().addChild(ps);
+        PSwing ps1 = new PSwing(igp2);
+        ps1.setBounds(180,100, 200, 61);
+        getLayer().addChild(ps1);
     }
 
-    private NodeEditor get() {return this;}
-
+    public NodeEditorEx get() {return this;}
     public void SetDebugPaint(boolean debugPaint) {
         this.debugPaint = debugPaint;
     }
     public boolean GetDebugPaint() {
         return this.debugPaint;
-    }
-
-    void RegisterDataTypes(INodeData[] dataTypes) {
-        this.dataTypes.addAll(Arrays.asList(dataTypes));
-
-        for (INodeData nData : dataTypes) {
-            Random rand = new Random();
-            float r = rand.nextFloat();
-            float g = rand.nextFloat();
-            float b = rand.nextFloat();
-            System.out.println(nData.getClass());
-            dataColors.add(new ColorPair(nData.getClass(), new Color(r, g, b)));
-        }
-    }
-
-    public Point RequestMousePosition() {
-        return mousePt;
     }
 
     INodeData nodeData;
@@ -236,6 +169,7 @@ public class NodeEditor
             this.draggingConnectorNode = nodeComponent;
             this.draggingConnector = connector;
             this.dragOrigin = getMousePosition(true);
+            neSelectionHandler.SetConnectorDragging(true);
             System.out.println("ORIGIN: "+ origin.toString());
 
             ShowDataType(nData.getClass());
@@ -251,6 +185,7 @@ public class NodeEditor
         needsReset = true;
         this.draggingConnectorNode = null;
         this.draggingConnector = null;
+        neSelectionHandler.SetConnectorDragging(false);
         dropPoint = getMousePosition();
         UpdateNodes();
         repaint();
@@ -295,48 +230,19 @@ public class NodeEditor
         }
     }
 
+
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        //graphics.drawLine(0, origin.y, getWidth(), origin.y);
-        //graphics.drawLine(origin.x, 0, origin.x, getHeight());
-
-        // set up grid
-        int x = -1;
-        int y = -1;
-        graphics.setColor(new Color(100, 100, 100));
-        while (x < getWidth()) {
-            graphics.drawLine(origin.x + x, 0, origin.x + x, getHeight());
-            x += 20;
-        }
-        while (y < getHeight()) {
-            graphics.drawLine(0, origin.y + y, getWidth(), origin.y + y);
-            y += 20;
-        }
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        super.paintComponent(graphics);
     }
 
-    double m_scale = 1.0d;
-    public void setScale(double p_newScale) {
-        m_scale = p_newScale;
-        int width = (int) (getWidth() * m_scale);
-        int height = (int) (getHeight() * m_scale);
-        setPreferredSize(new Dimension(width, height));
-        repaint();
-        revalidate();
-    }
-
-    private AffineTransform m_zoom;
     public void paintChildren(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-
-        //graphics.translate(getWidth()/2, getHeight()/2);
-        //graphics.scale(zoomFactor, zoomFactor);
-        //graphics.translate(-getWidth()/2, -getHeight()/2);
 
         if(draggingConnector != null) {
             DrawConnection(graphics);
@@ -358,16 +264,15 @@ public class NodeEditor
         super.paintChildren(graphics);
     }
 
-
     private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
         if(selectedNode != null) {
             if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
                     points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
                 graphics.setColor(new Color(240, 175, 50));
             else
-                graphics.setColor(new Color(255, 255, 255, 180));
+                graphics.setColor(new Color(0, 0, 0, 180));
         }else {
-            graphics.setColor(new Color(255, 255, 255, 180));
+            graphics.setColor(new Color(0, 0, 0, 180));
         }
 
         graphics.setStroke(new BasicStroke(1.3f));
@@ -428,7 +333,7 @@ public class NodeEditor
 
     // Dragging
     private void DrawConnection(Graphics2D graphics) {
-        graphics.setColor(new Color(255,255,255, 180));
+        graphics.setColor(new Color(0,0,0, 180));
         graphics.setStroke(new BasicStroke(1.3f));
         //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
 
@@ -436,6 +341,9 @@ public class NodeEditor
 
         Point curveOrigin = draggingConnector.GetRelativePosition();
         Point curveEnd = getMousePosition();
+
+        if(curveEnd == null)
+            return;
 
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
@@ -481,37 +389,6 @@ public class NodeEditor
             //ctrlEND
             graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
         }
-    }
-
-    private static final int SIZE = 14;
-    private static final String FONT = "Dialog";
-
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        //Zoom in
-        if (e.getWheelRotation() < 0) {
-            zoomFactor += 0.1;
-        }
-        //Zoom out
-        if (e.getWheelRotation() > 0) {
-            zoomFactor -= 0.1;
-        }
-
-        if(zoomFactor < 1.0) {
-            zoomFactor = 1.0;
-            return;
-        }
-        if(zoomFactor > 1.5) {
-            zoomFactor = 1.5;
-            return;
-        }
-
-        for (NodeComponent nComp : nodeComponents) {
-            nComp.setScale(zoomFactor);
-        }
-
-        repaint();
-        revalidate();
     }
 
     @Override
@@ -577,14 +454,77 @@ public class NodeEditor
 
     }
 
-    @Override
-    public Dimension OnSizeChanged(JComponent component) {
-
-        return null;
-    }
-
-    @Override
-    public Point OnPositionChanged(JComponent component) {
-        return null;
-    }
+    //public PSelectionEventHandler createRectangleEventHandler(PSwingCanvas canvas) {
+//
+    //    // Create a new subclass of PBasicEventHandler that creates new PPath
+    //    // nodes on mouse pressed, dragged, and released sequences. Not that
+    //    // subclassing PDragSequenceEventHandler would make this class easier to
+    //    // implement, but here you can see how to do it from scratch.
+    //    return new PSelectionEventHandler() {
+//
+    //        // The rectangle that is currently getting created.
+    //        protected PPath rectangle;
+//
+    //        // The mouse press location for the current pressed, drag, release
+    //        // sequence.
+    //        protected Point2D pressPoint;
+//
+    //        // The current drag location.
+    //        protected Point2D dragPoint;
+//
+    //        public void mousePressed(final PInputEvent e) {
+    //            super.mousePressed(e);
+    //            final PLayer layer = canvas.getLayer();
+//
+    //            // Initialize the locations.
+    //            pressPoint = e.getPosition();
+    //            dragPoint = pressPoint;
+//
+    //            // create a new rectangle and add it to the canvas layer so that
+    //            // we can see it.
+    //            rectangle = new PPath.Float();
+    //            rectangle.setStroke(new BasicStroke((float) (1 / e.getCamera().getViewScale())));
+    //            layer.addChild(rectangle);
+//
+    //            // update the rectangle shape.
+    //            updateRectangle();
+    //        }
+//
+    //        public void mouseDragged(final PInputEvent e) {
+//
+    //            // update the drag point location.
+    //            dragPoint = e.getPosition();
+//
+    //            //if(nodeDragging != null) {
+    //            //    double x = ps.getOffset().getX() + (dragPoint.getX());
+    //            //    double y = ps.getOffset().getY() + (dragPoint.getY());
+    //            //    ps.setOffset(x, y);
+    //            //}
+//
+    //            // update the rectangle shape.
+    //            //updateRectangle();
+    //            //super.mouseDragged(e);
+    //        }
+//
+    //        public void mouseReleased(final PInputEvent e) {
+    //            super.mouseReleased(e);
+    //            // update the rectangle shape.
+    //            updateRectangle();
+    //            rectangle = null;
+    //        }
+//
+    //        public void updateRectangle() {
+    //            // create a new bounds that contains both the press and current
+    //            // drag point.
+    //            final PBounds b = new PBounds();
+    //            b.add(pressPoint);
+    //            b.add(dragPoint);
+//
+    //            // Set the rectangles bounds.
+    //            rectangle.reset();
+    //            rectangle.append(b, false);
+    //            rectangle.closePath();
+    //        }
+    //    };
+    //}
 }

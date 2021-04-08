@@ -1,6 +1,7 @@
 package com.valhalla.application.gui;
 
 import net.miginfocom.swing.MigLayout;
+import org.piccolo2d.extras.PFrame;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -12,7 +13,6 @@ public class ProjectSelectorFrame
 {
     public ProjectSelectorFrame() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         initComponents();
     }
 
@@ -165,7 +165,6 @@ public class ProjectSelectorFrame
 
         NodeEditor editor = new NodeEditor();
         editor.SetDebugPaint(true);
-
         contentPane.add(editor, "grow");
     }
 }
