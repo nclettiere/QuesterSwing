@@ -98,11 +98,13 @@ public class NodeEditor
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
         this.setOpaque(true);
-        setBackground(Color.GREEN);
+        setBackground(new Color(60, 60, 60));
         this.nodeComponents = new ArrayList<>();
         this.bindings = new ArrayList<>();
         this.connectionPoints = new ArrayList<>();
         this.debugPaint = false;
+
+        this.setSize(99999, 8888);
 
         SelectImageComponent nodeSelect = new SelectImageComponent();
         DisplayImageComponent nodeDisplay = new DisplayImageComponent();

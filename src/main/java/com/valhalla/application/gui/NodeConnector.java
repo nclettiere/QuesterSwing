@@ -1,6 +1,8 @@
 package com.valhalla.application.gui;
 
 import com.valhalla.core.Node.*;
+import org.piccolo2d.event.PInputEventListener;
+import org.piccolo2d.extras.pswing.PSwing;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -45,9 +47,18 @@ public class NodeConnector
         setPreferredSize(new Dimension(15,15));
     }
 
+    public PSwing GetPSwing() {
+        return new PSwing(this);
+    }
+
     public void AddOnControlUpdateListener(ConnectorEventListener listener) {
         listenerList.add(ConnectorEventListener.class, listener);
     }
+
+    public void AddInputEve(PInputEventListener listener) {
+        listenerList.add(PInputEventListener.class, listener);
+    }
+
 
     public void RemoveOnControlUpdateListener(ConnectorEventListener listener) {
         listenerList.remove(ConnectorEventListener.class, listener);
@@ -70,6 +81,7 @@ public class NodeConnector
             }
         }
     }
+
 
     void FireOnConnectorDragStopEvent() {
         Object[] listeners = listenerList.getListenerList();
@@ -195,7 +207,8 @@ public class NodeConnector
 
     @Override
     public void mousePressed(MouseEvent e) {
-
+        if(!GetDisabled())
+            FireOnConnectorClickEvent();
     }
 
     @Override

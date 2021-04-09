@@ -51,6 +51,11 @@ public class PropertyPanel extends JPanel {
 
     }
 
+    // delete later
+    public ArrayList<NodeConnector> getConnectors() {
+        return connectorList;
+    }
+
     private void AddProperties() {
         for (INodeData nData : prop.GetInputs()) {
             NodeConnector nodeConnector = new NodeConnector(nData, node);

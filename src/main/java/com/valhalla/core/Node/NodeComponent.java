@@ -24,7 +24,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected Color                    NodeColor;
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
-    protected NodeEditor             editorParent;
+    protected NodeEditor               editorParent;
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
@@ -54,9 +54,18 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Content.setOpaque(false);
 
+        setPreferredSize(new Dimension(200, 200));
+
         add(Content, "grow");
 
+        //setScale(1.0d);
+
         repaint();
+    }
+
+    // Delete later
+    public ArrayList<PropertyPanel> GetPropertiesPanel() {
+        return propPanelList;
     }
 
     public void CreateNodeStructure() {
@@ -108,7 +117,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         int y = (int) (getLocation().y * m_scale);
 
         setSize(new Dimension(width, height));
-        setLocation(x, y);
+        //setLocation(x, y);
 
         repaint();
         revalidate();
@@ -121,7 +130,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
         Dimension arcs = new Dimension(10, 10);
 
-        m_zoom = graphics.getTransform();
+        m_zoom = new AffineTransform();
         m_zoom.scale(m_scale, m_scale);
         graphics.transform(m_zoom);
 
@@ -134,7 +143,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //int height = (51 + 24 + accumulatedHeight + 20 + 2);
         int height = getHeight();
 
-        this.setSize(getPreferredSize().width, getPreferredSize().height);
+        //this.setSize(getWidth() - 50, height);
 
         /* -- Node Base -- */
         if(selected) {
@@ -240,9 +249,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     public NodeBase GetNode() {return Node;}
 
-    public Dimension getPreferredSize( ) {
-        return new Dimension(200, 350);
-    }
+    //public Dimension getPreferredSize( ) {
+    //    return new Dimension(200, 350);
+    //}
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -276,12 +285,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if(this.isMousePressed) {
-            int x = (int) this.getLocation().getX() + (e.getX()) - (this.getSize().width / 2);
-            int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
-            setLocation(x,y);
-        }
-        FireNodeOnDraggedEvent();
+        //if(this.isMousePressed) {
+        //    int x = (int) this.getLocation().getX() + (e.getX()) - (this.getSize().width / 2);
+        //    int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
+        //    setLocation(x,y);
+        //}
+        //FireNodeOnDraggedEvent();
     }
 
     @Override
@@ -308,15 +317,15 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyConnectorClick(INodeData nData) {
-        editorParent.OnConnectorClick(nData);
+        //editorParent.OnConnectorClick(nData);
     }
 
     public void NotifyConnectorDrag(INodeData nData, NodeConnector connector) {
-        editorParent.OnConnectorDrag(this, nData, connector);
+        //editorParent.OnConnectorDrag(this, nData, connector);
     }
 
     public void NotifyConnectorDragStop(INodeData nData) {
-        editorParent.OnConnectorDragStop( nData);
+        //editorParent.OnConnectorDragStop( nData);
     }
 
     public void UpdateData() {
