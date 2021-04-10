@@ -28,7 +28,7 @@ public class PropertyPanel extends JPanel {
         this.node = node;
         this.connectorList = new ArrayList<>();
 
-        setLayout(new MigLayout("","2[15][grow][15]2", ""));
+        setLayout(new MigLayout("","20[grow]20", ""));
         setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
         setOpaque(false);
 
@@ -43,9 +43,9 @@ public class PropertyPanel extends JPanel {
         outputPanel.setBorder(new EmptyBorder(0,0,0,0));
         outputPanel.setOpaque(false);
 
-        add(inputPanel);
+        //add(inputPanel);
         add(controlPanel);
-        add(outputPanel);
+        //add(outputPanel);
 
         AddProperties();
 
@@ -74,7 +74,7 @@ public class PropertyPanel extends JPanel {
                 @Override
                 public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
             });
-            inputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
+            //inputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
         if(prop.GetControl() != null) {
             prop.AddOnControlUpdateListener(new PropertyEventListener() {
@@ -113,7 +113,7 @@ public class PropertyPanel extends JPanel {
                 @Override
                 public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
             });
-            outputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
+            //outputPanel.add(nodeConnector, "grow, w 15!, h 15!, wrap");
         }
 
         // Ensure a 'white space' on the input/output lane
