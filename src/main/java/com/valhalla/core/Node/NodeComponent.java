@@ -28,9 +28,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
-    private double prevZoomFactor = 1;
-    private boolean zoomer;
-    int width = 0;
 
     // Mouse vars
     protected boolean isMousePressed;

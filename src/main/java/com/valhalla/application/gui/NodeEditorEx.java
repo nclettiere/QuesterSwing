@@ -12,6 +12,7 @@ import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.nodes.PText;
 import org.piccolo2d.util.PBounds;
 import org.piccolo2d.util.PPaintContext;
+import org.w3c.dom.Node;
 
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
@@ -22,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.UUID;
@@ -44,6 +46,8 @@ public class NodeEditorEx
     protected Point2D draggingConnectorOrigin;
     protected Point2D draggingConnectorFinalPoint;
 
+
+    protected Point2D selectorPoint;
     boolean isNodeSelectorOpened = false;
     boolean isMouseOnNodeSelector = false;
 
@@ -153,8 +157,19 @@ public class NodeEditorEx
         ArrayList<Class<? extends NodeComponent>> nodes = new ArrayList<>();
         nodes.add(SelectImageComponent.class);
         nodes.add(DisplayImageComponent.class);
+        nodes.add(MiscComponent.class);
         NodeSelectorPanel nsp = new NodeSelectorPanel(nodes);
         PNode pSelector = new PSwing(nsp);
+
+        nsp.addNodeSelectorEventListener(new NodeSelectorListener() {
+            @Override
+            public void OnNodeSelected(Class<? extends NodeComponent> nodeClass) {
+                pSelector.setVisible(false);
+                nsp.reset();
+                addNode(nodeClass, selectorPoint);
+            }
+        });
+
         pSelector.setVisible(true);
 
         pSelector.addInputEventListener(new PBasicInputEventHandler() {
@@ -191,7 +206,8 @@ public class NodeEditorEx
                     if(!isMouseOnNodeSelector && !isNodeSelectorOpened) {
                         isNodeSelectorOpened = true;
                         getLayer().addChild(0, pSelector);
-                        pSelector.setOffset(event.getPosition());
+                        selectorPoint = event.getPosition();
+                        pSelector.setOffset(selectorPoint);
                         pSelector.setVisible(true);
                         nsp.setFocusField();
                     }else
@@ -226,6 +242,88 @@ public class NodeEditorEx
 
     public boolean GetDebugPaint() {
         return debugPaint;
+    }
+
+    private void addNode(Class<? extends NodeComponent> nodeClass, Point2D offset) {
+        NodeComponent nodeComp = null;
+        try {
+            nodeComp = nodeClass.getConstructor().newInstance();
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        //if(nodeComp != null) {
+        //    PNode newNode = new PSwing(nodeComp);
+        //    getLayer().addChild(0, newNode);
+        //    newNode.setOffset(selectorPoint);
+        //    double connYOffset = 55;
+        //    for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
+        //        for(NodeConnector conn : prop.getConnectors()) {
+        //            PNode connNode = new PSwing(conn);
+        //            newNode.addChild(connNode);
+//
+        //            if(conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
+        //                connNode.translate(0, connYOffset);
+        //            }else {
+        //                connNode.translate(95, connYOffset);
+        //            }
+//
+        //            connYOffset += 15;
+        //        }
+        //    }
+        //}
+
+
+        PNode pSwing = new PSwing(nodeComp);
+        pSwing.addInputEventListener(new PBasicInputEventHandler() {
+            public void mouseDragged(final PInputEvent aEvent) {
+                System.out.println("YOOOO2");
+                final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
+                pSwing.translate(delta.getWidth(), delta.getHeight());
+                aEvent.setHandled(true);
+            }
+        });
+
+
+        getLayer().addChild(0, pSwing);
+        pSwing.setOffset(offset);
+        double connYOffset = 75;
+        for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
+            for(NodeConnector conn : prop.getConnectors()) {
+                PNode connNode = new PSwing(conn);
+                if(conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
+                    connNode.setOffset(18, connYOffset);
+                }else {
+                    connNode.setOffset(165, connYOffset);
+                }
+
+                connNode.addInputEventListener(new PBasicInputEventHandler() {
+                    public void mousePressed(final PInputEvent aEvent) {
+                        draggingConnector = conn;
+                        draggingConnectorOrigin = aEvent.getPosition();
+                        draggingNodeConnector = pSwing;
+                        aEvent.setHandled(true);
+                    }
+
+                    public void mouseDragged(final PInputEvent aEvent) {
+                        draggingConnectorFinalPoint = aEvent.getPosition();
+                        getLayer().repaint();
+                        aEvent.setHandled(true);
+                    }
+
+                    public void mouseReleased(final PInputEvent aEvent) {
+                        draggingNodeConnector = null;
+                        draggingConnector = null;
+                        getLayer().repaint();
+                        aEvent.setHandled(true);
+                    }
+                });
+
+                connNode.addAttribute("tooltip", conn.GetNodeData().GetDisplayName());
+                pSwing.addChild(connNode);
+                connYOffset += 18;
+            }
+        }
     }
 
     // Dragging
