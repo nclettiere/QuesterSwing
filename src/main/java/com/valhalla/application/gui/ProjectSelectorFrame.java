@@ -163,7 +163,7 @@ public class ProjectSelectorFrame
 
         //contentPane.add(panel, BorderLayout.NORTH);
 
-        NodeEditor editor = new NodeEditor();
+        NodeEditorEx editor = new NodeEditorEx();
         editor.SetDebugPaint(true);
         contentPane.add(editor, "grow");
     }

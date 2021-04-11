@@ -55,6 +55,11 @@ class ZoomerPanel extends PSwingCanvas {
     protected double gridSpacing = 20;
     protected double gridSpacingThick = 100;
 
+    protected NodeConnector draggingConnector;
+    protected PNode draggingNodeConnector;
+    protected Point2D draggingConnectorOrigin;
+    protected Point2D draggingConnectorFinalPoint;
+
     public ZoomerPanel() {
         final PRoot root = getRoot();
         final PCamera camera = getCamera();
@@ -127,6 +132,9 @@ class ZoomerPanel extends PSwingCanvas {
                         g2.draw(gridLine);
                     }
                 }
+
+                if(draggingConnector != null)
+                    DrawConnection(g2);
             }
         };
 
@@ -183,30 +191,41 @@ class ZoomerPanel extends PSwingCanvas {
         PNode asd = new PSwing(sic);
 
         PNode ps1 = null;
-
+        NodeConnector connector = null;
         for (PropertyPanel prop :
                 propertyPanels) {
             for (NodeConnector conn :
                     prop.getConnectors()) {
+                connector = conn;
                 ps1 = conn.GetPSwing();
             }
         }
 
         ps1.addAttribute("tooltip", "node 1");
 
+        PNode finalPs = ps1;
+        NodeConnector finalConnector = connector;
         ps1.addInputEventListener(new PBasicInputEventHandler() {
             public void mousePressed(final PInputEvent aEvent) {
                 System.out.println("IIIIIIIIII");
+                draggingConnector = finalConnector;
+                draggingConnectorOrigin = aEvent.getPosition();
+                draggingNodeConnector = finalPs;
                 aEvent.setHandled(true);
             }
 
             public void mouseDragged(final PInputEvent aEvent) {
                 System.out.println("IIIIIIIIII");
+                draggingConnectorFinalPoint = aEvent.getPosition();
+                gridLayer.repaint();
                 aEvent.setHandled(true);
             }
 
             public void mouseReleased(final PInputEvent aEvent) {
                 System.out.println("IIIIIIIIII");
+                draggingNodeConnector = null;
+                draggingConnector = null;
+                gridLayer.repaint();
                 aEvent.setHandled(true);
             }
         });
@@ -254,5 +273,83 @@ class ZoomerPanel extends PSwingCanvas {
         getLayer().addChild(0, asd);
         ps1.translate(19, 140);
         pSwing.addChild(ps1);
+    }
+
+    // Dragging
+    private void DrawConnection(Graphics2D graphics) {
+        graphics.setColor(new Color(255,255,255, 180));
+        graphics.setStroke(new BasicStroke(1.3f));
+        //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
+
+        CubicCurve2D c = new CubicCurve2D.Double();
+
+        Point2D curveOrigin = draggingConnectorOrigin;
+        Point2D curveEnd = draggingConnectorFinalPoint;
+
+        Point curveOriginCtrl = new Point();
+        Point curveEndCtrl = new Point();
+
+        float delta = ((float)(curveEnd.getX()) / (float)(curveOrigin.getX())) - 1.0f;
+
+        if(draggingConnector.GetNodeData().GetMode() == ConnectorMode.OUTPUT) {
+            if (delta < 0) {
+                if (curveEnd.getY() < curveOrigin.getY()) {
+
+                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                    curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
+                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
+                    curveEndCtrl.y = (int) curveEnd.getY() - 300;
+                } else {
+                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                    curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
+                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
+                    curveEndCtrl.y = (int) curveEnd.getY() + 300;
+                }
+            } else {
+                curveOriginCtrl.x = (int) ((curveOrigin.getX() + 30) + (50 * delta));
+                curveOriginCtrl.y = (int) (curveOrigin.getY() + (50 * delta));
+                curveEndCtrl.x = (int) ((curveEnd.getX() - 30) - (50 * delta));
+                curveEndCtrl.y = (int) (curveEnd.getY() - (50 * delta));
+            }
+        }else {
+            if (delta < 0) {
+                curveOriginCtrl.x = (int) ((curveOrigin.getX() + 30) + (50 * delta));
+                curveOriginCtrl.y = (int) (curveOrigin.getY() + (50 * delta));
+                curveEndCtrl.x = (int) ((curveEnd.getX() - 30) - (50 * delta));
+                curveEndCtrl.y = (int) (curveEnd.getY() - (50 * delta));
+            } else {
+                if (curveEnd.getY() < curveOrigin.getY()) {
+                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                    curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
+                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
+                    curveEndCtrl.y = (int) curveEnd.getY() + 300;
+                } else {
+                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                    curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
+                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
+                    curveEndCtrl.y = (int) curveEnd.getY() - 300;
+                }
+            }
+        }
+
+        c.setCurve(
+                curveOrigin.getX(),
+                curveOrigin.getY(),
+                curveOriginCtrl.x,
+                curveOriginCtrl.y,
+                curveEndCtrl.x,
+                curveEndCtrl.y,
+                curveEnd.getX(),
+                curveEnd.getY());
+
+        graphics.draw(c);
+
+        //if(GetDebugPaint()) {
+        //    graphics.setColor(Color.RED);
+        //    //ctrlOrigin
+        //    graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+        //    //ctrlEND
+        //    graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        //}
     }
 }

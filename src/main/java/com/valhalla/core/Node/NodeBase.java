@@ -12,6 +12,7 @@ import java.util.UUID;
 public class NodeBase implements INode {
     protected UUID uuid;
     protected String name;
+    protected String groupName;
     protected String description;
     protected List<PropertyBase> properties;
 

@@ -63,6 +63,10 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         repaint();
     }
 
+    public String GetGroup() {
+        return Node.groupName;
+    }
+
     // Delete later
     public ArrayList<PropertyPanel> GetPropertiesPanel() {
         return propPanelList;
