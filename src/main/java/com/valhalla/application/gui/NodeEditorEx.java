@@ -164,8 +164,9 @@ public class NodeEditorEx
         nsp.addNodeSelectorEventListener(new NodeSelectorListener() {
             @Override
             public void OnNodeSelected(Class<? extends NodeComponent> nodeClass) {
-                pSelector.setVisible(false);
                 nsp.reset();
+                pSelector.setVisible(false);
+                isNodeSelectorOpened = false;
                 addNode(nodeClass, selectorPoint);
             }
         });
@@ -258,6 +259,7 @@ public class NodeEditorEx
             pSwing.addInputEventListener(new PBasicInputEventHandler() {
                 public void mouseDragged(final PInputEvent aEvent) {
                     System.out.println("YOOOO2");
+                    pSwing.raiseToTop();
                     final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
                     pSwing.translate(delta.getWidth(), delta.getHeight());
                     aEvent.setHandled(true);
@@ -304,8 +306,8 @@ public class NodeEditorEx
                     connYOffset += 18;
                 }
             }
+            pSwing.raiseToTop();
         }
-        this.grabFocus();
     }
 
     // Dragging
