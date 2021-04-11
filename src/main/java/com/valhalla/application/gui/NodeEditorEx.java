@@ -210,6 +210,7 @@ public class NodeEditorEx
                         pSelector.setOffset(selectorPoint);
                         pSelector.setVisible(true);
                         nsp.setFocusField();
+                        pSelector.raiseToTop();
                     }else
                         nsp.setFocusField();
                 }else {
@@ -252,78 +253,59 @@ public class NodeEditorEx
             e.printStackTrace();
         }
 
-        //if(nodeComp != null) {
-        //    PNode newNode = new PSwing(nodeComp);
-        //    getLayer().addChild(0, newNode);
-        //    newNode.setOffset(selectorPoint);
-        //    double connYOffset = 55;
-        //    for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
-        //        for(NodeConnector conn : prop.getConnectors()) {
-        //            PNode connNode = new PSwing(conn);
-        //            newNode.addChild(connNode);
-//
-        //            if(conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
-        //                connNode.translate(0, connYOffset);
-        //            }else {
-        //                connNode.translate(95, connYOffset);
-        //            }
-//
-        //            connYOffset += 15;
-        //        }
-        //    }
-        //}
-
-
-        PNode pSwing = new PSwing(nodeComp);
-        pSwing.addInputEventListener(new PBasicInputEventHandler() {
-            public void mouseDragged(final PInputEvent aEvent) {
-                System.out.println("YOOOO2");
-                final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
-                pSwing.translate(delta.getWidth(), delta.getHeight());
-                aEvent.setHandled(true);
-            }
-        });
-
-
-        getLayer().addChild(0, pSwing);
-        pSwing.setOffset(offset);
-        double connYOffset = 75;
-        for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
-            for(NodeConnector conn : prop.getConnectors()) {
-                PNode connNode = new PSwing(conn);
-                if(conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
-                    connNode.setOffset(18, connYOffset);
-                }else {
-                    connNode.setOffset(165, connYOffset);
+        if(nodeComp != null) {
+            PNode pSwing = new PSwing(nodeComp);
+            pSwing.addInputEventListener(new PBasicInputEventHandler() {
+                public void mouseDragged(final PInputEvent aEvent) {
+                    System.out.println("YOOOO2");
+                    final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
+                    pSwing.translate(delta.getWidth(), delta.getHeight());
+                    aEvent.setHandled(true);
                 }
+            });
 
-                connNode.addInputEventListener(new PBasicInputEventHandler() {
-                    public void mousePressed(final PInputEvent aEvent) {
-                        draggingConnector = conn;
-                        draggingConnectorOrigin = aEvent.getPosition();
-                        draggingNodeConnector = pSwing;
-                        aEvent.setHandled(true);
+
+            getLayer().addChild(0, pSwing);
+            pSwing.setOffset(offset);
+            double connYOffset = 75;
+            for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
+                for (NodeConnector conn : prop.getConnectors()) {
+                    PNode connNode = new PSwing(conn);
+                    if (conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
+                        connNode.setOffset(18, connYOffset);
+                    } else {
+                        connNode.setOffset(165, connYOffset);
                     }
 
-                    public void mouseDragged(final PInputEvent aEvent) {
-                        draggingConnectorFinalPoint = aEvent.getPosition();
-                        getLayer().repaint();
-                        aEvent.setHandled(true);
-                    }
+                    connNode.addInputEventListener(new PBasicInputEventHandler() {
+                        public void mousePressed(final PInputEvent aEvent) {
+                            draggingConnector = conn;
+                            draggingConnectorOrigin = aEvent.getPosition();
+                            draggingNodeConnector = pSwing;
+                            aEvent.setHandled(true);
+                        }
 
-                    public void mouseReleased(final PInputEvent aEvent) {
-                        draggingNodeConnector = null;
-                        draggingConnector = null;
-                        getLayer().repaint();
-                        aEvent.setHandled(true);
-                    }
-                });
+                        public void mouseDragged(final PInputEvent aEvent) {
+                            draggingConnectorFinalPoint = aEvent.getPosition();
+                            getLayer().repaint();
+                            aEvent.setHandled(true);
+                        }
 
-                connNode.addAttribute("tooltip", conn.GetNodeData().GetDisplayName());
-                pSwing.addChild(connNode);
-                connYOffset += 18;
+                        public void mouseReleased(final PInputEvent aEvent) {
+                            draggingNodeConnector = null;
+                            draggingConnector = null;
+                            getLayer().repaint();
+                            aEvent.setHandled(true);
+                        }
+                    });
+
+                    connNode.addAttribute("tooltip", conn.GetNodeData().GetDisplayName());
+                    pSwing.addChild(connNode);
+                    connYOffset += 18;
+                }
             }
         }
+        this.grabFocus();
     }
 
     // Dragging
