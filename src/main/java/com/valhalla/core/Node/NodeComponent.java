@@ -1,9 +1,7 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.application.gui.NodeConnector;
+import com.valhalla.application.gui.*;
 import com.valhalla.application.gui.NodeEditor;
-import com.valhalla.application.gui.NodeEditor;
-import com.valhalla.application.gui.PropertyPanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -24,7 +22,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected Color                    NodeColor;
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
-    protected NodeEditor               editorParent;
+    protected NodeEditorEx             editorParent;
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
@@ -77,7 +75,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         }
     }
 
-    public void SetParentEditor(NodeEditor editor) {
+    public void SetParentEditor(NodeEditorEx editor) {
         this.editorParent = editor;
     }
 
@@ -291,7 +289,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //    int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
         //    setLocation(x,y);
         //}
-        //FireNodeOnDraggedEvent();
+        FireNodeOnDraggedEvent();
     }
 
     @Override
@@ -318,15 +316,15 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyConnectorClick(INodeData nData) {
-        //editorParent.OnConnectorClick(nData);
+        editorParent.OnConnectorClick(nData);
     }
 
     public void NotifyConnectorDrag(INodeData nData, NodeConnector connector) {
-        //editorParent.OnConnectorDrag(this, nData, connector);
+        editorParent.OnConnectorDrag(this, nData, connector);
     }
 
     public void NotifyConnectorDragStop(INodeData nData) {
-        //editorParent.OnConnectorDragStop( nData);
+        editorParent.OnConnectorDragStop( nData);
     }
 
     public void UpdateData() {
@@ -364,7 +362,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         return null;
     }
 
-    public NodeEditor GetEditor() {
+    public NodeEditorEx GetEditor() {
         return editorParent;
     }
 

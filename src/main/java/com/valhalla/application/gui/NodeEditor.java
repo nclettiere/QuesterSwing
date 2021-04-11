@@ -113,11 +113,11 @@ public class NodeEditor
         nodeComponents.add(nodeDisplay);
 
         //node.AddOnBoundsListener(this);
-        nodeSelect.SetParentEditor(this);
+        //nodeSelect.SetParentEditor(this);
         nodeSelect.setLocation(70,70);
         nodeSelect.setSize(nodeSelect.getPreferredSize());
 
-        nodeDisplay.SetParentEditor(this);
+        //nodeDisplay.SetParentEditor(this);
         nodeDisplay.setLocation(300,70);
         nodeDisplay.setSize(nodeDisplay.getPreferredSize());
 

@@ -16,10 +16,7 @@ import org.w3c.dom.Node;
 
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -45,7 +42,14 @@ public class NodeEditorEx
     protected PNode draggingNodeConnector;
     protected Point2D draggingConnectorOrigin;
     protected Point2D draggingConnectorFinalPoint;
+    protected NodeComponent draggingConnectorNode;
+    protected Point dragOrigin;
 
+    protected ArrayList<NodeConnectionPoints> connectionPoints;
+    protected ArrayList<NodeComponent> nodeComponents;
+    protected NodeComponent nodeDragging;
+    protected NodeComponent selectedNode;
+    protected INodeData nodeData;
 
     protected Point2D selectorPoint;
     boolean isNodeSelectorOpened = false;
@@ -54,6 +58,10 @@ public class NodeEditorEx
     public NodeEditorEx() {
         final PRoot root = getRoot();
         final PCamera camera = getCamera();
+
+
+        this.connectionPoints = new ArrayList<>();
+        this.nodeComponents = new ArrayList<>();
 
         setBackground(new Color(50,50,50));
 
@@ -126,8 +134,41 @@ public class NodeEditorEx
 
                 if(draggingConnector != null)
                     DrawConnection(g2);
+
+                for (NodeConnectionPoints connectionPoints : connectionPoints) {
+                    if(nodeDragging != null) {
+                        if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
+                            Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
+                            connectionPoints.SetPoint1(connectorPoint1);
+                        }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
+                            Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
+                            connectionPoints.SetPoint2(connectorPoint2);
+                        }
+                    }
+                    DrawConnection(g2, connectionPoints);
+                }
             }
         };
+
+        addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseReleased(PInputEvent event) {
+                super.mouseReleased(event);
+
+                if(event.getButton() == MouseEvent.BUTTON3) {
+                    ImagePanel nsp = new ImagePanel();
+                    nsp.addImage("C:\\Users\\Percebe64\\Pictures\\5f7b5e35cd151.jpg");
+                    //nsp.setPreferredSize(new Dimension(300, 300));
+                    add(nsp);
+                }else {
+                    for (NodeComponent nComp: nodeComponents)
+                        nComp.Unselect();
+                    selectedNode = null;
+                    //ResetDataTypesState();
+                }
+                System.out.println("XD");
+            }
+        });
 
         // replace standar layer with grid layer.
         root.removeChild(camera.getLayer(0));
@@ -235,6 +276,14 @@ public class NodeEditorEx
                 tooltipNode.setOffset(p.getX() + 8, p.getY() - 8);
             }
         });
+
+        this.getRoot().addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseClicked(PInputEvent event) {
+                System.out.println("asdsad");
+                super.mouseClicked(event);
+            }
+        });
     }
 
 
@@ -255,8 +304,16 @@ public class NodeEditorEx
         }
 
         if(nodeComp != null) {
+            nodeComponents.add(nodeComp);
+            nodeComp.SetParentEditor(this);
             PNode pSwing = new PSwing(nodeComp);
             pSwing.addInputEventListener(new PBasicInputEventHandler() {
+                @Override
+                public void mouseClicked(PInputEvent event) {
+                    super.mouseClicked(event);
+
+                }
+
                 public void mouseDragged(final PInputEvent aEvent) {
                     System.out.println("YOOOO2");
                     pSwing.raiseToTop();
@@ -266,13 +323,41 @@ public class NodeEditorEx
                 }
             });
 
+            nodeComp.AddOnNodeEventListener(new NodeEventListener() {
+                @Override
+                public void OnNodeComponentDrag(NodeComponent nodeComponent) {
+                    if(nodeComponent != null) {
+                        nodeDragging = nodeComponent;
+                        repaint();
+                    }
+                }
+
+                @Override
+                public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
+                    nodeDragging = null;
+                }
+
+                @Override
+                public void OnNodeComponentClick(NodeComponent nodeComponent) {
+                    for (NodeComponent nComp: nodeComponents)
+                        nComp.Unselect();
+                    if(nodeComponent != null) {
+                        //get().moveToFront(nodeComponent);
+                        selectedNode = nodeComponent;
+                    }
+                    repaint();
+                }
+            });
+
 
             getLayer().addChild(0, pSwing);
             pSwing.setOffset(offset);
             double connYOffset = 75;
             for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
                 for (NodeConnector conn : prop.getConnectors()) {
+
                     PNode connNode = new PSwing(conn);
+
                     if (conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
                         connNode.setOffset(18, connYOffset);
                     } else {
@@ -288,16 +373,18 @@ public class NodeEditorEx
                         }
 
                         public void mouseDragged(final PInputEvent aEvent) {
+                            aEvent.setHandled(true);
+                            conn.FireOnConnectorDragEvent();
                             draggingConnectorFinalPoint = aEvent.getPosition();
                             getLayer().repaint();
-                            aEvent.setHandled(true);
                         }
 
                         public void mouseReleased(final PInputEvent aEvent) {
+                            aEvent.setHandled(true);
+                            conn.FireOnConnectorDragStopEvent();
                             draggingNodeConnector = null;
                             draggingConnector = null;
                             getLayer().repaint();
-                            aEvent.setHandled(true);
                         }
                     });
 
@@ -311,6 +398,73 @@ public class NodeEditorEx
     }
 
     // Dragging
+    private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
+        if(selectedNode != null) {
+            if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
+                    points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
+                graphics.setColor(new Color(240, 175, 50));
+            else
+                graphics.setColor(new Color(255, 255, 255, 180));
+        }else {
+            graphics.setColor(new Color(255, 255, 255, 180));
+        }
+
+        graphics.setStroke(new BasicStroke(1.3f));
+
+        CubicCurve2D c = new CubicCurve2D.Double();
+
+        Point curveOrigin = points.GetPoint1();
+        Point curveEnd = points.GetPoint2();
+
+        if(curveOrigin == null || curveEnd == null)
+            return;
+
+        Point curveOriginCtrl = new Point();
+        Point curveEndCtrl = new Point();
+
+        float delta = ((float)(curveEnd.x) / (float)(curveOrigin.x)) - 1.0f;
+
+        if(delta < 0) {
+            if(curveEnd.y < curveOrigin.y) {
+
+                curveOriginCtrl.x = curveOrigin.x + 400;
+                curveOriginCtrl.y = curveOrigin.y - 200;
+                curveEndCtrl.x    = curveEnd.x - 300;
+                curveEndCtrl.y    = curveEnd.y - 300;
+            }else {
+                curveOriginCtrl.x = curveOrigin.x + 400;
+                curveOriginCtrl.y = curveOrigin.y + 200;
+                curveEndCtrl.x    = curveEnd.x - 300;
+                curveEndCtrl.y    = curveEnd.y + 300;
+            }
+        }else {
+            curveOriginCtrl.x = (int)((curveOrigin.x + 30) + (50 * delta));
+            curveOriginCtrl.y = (int)(curveOrigin.y + (50 * delta));
+            curveEndCtrl.x    = (int)((curveEnd.x - 30) - (50 * delta));
+            curveEndCtrl.y    = (int)(curveEnd.y - (50 * delta));
+        }
+
+        c.setCurve(
+                curveOrigin.x,
+                curveOrigin.y,
+                curveOriginCtrl.x,
+                curveOriginCtrl.y,
+                curveEndCtrl.x,
+                curveEndCtrl.y,
+                curveEnd.x,
+                curveEnd.y);
+
+        graphics.draw(c);
+
+        if(GetDebugPaint()) {
+            graphics.setColor(Color.RED);
+            //ctrlOrigin
+            graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+            //ctrlEND
+            graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        }
+    }
+
     private void DrawConnection(Graphics2D graphics) {
         graphics.setColor(new Color(255,255,255, 180));
         graphics.setStroke(new BasicStroke(1.3f));
@@ -320,6 +474,7 @@ public class NodeEditorEx
 
         Point2D curveOrigin = draggingConnectorOrigin;
         Point2D curveEnd = draggingConnectorFinalPoint;
+        curveEnd = new Point2D.Double(curveEnd.getX() - 10, curveEnd.getY() - 10);
 
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
@@ -385,6 +540,92 @@ public class NodeEditorEx
             graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
             //ctrlEND
             graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        }
+    }
+
+    public void CreateConnection(NodeConnector initialConnector, NodeConnector connectorDropped, UUID nodeUUID1, UUID nodeUUID2, UUID dataUUID1, UUID dataUUID2) {
+        connectionPoints.add(new NodeConnectionPoints(
+                initialConnector.node.GetNode().GetUUID(),
+                connectorDropped.node.GetNode().GetUUID(),
+                dataUUID2,
+                initialConnector.GetRelativePosition(),
+                dataUUID1,
+                connectorDropped.GetRelativePosition()));
+        repaint();
+    }
+
+    public void UpdateNodes() {
+        for (NodeComponent nPanel : nodeComponents) {
+            nPanel.UpdateData();
+        }
+    }
+
+    public void NotifyConnectorsDrop() {
+        for (NodeComponent nPanel : nodeComponents) {
+            nPanel.ConnectorDropped(draggingConnector, nodeData);
+        }
+    }
+
+    public void OnConnectorClick(INodeData nData) {
+        if(nodeData == null) {
+            nodeData = nData;
+            ShowDataType(nData.getClass());
+        }else {
+            if(nData.getClass().isAssignableFrom(nodeData.getClass())) {
+                if (nodeData.GetMode() == ConnectorMode.OUTPUT)
+                    nData.SetBinding(nodeData);
+                else
+                    nodeData.SetBinding(nData);
+            }
+
+            // Reset for new bindings
+            ResetDataTypesState();
+            nodeData = null;
+
+            UpdateNodes();
+        }
+    }
+
+    boolean needsReset;
+    ConnectionLine cLine;
+    public void OnConnectorDrag(NodeComponent nodeComponent, INodeData nData, NodeConnector connector) {
+        needsReset = false;
+        this.nodeData = nData;
+        this.draggingConnectorNode = nodeComponent;
+        this.draggingConnector = connector;
+        this.dragOrigin = getMousePosition(true);
+        System.out.println("ORIGIN: ");
+
+        ShowDataType(nData.getClass());
+        repaint();
+    }
+
+    Point dropPoint;
+    public void OnConnectorDragStop(INodeData nData) {
+        NotifyConnectorsDrop();
+        // Reset for new bindings
+        ResetDataTypesState();
+        needsReset = true;
+        this.draggingConnectorNode = null;
+        this.draggingConnector = null;
+        dropPoint = getMousePosition();
+        UpdateNodes();
+        repaint();
+    }
+
+    // OnConnector Click/Drag disables all
+    // connector with different data type
+    public void ShowDataType(Class<? extends INodeData> dataType) {
+        for (NodeComponent nPanel : nodeComponents) {
+            nPanel.MatchConnectorType(dataType);
+        }
+    }
+    // Resets All connectors and return to
+    // enabled state
+    public void ResetDataTypesState() {
+        this.nodeData = null;
+        for (NodeComponent nPanel : nodeComponents) {
+            nPanel.ResetDataTypesState();
         }
     }
 }
