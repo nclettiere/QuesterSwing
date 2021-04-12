@@ -10,6 +10,7 @@ import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.extras.pswing.PSwingMouseEvent;
 import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.nodes.PText;
+import org.piccolo2d.util.PAffineTransform;
 import org.piccolo2d.util.PBounds;
 import org.piccolo2d.util.PPaintContext;
 import org.w3c.dom.Node;
@@ -42,7 +43,6 @@ public class NodeEditorEx
     protected PNode draggingNodeConnector;
     protected Point2D draggingConnectorOrigin;
     protected Point2D draggingConnectorFinalPoint;
-    protected NodeComponent draggingConnectorNode;
     protected Point dragOrigin;
 
     protected ArrayList<NodeConnectionPoints> connectionPoints;
@@ -72,10 +72,23 @@ public class NodeEditorEx
         final PMouseWheelZoomEventHandler mouseWheelZoomEventHandler = new PMouseWheelZoomEventHandler();
         addInputEventListener(mouseWheelZoomEventHandler);
 
+        removeInputEventListener(getPanEventHandler());
+        addInputEventListener(new PPanEventHandler() {
+            @Override
+            protected void drag(PInputEvent event) {
+                if(draggingConnector == null || nodeDragging == null)
+                    super.drag(event);
+            }
+
+            @Override
+            public void setAutopan(boolean autopan) {
+                super.setAutopan(false);
+            }
+        });
+
         //PSwing ps1 = new PSwing(new DisplayImageComponent());
         DisplayImageComponent dic = new DisplayImageComponent();
         ArrayList<PropertyPanel> propertyPanels = dic.GetPropertiesPanel();
-
 
         final PLayer gridLayer = new PLayer() {
 
@@ -315,10 +328,11 @@ public class NodeEditorEx
                 }
 
                 public void mouseDragged(final PInputEvent aEvent) {
-                    System.out.println("YOOOO2");
-                    pSwing.raiseToTop();
-                    final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
-                    pSwing.translate(delta.getWidth(), delta.getHeight());
+                    if(draggingConnector == null) {
+                        pSwing.raiseToTop();
+                        final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
+                        pSwing.translate(delta.getWidth(), delta.getHeight());
+                    }
                     aEvent.setHandled(true);
                 }
             });
@@ -349,7 +363,6 @@ public class NodeEditorEx
                 }
             });
 
-
             getLayer().addChild(0, pSwing);
             pSwing.setOffset(offset);
             double connYOffset = 75;
@@ -367,13 +380,14 @@ public class NodeEditorEx
                     connNode.addInputEventListener(new PBasicInputEventHandler() {
                         public void mousePressed(final PInputEvent aEvent) {
                             draggingConnector = conn;
+                            draggingNodeConnector = connNode;
                             draggingConnectorOrigin = aEvent.getPosition();
                             draggingNodeConnector = pSwing;
                             aEvent.setHandled(true);
                         }
 
                         public void mouseDragged(final PInputEvent aEvent) {
-                            aEvent.setHandled(true);
+                            aEvent.setHandled(false);
                             conn.FireOnConnectorDragEvent();
                             draggingConnectorFinalPoint = aEvent.getPosition();
                             getLayer().repaint();
@@ -457,11 +471,18 @@ public class NodeEditorEx
         graphics.draw(c);
 
         if(GetDebugPaint()) {
+            graphics.setColor(Color.GREEN);
+            //OriginPoint
+            graphics.fillOval(curveOrigin.x, curveOrigin.y, 10, 10);
+            //EndPoint
+            graphics.fillOval(curveEnd.x, curveEnd.y, 10, 10);
+
             graphics.setColor(Color.RED);
             //ctrlOrigin
             graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
             //ctrlEND
             graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+
         }
     }
 
@@ -472,7 +493,7 @@ public class NodeEditorEx
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point2D curveOrigin = draggingConnectorOrigin;
+        Point2D curveOrigin = draggingConnector.GetRelativePosition();
         Point2D curveEnd = draggingConnectorFinalPoint;
         curveEnd = new Point2D.Double(curveEnd.getX() - 10, curveEnd.getY() - 10);
 
@@ -535,6 +556,12 @@ public class NodeEditorEx
         graphics.draw(c);
 
         if(GetDebugPaint()) {
+            graphics.setColor(Color.GREEN);
+            //OriginPoint
+            graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
+            //EndPoint
+            graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
+
             graphics.setColor(Color.RED);
             //ctrlOrigin
             graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
@@ -591,7 +618,6 @@ public class NodeEditorEx
     public void OnConnectorDrag(NodeComponent nodeComponent, INodeData nData, NodeConnector connector) {
         needsReset = false;
         this.nodeData = nData;
-        this.draggingConnectorNode = nodeComponent;
         this.draggingConnector = connector;
         this.dragOrigin = getMousePosition(true);
         System.out.println("ORIGIN: ");
@@ -606,7 +632,6 @@ public class NodeEditorEx
         // Reset for new bindings
         ResetDataTypesState();
         needsReset = true;
-        this.draggingConnectorNode = null;
         this.draggingConnector = null;
         dropPoint = getMousePosition();
         UpdateNodes();
