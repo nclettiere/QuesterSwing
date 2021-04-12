@@ -45,6 +45,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         this.setBackground(new Color(0,255,0,0));
         //this.setOpaque(false);
 
+
         Content = new JPanel(new MigLayout("", "grow"));
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Content.setOpaque(false);

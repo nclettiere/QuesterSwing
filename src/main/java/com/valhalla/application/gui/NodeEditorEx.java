@@ -510,13 +510,13 @@ public class NodeEditorEx
                     curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
                     curveEndCtrl.x = (int) curveEnd.getX() - 300;
                     curveEndCtrl.y = (int) curveEnd.getY() - 300;
-                } else {
+                }else {
                     curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
                     curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
                     curveEndCtrl.x = (int) curveEnd.getX() - 300;
                     curveEndCtrl.y = (int) curveEnd.getY() + 300;
                 }
-            } else {
+            }else {
                 curveOriginCtrl.x = (int) ((curveOrigin.getX() + 30) + (50 * delta));
                 curveOriginCtrl.y = (int) (curveOrigin.getY() + (50 * delta));
                 curveEndCtrl.x = (int) ((curveEnd.getX() - 30) - (50 * delta));
