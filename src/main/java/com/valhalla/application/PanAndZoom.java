@@ -197,7 +197,7 @@ class ZoomerPanel extends PSwingCanvas {
             for (NodeConnector conn :
                     prop.getConnectors()) {
                 connector = conn;
-                ps1 = conn.GetPSwing();
+                ps1 = conn.GetPNode();
             }
         }
 

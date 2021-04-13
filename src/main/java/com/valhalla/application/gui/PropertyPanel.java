@@ -2,6 +2,7 @@ package com.valhalla.application.gui;
 
 import com.valhalla.core.Node.*;
 import net.miginfocom.swing.MigLayout;
+import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -144,10 +145,10 @@ public class PropertyPanel extends JPanel {
             connector.ConnectorDropped(draggingConnector, nodeData);
     }
 
-    public Point GetConnectorLocation(UUID uuid) {
+    public NodeConnector GetConnectorLocation(UUID uuid) {
         for (NodeConnector connector : connectorList) {
             if(connector.GetNodeData().GetUUID() == uuid) {
-                return connector.GetRelativePosition();
+                return connector;
             }
         }
         return null;

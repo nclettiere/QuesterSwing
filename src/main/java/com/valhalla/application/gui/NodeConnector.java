@@ -1,6 +1,7 @@
 package com.valhalla.application.gui;
 
 import com.valhalla.core.Node.*;
+import org.piccolo2d.PNode;
 import org.piccolo2d.event.PInputEventListener;
 import org.piccolo2d.extras.pswing.PSwing;
 
@@ -19,6 +20,8 @@ public class NodeConnector
     FocusListener,
     MouseListener,
     MouseMotionListener {
+
+    protected PNode connectorPNode;
 
     protected NodeComponent node;
     protected boolean mouseEntered;
@@ -47,8 +50,12 @@ public class NodeConnector
         setPreferredSize(new Dimension(15,15));
     }
 
-    public PSwing GetPSwing() {
-        return new PSwing(this);
+    public void SetPNode(PNode connectorPNode) {
+        this.connectorPNode = connectorPNode;
+    }
+
+    public PNode GetPNode() {
+        return this.connectorPNode;
     }
 
     public void AddOnControlUpdateListener(ConnectorEventListener listener) {

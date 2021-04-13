@@ -151,10 +151,23 @@ public class NodeEditorEx
                 for (NodeConnectionPoints connectionPoints : connectionPoints) {
                     if(nodeDragging != null) {
                         if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
-                            Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
+                            System.out.println("UUID EQU");
+                            Point2D connectorPoint1 = nodeDragging
+                                    .GetConnectorComponent(connectionPoints.GetDataUUID1())
+                                    .GetPNode()
+                                    .getGlobalBounds()
+                                    .getOrigin();
+
+                            connectorPoint1 = new Point2D.Double(connectorPoint1.getX() + 5, connectorPoint1.getY() + 5);
                             connectionPoints.SetPoint1(connectorPoint1);
                         }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
-                            Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
+                            System.out.println("OTHER UUID EQU");
+                            Point2D connectorPoint2 = nodeDragging
+                                    .GetConnectorComponent(connectionPoints.GetDataUUID2())
+                                    .GetPNode()
+                                    .getGlobalBounds()
+                                    .getOrigin();
+                            connectorPoint2 = new Point2D.Double(connectorPoint2.getX() + 5, connectorPoint2.getY() + 5);
                             connectionPoints.SetPoint2(connectorPoint2);
                         }
                     }
@@ -163,25 +176,6 @@ public class NodeEditorEx
             }
         };
 
-        addInputEventListener(new PBasicInputEventHandler() {
-            @Override
-            public void mouseReleased(PInputEvent event) {
-                super.mouseReleased(event);
-
-                if(event.getButton() == MouseEvent.BUTTON3) {
-                    ImagePanel nsp = new ImagePanel();
-                    nsp.addImage("C:\\Users\\Percebe64\\Pictures\\5f7b5e35cd151.jpg");
-                    //nsp.setPreferredSize(new Dimension(300, 300));
-                    add(nsp);
-                }else {
-                    for (NodeComponent nComp: nodeComponents)
-                        nComp.Unselect();
-                    selectedNode = null;
-                    //ResetDataTypesState();
-                }
-                System.out.println("XD");
-            }
-        });
 
         // replace standar layer with grid layer.
         root.removeChild(camera.getLayer(0));
@@ -293,7 +287,6 @@ public class NodeEditorEx
         this.getRoot().addInputEventListener(new PBasicInputEventHandler() {
             @Override
             public void mouseClicked(PInputEvent event) {
-                System.out.println("asdsad");
                 super.mouseClicked(event);
             }
         });
@@ -319,8 +312,9 @@ public class NodeEditorEx
         if(nodeComp != null) {
             nodeComponents.add(nodeComp);
             nodeComp.SetParentEditor(this);
-            PNode pSwing = new PSwing(nodeComp);
-            pSwing.addInputEventListener(new PBasicInputEventHandler() {
+            PNode pNodeComp = new PSwing(nodeComp);
+            NodeComponent finalNodeComp = nodeComp;
+            pNodeComp.addInputEventListener(new PBasicInputEventHandler() {
                 @Override
                 public void mouseClicked(PInputEvent event) {
                     super.mouseClicked(event);
@@ -328,27 +322,36 @@ public class NodeEditorEx
                 }
 
                 public void mouseDragged(final PInputEvent aEvent) {
-                    if(draggingConnector == null) {
-                        pSwing.raiseToTop();
-                        final Dimension2D delta = aEvent.getDeltaRelativeTo(pSwing);
-                        pSwing.translate(delta.getWidth(), delta.getHeight());
-                    }
                     aEvent.setHandled(true);
+
+                    nodeDragging = finalNodeComp;
+
+                    if(draggingConnector == null) {
+                        pNodeComp.raiseToTop();
+                        final Dimension2D delta = aEvent.getDeltaRelativeTo(pNodeComp);
+                        pNodeComp.translate(delta.getWidth(), delta.getHeight());
+                    }
+
+                    getLayer().repaint();
+                }
+
+                @Override
+                public void mouseReleased(PInputEvent event) {
+                    nodeDragging = null;
+                    getLayer().repaint();
+                    super.mouseReleased(event);
                 }
             });
 
             nodeComp.AddOnNodeEventListener(new NodeEventListener() {
                 @Override
                 public void OnNodeComponentDrag(NodeComponent nodeComponent) {
-                    if(nodeComponent != null) {
-                        nodeDragging = nodeComponent;
-                        repaint();
-                    }
+
                 }
 
                 @Override
                 public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
-                    nodeDragging = null;
+
                 }
 
                 @Override
@@ -363,13 +366,14 @@ public class NodeEditorEx
                 }
             });
 
-            getLayer().addChild(0, pSwing);
-            pSwing.setOffset(offset);
+            getLayer().addChild(0, pNodeComp);
+            pNodeComp.setOffset(offset);
             double connYOffset = 75;
             for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
                 for (NodeConnector conn : prop.getConnectors()) {
 
                     PNode connNode = new PSwing(conn);
+                    conn.SetPNode(connNode);
 
                     if (conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
                         connNode.setOffset(18, connYOffset);
@@ -381,8 +385,8 @@ public class NodeEditorEx
                         public void mousePressed(final PInputEvent aEvent) {
                             draggingConnector = conn;
                             draggingNodeConnector = connNode;
-                            draggingConnectorOrigin = aEvent.getPosition();
-                            draggingNodeConnector = pSwing;
+                            draggingConnectorOrigin = connNode.getGlobalTranslation();
+                            draggingNodeConnector = pNodeComp;
                             aEvent.setHandled(true);
                         }
 
@@ -403,11 +407,11 @@ public class NodeEditorEx
                     });
 
                     connNode.addAttribute("tooltip", conn.GetNodeData().GetDisplayName());
-                    pSwing.addChild(connNode);
+                    pNodeComp.addChild(connNode);
                     connYOffset += 18;
                 }
             }
-            pSwing.raiseToTop();
+            pNodeComp.raiseToTop();
         }
     }
 
@@ -427,8 +431,8 @@ public class NodeEditorEx
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point curveOrigin = points.GetPoint1();
-        Point curveEnd = points.GetPoint2();
+        Point2D curveOrigin = points.GetPoint1();
+        Point2D curveEnd = points.GetPoint2();
 
         if(curveOrigin == null || curveEnd == null)
             return;
@@ -436,46 +440,47 @@ public class NodeEditorEx
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
 
-        float delta = ((float)(curveEnd.x) / (float)(curveOrigin.x)) - 1.0f;
+        float delta = ((float)(curveEnd.getX()) / (float)(curveOrigin.getX())) - 1.0f;
 
         if(delta < 0) {
-            if(curveEnd.y < curveOrigin.y) {
+            if(curveEnd.getY() < curveOrigin.getY()) {
 
-                curveOriginCtrl.x = curveOrigin.x + 400;
-                curveOriginCtrl.y = curveOrigin.y - 200;
-                curveEndCtrl.x    = curveEnd.x - 300;
-                curveEndCtrl.y    = curveEnd.y - 300;
+                curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
+                curveEndCtrl.x    = (int) curveEnd.getX() - 300;
+                curveEndCtrl.y    = (int) curveEnd.getY() - 300;
             }else {
-                curveOriginCtrl.x = curveOrigin.x + 400;
-                curveOriginCtrl.y = curveOrigin.y + 200;
-                curveEndCtrl.x    = curveEnd.x - 300;
-                curveEndCtrl.y    = curveEnd.y + 300;
+                curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
+                curveEndCtrl.x    = (int) curveEnd.getX() - 300;
+                curveEndCtrl.y    = (int) curveEnd.getY() + 300;
             }
         }else {
-            curveOriginCtrl.x = (int)((curveOrigin.x + 30) + (50 * delta));
-            curveOriginCtrl.y = (int)(curveOrigin.y + (50 * delta));
-            curveEndCtrl.x    = (int)((curveEnd.x - 30) - (50 * delta));
-            curveEndCtrl.y    = (int)(curveEnd.y - (50 * delta));
+            curveOriginCtrl.x = (int)((curveOrigin.getX() + 30) + (50 * delta));
+            curveOriginCtrl.y = (int)(curveOrigin.getY() + (50 * delta));
+            curveEndCtrl.x    = (int)((curveEnd.getX() - 30) - (50 * delta));
+            curveEndCtrl.y    = (int)(curveEnd.getY() - (50 * delta));
         }
 
         c.setCurve(
-                curveOrigin.x,
-                curveOrigin.y,
+                curveOrigin.getX(),
+                curveOrigin.getY(),
                 curveOriginCtrl.x,
                 curveOriginCtrl.y,
                 curveEndCtrl.x,
                 curveEndCtrl.y,
-                curveEnd.x,
-                curveEnd.y);
+                curveEnd.getX(),
+                curveEnd.getY());
 
         graphics.draw(c);
 
         if(GetDebugPaint()) {
             graphics.setColor(Color.GREEN);
             //OriginPoint
-            graphics.fillOval(curveOrigin.x, curveOrigin.y, 10, 10);
+            graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
             //EndPoint
-            graphics.fillOval(curveEnd.x, curveEnd.y, 10, 10);
+            graphics.setColor(Color.YELLOW);
+            graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
 
             graphics.setColor(Color.RED);
             //ctrlOrigin
@@ -493,9 +498,12 @@ public class NodeEditorEx
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point2D curveOrigin = draggingConnector.GetRelativePosition();
+        //Point2D curveOrigin = draggingConnectorOrigin;
+        Point2D curveOrigin = draggingConnectorOrigin;
         Point2D curveEnd = draggingConnectorFinalPoint;
-        curveEnd = new Point2D.Double(curveEnd.getX() - 10, curveEnd.getY() - 10);
+        // Add the connector size
+        curveOrigin = new Point2D.Double(curveOrigin.getX() + 5, curveOrigin.getY() + 5);
+        // curveEnd = new Point2D.Double(curveEnd.getX() - 10, curveEnd.getY() - 10);
 
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
@@ -560,6 +568,7 @@ public class NodeEditorEx
             //OriginPoint
             graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
             //EndPoint
+            graphics.setColor(Color.YELLOW);
             graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
 
             graphics.setColor(Color.RED);
@@ -571,13 +580,16 @@ public class NodeEditorEx
     }
 
     public void CreateConnection(NodeConnector initialConnector, NodeConnector connectorDropped, UUID nodeUUID1, UUID nodeUUID2, UUID dataUUID1, UUID dataUUID2) {
+
+        Point2D connectorPoint2 = connectorDropped.GetPNode().getGlobalBounds().getOrigin();
+        connectorPoint2 = new Point2D.Double(connectorPoint2.getX() + 5, connectorPoint2.getY() + 5);
         connectionPoints.add(new NodeConnectionPoints(
                 initialConnector.node.GetNode().GetUUID(),
                 connectorDropped.node.GetNode().GetUUID(),
                 dataUUID2,
-                initialConnector.GetRelativePosition(),
+                draggingConnectorOrigin,
                 dataUUID1,
-                connectorDropped.GetRelativePosition()));
+                connectorPoint2));
         repaint();
     }
 

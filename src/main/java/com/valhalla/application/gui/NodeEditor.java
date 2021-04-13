@@ -347,11 +347,11 @@ public class NodeEditor
         for (NodeConnectionPoints connectionPoints : connectionPoints) {
             if(nodeDragging != null) {
                 if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
-                    Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
-                    connectionPoints.SetPoint1(connectorPoint1);
+                    //Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
+                    //connectionPoints.SetPoint1(connectorPoint1);
                 }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
-                    Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
-                    connectionPoints.SetPoint2(connectorPoint2);
+                    //Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
+                    //connectionPoints.SetPoint2(connectorPoint2);
                 }
             }
             DrawConnection(graphics, connectionPoints);
@@ -376,8 +376,8 @@ public class NodeEditor
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point curveOrigin = points.GetPoint1();
-        Point curveEnd = points.GetPoint2();
+        Point2D curveOrigin = points.GetPoint1();
+        Point2D curveEnd = points.GetPoint2();
 
         if(curveOrigin == null || curveEnd == null)
             return;
@@ -385,46 +385,46 @@ public class NodeEditor
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
 
-        float delta = ((float)(curveEnd.x) / (float)(curveOrigin.x)) - 1.0f;
+        float delta = ((float)(curveEnd.getX()) / (float)(curveOrigin.getX())) - 1.0f;
 
         if(delta < 0) {
-            if(curveEnd.y < curveOrigin.y) {
+            if(curveEnd.getY() < curveOrigin.getY()) {
 
-                curveOriginCtrl.x = curveOrigin.x + 400;
-                curveOriginCtrl.y = curveOrigin.y - 200;
-                curveEndCtrl.x    = curveEnd.x - 300;
-                curveEndCtrl.y    = curveEnd.y - 300;
+                curveOriginCtrl.x = (int)curveOrigin.getX() + 400;
+                curveOriginCtrl.y = (int)curveOrigin.getY() - 200;
+                curveEndCtrl.x    = (int)curveEnd.getX() - 300;
+                curveEndCtrl.y    = (int)curveEnd.getY() - 300;
             }else {
-                curveOriginCtrl.x = curveOrigin.x + 400;
-                curveOriginCtrl.y = curveOrigin.y + 200;
-                curveEndCtrl.x    = curveEnd.x - 300;
-                curveEndCtrl.y    = curveEnd.y + 300;
+                curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
+                curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
+                curveEndCtrl.x    = (int) curveEnd.getX() - 300;
+                curveEndCtrl.y    = (int) curveEnd.getY() + 300;
             }
         }else {
-            curveOriginCtrl.x = (int)((curveOrigin.x + 30) + (50 * delta));
-            curveOriginCtrl.y = (int)(curveOrigin.y + (50 * delta));
-            curveEndCtrl.x    = (int)((curveEnd.x - 30) - (50 * delta));
-            curveEndCtrl.y    = (int)(curveEnd.y - (50 * delta));
+            curveOriginCtrl.x = (int)((curveOrigin.getX() + 30) + (50 * delta));
+            curveOriginCtrl.y = (int)(curveOrigin.getY() + (50 * delta));
+            curveEndCtrl.x    = (int)((curveEnd.getX() - 30) - (50 * delta));
+            curveEndCtrl.y    = (int)(curveEnd.getY() - (50 * delta));
         }
 
         c.setCurve(
-                curveOrigin.x,
-                curveOrigin.y,
-                curveOriginCtrl.x,
-                curveOriginCtrl.y,
-                curveEndCtrl.x,
-                curveEndCtrl.y,
-                curveEnd.x,
-                curveEnd.y);
+                curveOrigin.getX(),
+                curveOrigin.getY(),
+                curveOriginCtrl.getX(),
+                curveOriginCtrl.getY(),
+                curveEndCtrl.getX(),
+                curveEndCtrl.getY(),
+                curveEnd.getX(),
+                curveEnd.getY());
 
         graphics.draw(c);
 
         if(GetDebugPaint()) {
             graphics.setColor(Color.RED);
             //ctrlOrigin
-            graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+            graphics.drawOval((int)curveOriginCtrl.getX(), (int)curveOriginCtrl.getY(), 10, 10);
             //ctrlEND
-            graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+            graphics.drawOval((int)curveEndCtrl.getX(), (int)curveEndCtrl.getY(), 10, 10);
         }
     }
 

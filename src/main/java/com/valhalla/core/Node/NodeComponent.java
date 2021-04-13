@@ -306,7 +306,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         listenerList.remove(NodeEventListener.class, listener);
     }
 
-    public INodeData GetConnector(UUID uuid) {
+    public INodeData GetConnectorData(UUID uuid) {
         for (PropertyBase prop :  Node.GetProperties()) {
             for (INodeData nData : prop.GetInputs()) {
                 if(nData.GetUUID() == uuid)
@@ -354,11 +354,11 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         editorParent.CreateConnection(initialConnector, connectorDropped, this.Node.GetUUID(), connectorDropped.GetNode().GetNode().GetUUID(), uuid1, uuid2);
     }
 
-    public Point GetConnectorLocation(UUID uuid) {
+    public NodeConnector GetConnectorComponent(UUID uuid) {
         for (PropertyPanel propPanel : propPanelList) {
-            Point p =  propPanel.GetConnectorLocation(uuid);
-            if(p != null)
-                return p;
+            NodeConnector connector =  propPanel.GetConnectorLocation(uuid);
+            if(connector != null)
+                return connector;
         }
         return null;
     }
