@@ -7,5 +7,6 @@ public class SelectImageNode extends NodeBase {
         SetName("Select Image");
         SetDescription("Select an image file as InputStream");
         AddProperty(new SelectImageProperty());
+        AddProperty(new DisplayImageProperty());
     }
 }

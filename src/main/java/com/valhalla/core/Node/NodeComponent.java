@@ -46,15 +46,11 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //this.setOpaque(false);
 
 
-        Content = new JPanel(new MigLayout("", "grow"));
+        Content = new JPanel(new MigLayout("", "[grow]", "[grow]"));
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Content.setOpaque(false);
 
-        setPreferredSize(new Dimension(200, 200));
-
-        add(Content, "grow");
-
-        //setScale(1.0d);
+        add(Content, "w 200!, grow");
 
         repaint();
     }
@@ -142,6 +138,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         // header size + panels size + additional paddings
         //int height = (51 + 24 + accumulatedHeight + 20 + 2);
         int height = getHeight();
+        //int height = getPreferredSize().height + 51;
 
         //this.setSize(getWidth() - 50, height);
 

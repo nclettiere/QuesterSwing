@@ -34,10 +34,9 @@ public class NodeEditorEx
     boolean debugPaint = false;
     protected Line2D gridLine = new Line2D.Double();
     protected Stroke gridStroke = new BasicStroke(1);
-    protected Stroke gridStrokeThick = new BasicStroke(2);
     protected Color gridPaint = Color.BLACK;
-    protected double gridSpacing = 20;
-    protected double gridSpacingThick = 100;
+    protected double gridSpacing = 15;
+    protected double gridSpacingThick = 150;
 
     protected NodeConnector draggingConnector;
     protected PNode draggingNodeConnector;
@@ -128,8 +127,7 @@ public class NodeEditorEx
                     }
                 }
 
-                g2.setColor(new Color(100,100,100));
-                g2.setStroke(gridStrokeThick);
+                g2.setColor(new Color(30,30,30));
 
                 for (double x = bxT; x < rightBorderT; x += gridSpacingThick) {
                     gridLine.setLine(x, byT, x, bottomBorderT);
@@ -150,8 +148,8 @@ public class NodeEditorEx
 
                 for (NodeConnectionPoints connectionPoints : connectionPoints) {
                     if(nodeDragging != null) {
+                        // Input and ouput in the same node!
                         if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
-                            System.out.println("UUID EQU");
                             Point2D connectorPoint1 = nodeDragging
                                     .GetConnectorComponent(connectionPoints.GetDataUUID1())
                                     .GetPNode()
@@ -160,8 +158,8 @@ public class NodeEditorEx
 
                             connectorPoint1 = new Point2D.Double(connectorPoint1.getX() + 5, connectorPoint1.getY() + 5);
                             connectionPoints.SetPoint1(connectorPoint1);
-                        }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
-                            System.out.println("OTHER UUID EQU");
+                        }
+                        if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
                             Point2D connectorPoint2 = nodeDragging
                                     .GetConnectorComponent(connectionPoints.GetDataUUID2())
                                     .GetPNode()
@@ -170,6 +168,11 @@ public class NodeEditorEx
                             connectorPoint2 = new Point2D.Double(connectorPoint2.getX() + 5, connectorPoint2.getY() + 5);
                             connectionPoints.SetPoint2(connectorPoint2);
                         }
+                        // Input and ouput in the same node!
+                        //if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID() &&
+                        //        connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
+                        //    System.out.println("YUP");
+                        //}
                     }
                     DrawConnection(g2, connectionPoints);
                 }
@@ -378,7 +381,7 @@ public class NodeEditorEx
                     if (conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
                         connNode.setOffset(18, connYOffset);
                     } else {
-                        connNode.setOffset(165, connYOffset);
+                        connNode.setOffset(187, connYOffset);
                     }
 
                     connNode.addInputEventListener(new PBasicInputEventHandler() {
@@ -410,6 +413,7 @@ public class NodeEditorEx
                     pNodeComp.addChild(connNode);
                     connYOffset += 18;
                 }
+                connYOffset += 50;
             }
             pNodeComp.raiseToTop();
         }
