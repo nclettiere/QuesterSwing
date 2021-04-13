@@ -23,30 +23,35 @@ public class SelectImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageData id = new ImageData();
+        ImageData imageOut = new ImageData();
         IntegerData integerData = new IntegerData();
-        id.SetMode(ConnectorMode.OUTPUT);
-        integerData.SetMode(ConnectorMode.OUTPUT);
 
-        AddOutput(id);
+        ImageData imageIn = new ImageData();
+
+        AddInput(imageIn);
+        AddOutput(imageOut);
         AddOutput(integerData);
     }
 
     private void openActionPerformed(Component parent) {
-        JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView());
-        int result = chooser.showOpenDialog(parent);
+        //JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView());
+        //int result = chooser.showOpenDialog(parent);
+//
+        //// if the user selects a file
+        //if (result == JFileChooser.APPROVE_OPTION) {
+        //    // set the output data
+        //    // update the control if needed
+        //    this.GetOutputs().get(0)
+        //            .SetData(chooser.getSelectedFile().getAbsolutePath());
+//
+        //    // Notify for DataBinding
+        //    ((ImageData)this.GetOutputs().get(0)).FireOnBindingDataChanged();
+        //    // Notify Panel of change
+        //    FireControlUpdateEvent();
+        //}
 
-        // if the user selects a file
-        if (result == JFileChooser.APPROVE_OPTION) {
-            // set the output data
-            // update the control if needed
-            this.GetOutputs().get(0)
-                    .SetData(chooser.getSelectedFile().getAbsolutePath());
-
-            // Notify for DataBinding
-            ((ImageData)this.GetOutputs().get(0)).FireOnBindingDataChanged();
-            // Notify Panel of change
-            FireControlUpdateEvent();
-        }
+        ImageData imageIn = new ImageData();
+        AddOutput(imageIn);
+        FireControlUpdateEvent();
     }
 }

@@ -3,6 +3,8 @@ package com.valhalla.core.Node;
 import com.valhalla.application.gui.*;
 import com.valhalla.application.gui.NodeEditor;
 import net.miginfocom.swing.MigLayout;
+import org.piccolo2d.PNode;
+import org.piccolo2d.extras.pswing.PSwing;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -40,7 +42,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         this.addMouseMotionListener(this);
 
         propPanelList = new ArrayList<>();
-        this.setLayout(new MigLayout("debug", "0[grow]0", "0[grow]0"));
+        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51 + 22, 10, 2, 12));
         this.setBackground(new Color(0,255,0,0));
         //this.setOpaque(false);
@@ -386,5 +388,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //setPreferredSize(new Dimension(
         //        (int)(getSize().width * zoomFactor),
         //        (int)(getSize().height * zoomFactor)));
+    }
+
+    public void NotifyControlUpdated(PropertyPanel pPanel) {
+        System.out.println(pPanel.getLocationOnScreen());
     }
 }

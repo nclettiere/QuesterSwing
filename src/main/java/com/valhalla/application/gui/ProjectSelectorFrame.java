@@ -1,5 +1,6 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.core.Node.SelectImageComponent;
 import net.miginfocom.swing.MigLayout;
 import org.piccolo2d.extras.PFrame;
 
@@ -166,5 +167,9 @@ public class ProjectSelectorFrame
         NodeEditorEx editor = new NodeEditorEx();
         editor.SetDebugPaint(true);
         contentPane.add(editor, "grow");
+
+        //SelectImageComponent sic = new SelectImageComponent();
+//
+        //contentPane.add(sic);
     }
 }

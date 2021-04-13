@@ -371,7 +371,7 @@ public class NodeEditorEx
 
             getLayer().addChild(0, pNodeComp);
             pNodeComp.setOffset(offset);
-            double connYOffset = 75;
+            double connYOffset = 70;
             for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
                 for (NodeConnector conn : prop.getConnectors()) {
 

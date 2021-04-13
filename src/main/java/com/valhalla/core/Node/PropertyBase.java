@@ -51,6 +51,7 @@ public class PropertyBase implements INodeProperty {
 
     @Override
     public void AddInput(INodeData input) {
+        input.SetMode(ConnectorMode.INPUT);
         inputs.add(input);
     }
 
@@ -61,6 +62,7 @@ public class PropertyBase implements INodeProperty {
 
     @Override
     public void AddOutput(INodeData output) {
+        output.SetMode(ConnectorMode.OUTPUT);
         outputs.add(output);
     }
 
