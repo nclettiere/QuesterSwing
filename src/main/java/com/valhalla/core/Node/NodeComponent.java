@@ -391,6 +391,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyControlUpdated(PropertyPanel pPanel) {
-        System.out.println(pPanel.getLocationOnScreen());
+        editorParent.UpdateNode(this, pPanel);
     }
 }

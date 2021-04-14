@@ -22,9 +22,8 @@ import java.awt.geom.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.List;
 
 import static java.awt.event.MouseEvent.BUTTON3;
 
@@ -45,7 +44,8 @@ public class NodeEditorEx
     protected Point dragOrigin;
 
     protected ArrayList<NodeConnectionPoints> connectionPoints;
-    protected ArrayList<NodeComponent> nodeComponents;
+    //protected ArrayList<NodeComponent> nodeComponents;
+    protected HashMap<PNode, NodeComponent> nodeComponents;
     protected NodeComponent nodeDragging;
     protected NodeComponent selectedNode;
     protected INodeData nodeData;
@@ -60,7 +60,7 @@ public class NodeEditorEx
 
 
         this.connectionPoints = new ArrayList<>();
-        this.nodeComponents = new ArrayList<>();
+        this.nodeComponents = new HashMap<>();
 
         setBackground(new Color(50,50,50));
 
@@ -313,9 +313,11 @@ public class NodeEditorEx
         }
 
         if(nodeComp != null) {
-            nodeComponents.add(nodeComp);
+            //nodeComponents.
             nodeComp.SetParentEditor(this);
             PNode pNodeComp = new PSwing(nodeComp);
+            AddToNodeList(pNodeComp, nodeComp);
+
             NodeComponent finalNodeComp = nodeComp;
             pNodeComp.addInputEventListener(new PBasicInputEventHandler() {
                 @Override
@@ -359,8 +361,13 @@ public class NodeEditorEx
 
                 @Override
                 public void OnNodeComponentClick(NodeComponent nodeComponent) {
-                    for (NodeComponent nComp: nodeComponents)
-                        nComp.Unselect();
+                    Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<PNode, NodeComponent> pair = it.next();
+                        pair.getValue().Unselect();
+                        it.remove();
+                    }
+
                     if(nodeComponent != null) {
                         //get().moveToFront(nodeComponent);
                         selectedNode = nodeComponent;
@@ -598,14 +605,20 @@ public class NodeEditorEx
     }
 
     public void UpdateNodes() {
-        for (NodeComponent nPanel : nodeComponents) {
-            nPanel.UpdateData();
+        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<PNode, NodeComponent> pair = it.next();
+            pair.getValue().UpdateData();
+            it.remove();
         }
     }
 
     public void NotifyConnectorsDrop() {
-        for (NodeComponent nPanel : nodeComponents) {
-            nPanel.ConnectorDropped(draggingConnector, nodeData);
+        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<PNode, NodeComponent> pair = it.next();
+            pair.getValue().ConnectorDropped(draggingConnector, nodeData);
+            it.remove();
         }
     }
 
@@ -657,16 +670,61 @@ public class NodeEditorEx
     // OnConnector Click/Drag disables all
     // connector with different data type
     public void ShowDataType(Class<? extends INodeData> dataType) {
-        for (NodeComponent nPanel : nodeComponents) {
-            nPanel.MatchConnectorType(dataType);
+        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<PNode, NodeComponent> pair = it.next();
+            pair.getValue().MatchConnectorType(dataType);
+            it.remove();
         }
     }
     // Resets All connectors and return to
     // enabled state
     public void ResetDataTypesState() {
         this.nodeData = null;
-        for (NodeComponent nPanel : nodeComponents) {
-            nPanel.ResetDataTypesState();
+        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<PNode, NodeComponent> pair = it.next();
+            pair.getValue().ResetDataTypesState();
+            it.remove();
         }
+    }
+
+    private void AddToNodeList(PNode pNode, NodeComponent nComp) {
+        UUID uuidToFind = nComp.GetNode().GetUUID();
+        boolean safeToAdd = true;
+
+        // Checks if the node is already added
+        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<PNode, NodeComponent> pair = it.next();
+
+            if(pair.getValue().GetNode().GetUUID().equals(uuidToFind))
+                safeToAdd = false;
+
+            it.remove();
+        }
+
+        if(safeToAdd)
+            nodeComponents.put(pNode, nComp);
+    }
+
+    private PNode GetPNodeWithID(UUID uuid) {
+        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<PNode, NodeComponent> pair = it.next();
+
+            if(pair.getValue().GetNode().GetUUID().equals(uuid))
+                return pair.getKey();
+
+            it.remove();
+        }
+        return null;
+    }
+
+    public void UpdateNode(NodeComponent nodeComponent, PropertyPanel pPanel) {
+        if(nodeComponents.containsValue(nodeComponent)) {
+            PNode pNode = GetPNodeWithID(nodeComponent.GetNode().GetUUID());
+            if(pNode != null)
+                getLayer().removeChild(pNode);
     }
 }
