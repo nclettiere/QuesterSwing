@@ -105,32 +105,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         }
     }
 
-    double m_scale = 1.0d;
-    public void setScale(double p_newScale) {
-        m_scale = p_newScale;
-        int width = (int) (getPreferredSize().width * m_scale);
-        int height = (int) (getPreferredSize().height * m_scale);
-
-        int x = (int) (getLocation().x * m_scale);
-        int y = (int) (getLocation().y * m_scale);
-
-        setSize(new Dimension(width, height));
-        //setLocation(x, y);
-
-        repaint();
-        revalidate();
-    }
-
     private AffineTransform m_zoom;
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         Dimension arcs = new Dimension(10, 10);
-
-        m_zoom = new AffineTransform();
-        m_zoom.scale(m_scale, m_scale);
-        graphics.transform(m_zoom);
 
         int accumulatedHeight = 0;
         for(PropertyPanel panel : propPanelList) {
@@ -324,7 +304,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyConnectorDragStop(INodeData nData) {
-        editorParent.OnConnectorDragStop( nData);
+        editorParent.OnConnectorDragStop(nData);
     }
 
     public void UpdateData() {

@@ -508,9 +508,6 @@ public class NodeEditor
             return;
         }
 
-        for (NodeComponent nComp : nodeComponents) {
-            nComp.setScale(zoomFactor);
-        }
 
         repaint();
         revalidate();

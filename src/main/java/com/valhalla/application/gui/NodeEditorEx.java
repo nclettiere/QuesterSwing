@@ -316,6 +316,7 @@ public class NodeEditorEx
             //nodeComponents.
             nodeComp.SetParentEditor(this);
             PNode pNodeComp = new PSwing(nodeComp);
+
             AddToNodeList(pNodeComp, nodeComp);
 
             NodeComponent finalNodeComp = nodeComp;
@@ -378,50 +379,9 @@ public class NodeEditorEx
 
             getLayer().addChild(0, pNodeComp);
             pNodeComp.setOffset(offset);
-            double connYOffset = 70;
-            for (PropertyPanel prop : nodeComp.GetPropertiesPanel()) {
-                for (NodeConnector conn : prop.getConnectors()) {
 
-                    PNode connNode = new PSwing(conn);
-                    conn.SetPNode(connNode);
+            CreateNodeConnectors(nodeComp);
 
-                    if (conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
-                        connNode.setOffset(18, connYOffset);
-                    } else {
-                        connNode.setOffset(187, connYOffset);
-                    }
-
-                    connNode.addInputEventListener(new PBasicInputEventHandler() {
-                        public void mousePressed(final PInputEvent aEvent) {
-                            draggingConnector = conn;
-                            draggingNodeConnector = connNode;
-                            draggingConnectorOrigin = connNode.getGlobalTranslation();
-                            draggingNodeConnector = pNodeComp;
-                            aEvent.setHandled(true);
-                        }
-
-                        public void mouseDragged(final PInputEvent aEvent) {
-                            aEvent.setHandled(false);
-                            conn.FireOnConnectorDragEvent();
-                            draggingConnectorFinalPoint = aEvent.getPosition();
-                            getLayer().repaint();
-                        }
-
-                        public void mouseReleased(final PInputEvent aEvent) {
-                            aEvent.setHandled(true);
-                            conn.FireOnConnectorDragStopEvent();
-                            draggingNodeConnector = null;
-                            draggingConnector = null;
-                            getLayer().repaint();
-                        }
-                    });
-
-                    connNode.addAttribute("tooltip", conn.GetNodeData().GetDisplayName());
-                    pNodeComp.addChild(connNode);
-                    connYOffset += 18;
-                }
-                connYOffset += 50;
-            }
             pNodeComp.raiseToTop();
         }
     }
@@ -658,11 +618,13 @@ public class NodeEditorEx
     Point dropPoint;
     public void OnConnectorDragStop(INodeData nData) {
         NotifyConnectorsDrop();
+
         // Reset for new bindings
         ResetDataTypesState();
         needsReset = true;
         this.draggingConnector = null;
         dropPoint = getMousePosition();
+
         UpdateNodes();
         repaint();
     }
@@ -722,9 +684,77 @@ public class NodeEditorEx
     }
 
     public void UpdateNode(NodeComponent nodeComponent, PropertyPanel pPanel) {
-        if(nodeComponents.containsValue(nodeComponent)) {
-            PNode pNode = GetPNodeWithID(nodeComponent.GetNode().GetUUID());
-            if(pNode != null)
-                getLayer().removeChild(pNode);
+        PNode pNode = GetPNodeWithID(nodeComponent.GetNode().GetUUID());
+        CreateNodeConnectors(nodeComponent);
+        nodeComponent.repaint();;
     }
+
+    private void CreateNodeConnectors(NodeComponent nodeComponent) {
+        PNode pNode = GetPNodeWithID(nodeComponent.GetNode().GetUUID());
+        if (pNode == null) return;
+
+        double lastOffsetY = 70;
+        for (int i = 0; i < pNode.getChildrenCount(); i++) {
+            PNode childPNode = pNode.getChild(i);
+            lastOffsetY = childPNode.getYOffset();
+        }
+
+        lastOffsetY += 18;
+        for (PropertyPanel prop : nodeComponent.GetPropertiesPanel()) {
+            for (NodeConnector conn : prop.getConnectors()) {
+                boolean canContinue = true;
+                for (int i = 0; i < pNode.getChildrenCount(); i++) {
+                    PSwing childPNode = (PSwing) pNode.getChild(i);
+                    NodeConnector childNodeConnector = (NodeConnector) childPNode.getComponent();
+                    if(childNodeConnector.GetNodeData().GetUUID().equals(conn.GetNodeData().GetUUID())) {
+                        canContinue = false;
+                        break;
+                    }
+                }
+                if(!canContinue)
+                    continue;
+
+                PNode connNode = new PSwing(conn);
+                conn.SetPNode(connNode);
+
+                if (conn.GetNodeData().GetMode() == ConnectorMode.INPUT) {
+                    connNode.setOffset(18, lastOffsetY);
+                } else {
+                    connNode.setOffset(187, lastOffsetY);
+                }
+
+                connNode.addInputEventListener(new PBasicInputEventHandler() {
+                    public void mousePressed(final PInputEvent aEvent) {
+                        draggingConnector = conn;
+                        draggingNodeConnector = connNode;
+                        draggingConnectorOrigin = connNode.getGlobalTranslation();
+                        draggingNodeConnector = pNode;
+                        aEvent.setHandled(true);
+                    }
+
+                    public void mouseDragged(final PInputEvent aEvent) {
+                        aEvent.setHandled(false);
+                        conn.FireOnConnectorDragEvent();
+                        draggingConnectorFinalPoint = aEvent.getPosition();
+                        getLayer().repaint();
+                    }
+
+                    public void mouseReleased(final PInputEvent aEvent) {
+                        aEvent.setHandled(true);
+                        conn.FireOnConnectorDragStopEvent();
+                        System.out.println("YES");
+                        draggingNodeConnector = null;
+                        draggingConnector = null;
+                        getLayer().repaint();
+                    }
+                });
+
+                connNode.addAttribute("tooltip", conn.GetNodeData().GetDisplayName());
+                pNode.addChild(connNode);
+                lastOffsetY += 18;
+            }
+            lastOffsetY += 50;
+        }
+    }
+
 }
