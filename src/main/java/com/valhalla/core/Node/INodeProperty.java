@@ -12,6 +12,7 @@ public interface INodeProperty extends EventListener {
 
     List<INodeData> GetInputs();
     List<INodeData> GetOutputs();
+    List<INodeData> GetIO();
 
     void AddInput(INodeData input);
     void RemoveInput(int index);

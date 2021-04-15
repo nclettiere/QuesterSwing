@@ -50,6 +50,14 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
+    public List<INodeData> GetIO() {
+        List<INodeData> IO = new ArrayList<>();
+        IO.addAll(inputs);
+        IO.addAll(outputs);
+        return IO;
+    }
+
+    @Override
     public void AddInput(INodeData input) {
         input.SetMode(ConnectorMode.INPUT);
         inputs.add(input);

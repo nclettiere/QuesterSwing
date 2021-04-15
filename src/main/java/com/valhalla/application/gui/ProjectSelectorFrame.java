@@ -1,5 +1,6 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.application.TestJLayerZoom;
 import com.valhalla.core.Node.SelectImageComponent;
 import net.miginfocom.swing.MigLayout;
 import org.piccolo2d.extras.PFrame;
@@ -44,7 +45,7 @@ public class ProjectSelectorFrame
         setTitle("Quester");
         Container contentPane = getContentPane();
         //contentPane.setLayout(new BorderLayout());
-        contentPane.setLayout(new MigLayout("", "[grow]", "[grow]"));
+        contentPane.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
 
         {
             //======== fileMenu ========
@@ -164,12 +165,11 @@ public class ProjectSelectorFrame
 
         //contentPane.add(panel, BorderLayout.NORTH);
 
-        NodeEditorEx editor = new NodeEditorEx();
-        editor.SetDebugPaint(true);
-        contentPane.add(editor, "grow");
+        //NodeEditorEx editor = new NodeEditorEx();
+        //editor.SetDebugPaint(true);
+        //contentPane.add(editor, "grow");
 
-        //SelectImageComponent sic = new SelectImageComponent();
-//
-        //contentPane.add(sic);
+        TestJLayerZoom sic = new TestJLayerZoom();
+        contentPane.add(sic, "grow");
     }
 }

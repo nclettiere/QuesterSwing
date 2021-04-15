@@ -8,6 +8,7 @@ import org.piccolo2d.extras.pswing.PSwing;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -24,6 +25,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected Color                    NodeColor;
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
+    protected ArrayList<NodeConnector> connectors;
     protected NodeEditorEx             editorParent;
     protected boolean                  selected;
 
@@ -36,8 +38,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
-
-        this.listenerList = new EventListenerList();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
 
@@ -269,7 +269,8 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //    int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
         //    setLocation(x,y);
         //}
-        FireNodeOnDraggedEvent();
+        //FireNodeOnDraggedEvent();
+        GetNode().SetCurrentAction(NodeBase.NodeAction.DRAGGING);
     }
 
     @Override

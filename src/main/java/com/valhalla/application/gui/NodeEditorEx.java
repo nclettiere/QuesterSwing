@@ -54,6 +54,12 @@ public class NodeEditorEx
     boolean isNodeSelectorOpened = false;
     boolean isMouseOnNodeSelector = false;
 
+    // TEST ZONE
+    private volatile double screenX = 0;
+    private volatile double screenY = 0;
+    private volatile double myX = 0;
+    private volatile double myY = 0;
+
     public NodeEditorEx() {
         final PRoot root = getRoot();
         final PCamera camera = getCamera();
@@ -74,6 +80,16 @@ public class NodeEditorEx
         removeInputEventListener(getPanEventHandler());
         addInputEventListener(new PPanEventHandler() {
             @Override
+            public void mousePressed(PInputEvent event) {
+                super.mousePressed(event);
+                screenX = event.getCanvasPosition().getX();
+                screenY = event.getCanvasPosition().getY();
+
+                myX = getX();
+                myY = getY();
+            }
+
+            @Override
             protected void drag(PInputEvent event) {
                 if(draggingConnector == null || nodeDragging == null)
                     super.drag(event);
@@ -90,7 +106,6 @@ public class NodeEditorEx
         ArrayList<PropertyPanel> propertyPanels = dic.GetPropertiesPanel();
 
         final PLayer gridLayer = new PLayer() {
-
             protected void paint(final PPaintContext paintContext) {
                 // make sure grid gets drawn on snap to grid boundaries. And
                 // expand a little to make sure that entire view is filled.
@@ -320,62 +335,74 @@ public class NodeEditorEx
             AddToNodeList(pNodeComp, nodeComp);
 
             NodeComponent finalNodeComp = nodeComp;
-            pNodeComp.addInputEventListener(new PBasicInputEventHandler() {
-                @Override
-                public void mouseClicked(PInputEvent event) {
-                    super.mouseClicked(event);
+            //pNodeComp.addInputEventListener(new PBasicInputEventHandler() {
+            //    @Override
+            //    public void mouseClicked(PInputEvent event) {
+            //        super.mouseClicked(event);
+//
+            //    }
+//
+            //    public void mouseDragged(final PInputEvent aEvent) {
+            //        aEvent.setHandled(true);
+//
+            //        nodeDragging = finalNodeComp;
+//
+            //        if(draggingConnector == null) {
+            //            pNodeComp.raiseToTop();
+            //            final Dimension2D delta = aEvent.getDeltaRelativeTo(pNodeComp);
+            //            pNodeComp.translate(delta.getWidth(), delta.getHeight());
+            //        }
+//
+            //        getLayer().repaint();
+            //    }
+//
+            //    @Override
+            //    public void mouseReleased(PInputEvent event) {
+            //        nodeDragging = null;
+            //        getLayer().repaint();
+            //        super.mouseReleased(event);
+            //    }
+            //});
 
-                }
-
-                public void mouseDragged(final PInputEvent aEvent) {
-                    aEvent.setHandled(true);
-
-                    nodeDragging = finalNodeComp;
-
-                    if(draggingConnector == null) {
+            nodeComp.GetNode().AddNodeActionListener(nodeAction -> {
+                switch (nodeAction) {
+                    case DRAGGING -> {
                         pNodeComp.raiseToTop();
-                        final Dimension2D delta = aEvent.getDeltaRelativeTo(pNodeComp);
-                        pNodeComp.translate(delta.getWidth(), delta.getHeight());
+                        getMousePosition(true);
+                        double deltaX = getMousePosition(true).x - screenX;
+                        double deltaY = getMousePosition(true).y - screenY;
+                        pNodeComp.translate(myX + deltaX, myY + deltaY);
                     }
-
-                    getLayer().repaint();
-                }
-
-                @Override
-                public void mouseReleased(PInputEvent event) {
-                    nodeDragging = null;
-                    getLayer().repaint();
-                    super.mouseReleased(event);
                 }
             });
 
-            nodeComp.AddOnNodeEventListener(new NodeEventListener() {
-                @Override
-                public void OnNodeComponentDrag(NodeComponent nodeComponent) {
-
-                }
-
-                @Override
-                public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
-
-                }
-
-                @Override
-                public void OnNodeComponentClick(NodeComponent nodeComponent) {
-                    Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<PNode, NodeComponent> pair = it.next();
-                        pair.getValue().Unselect();
-                        it.remove();
-                    }
-
-                    if(nodeComponent != null) {
-                        //get().moveToFront(nodeComponent);
-                        selectedNode = nodeComponent;
-                    }
-                    repaint();
-                }
-            });
+            //nodeComp.AddOnNodeEventListener(new NodeEventListener() {
+            //    @Override
+            //    public void OnNodeComponentDrag(NodeComponent nodeComponent) {
+//
+            //    }
+//
+            //    @Override
+            //    public void OnNodeComponentDragStop(NodeComponent nodeComponent) {
+//
+            //    }
+//
+            //    @Override
+            //    public void OnNodeComponentClick(NodeComponent nodeComponent) {
+            //        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+            //        while (it.hasNext()) {
+            //            Map.Entry<PNode, NodeComponent> pair = it.next();
+            //            pair.getValue().Unselect();
+            //            it.remove();
+            //        }
+//
+            //        if(nodeComponent != null) {
+            //            //get().moveToFront(nodeComponent);
+            //            selectedNode = nodeComponent;
+            //        }
+            //        repaint();
+            //    }
+            //});
 
             getLayer().addChild(0, pNodeComp);
             pNodeComp.setOffset(offset);
