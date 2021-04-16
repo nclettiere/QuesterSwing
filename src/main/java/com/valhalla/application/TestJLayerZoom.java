@@ -3,43 +3,49 @@ package com.valhalla.application;
 import com.valhalla.NodeEditor.NEditorMouseWheelZoomHandler;
 import com.valhalla.application.gui.NodeConnectionPoints;
 import com.valhalla.application.gui.NodeConnector;
-import com.valhalla.core.Node.NodeComponent;
+import com.valhalla.application.gui.NodeSelectorListener;
+import com.valhalla.application.gui.NodeSelectorPanel;
+import com.valhalla.core.Node.*;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
 import org.piccolo2d.PNode;
 import org.piccolo2d.PRoot;
+import org.piccolo2d.event.PBasicInputEventHandler;
 import org.piccolo2d.event.PInputEvent;
 import org.piccolo2d.event.PMouseWheelZoomEventHandler;
 import org.piccolo2d.event.PPanEventHandler;
 import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.util.PPaintContext;
+import org.w3c.dom.Node;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.awt.image.ColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.List;
+
+import static java.awt.event.MouseEvent.BUTTON2;
+import static java.awt.event.MouseEvent.BUTTON3;
 
 public class TestJLayerZoom extends PSwingCanvas {
 
     protected NodeEditorProperties props;
+    protected NodeSelectorPanel nsp;
+    protected PNode pSelector;
 
-    public TestJLayerZoom() {
+    public TestJLayerZoom(Class<? extends NodeComponent>[] nodeClasses) {
         this.props = new NodeEditorProperties();
+        this.props.registerNodeClasses(nodeClasses);
 
         final PRoot root = getRoot();
         final PCamera camera = getCamera();
 
+        SetupCanvas(root, camera);
         SetupListeners();
-        SetupGridLayer(root, camera);
     }
 
     public void CreateNewNode(Class<? extends NodeComponent> nCompClass) {
@@ -50,16 +56,47 @@ public class TestJLayerZoom extends PSwingCanvas {
             return;
         }
 
-        UUID uuid = nodeComp.GetNode().GetUUID();
+        final UUID uuid = nodeComp.GetNode().GetUUID();
         // Create a new PNode for the NodeComponent
-        PNode pNode = new PSwing(nodeComp);
+        final PNode pNode = new PSwing(nodeComp);
         // Add nodes to the props list
         props.addNode(uuid, pNode);
         props.addComponent(nodeComp);
+        // Set editor parent
+        nodeComp.SetParentEditor(this);
         // Setup node connectors
         UpdateNodeConnectors(uuid);
+        // Add node listeners
+        pNode.addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseDragged(PInputEvent event) {
+                if (props.isNodeDragging()) {
+                    event.setHandled(true);
+                    super.mouseDragged(event);
+                    Dimension2D delta = event.getDeltaRelativeTo(pNode);
+                    pNode.translate(delta.getWidth(), delta.getHeight());
+                    props.setLastInputEvent(event);
+                }
+            }
+        });
+        nodeComp.GetNode().AddNodeActionListener(nodeAction -> {
+            switch (nodeAction) {
+                case NONE -> props.resetNodeState();
+                case DRAGGING -> {
+                    props.setNodeDragging(true);
+                }
+                case PRESSED -> {
+                    System.out.println("YEEES");
+                    props.setNodePressed(true);
+                }
+            }
+        });
         // Add node to the canvas
+        pNode.setOffset(props.getLastInputEvent().getPosition());
+        getLayer().addChild(pNode);
         // ...
+        pSelector.setVisible(false);
+        nsp.reset();
     }
 
     public void UpdateNodeConnectors(UUID nodeCompUUID) {
@@ -67,7 +104,43 @@ public class TestJLayerZoom extends PSwingCanvas {
         if(pNode == null) return;
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
         if(nodeComponent == null) return;
+        // Get Connector Data
+        HashMap<Integer, List<INodeData>> nodePropsData =
+                nodeComponent.GetNode().getAllConnectorsData();
+        // Create NodeConnectors
+        Iterator<Map.Entry<Integer, List<INodeData>>> it = nodePropsData.entrySet().iterator();
+        int inputOffsetY = 95;
+        int outputOffsetY = 95;
+        while (it.hasNext()) {
+            Map.Entry<Integer, List<INodeData>> pair = it.next();
+            List<INodeData> connectorDataList = pair.getValue();
 
+            for (INodeData data : connectorDataList) {
+                NodeConnector nConn = new NodeConnector(data, nodeComponent);
+                PNode nConnPNode = new PSwing(nConn);
+                props.addConnector(nodeCompUUID, nConn);
+                pNode.addChild(nConnPNode);
+
+                if(data.GetMode() == ConnectorMode.INPUT) {
+                    nConnPNode.setOffset(20, inputOffsetY);
+                    inputOffsetY += 22;
+                }else {
+                    nConnPNode.setOffset(187, outputOffsetY);
+                    outputOffsetY += 22;
+                }
+            }
+
+            // Add a margin to delimit a new property
+            if (inputOffsetY > outputOffsetY) {
+                inputOffsetY += 38;
+                outputOffsetY = inputOffsetY;
+            }else {
+                outputOffsetY += 38;
+                inputOffsetY = outputOffsetY;
+            }
+
+            it.remove();
+        }
     }
 
     protected void SetupListeners() {
@@ -75,12 +148,13 @@ public class TestJLayerZoom extends PSwingCanvas {
         removeInputEventListener(getZoomEventHandler());
         // install mouse wheel zoom event handler
         addInputEventListener(new NEditorMouseWheelZoomHandler());
-
         // add custom pan event handler
         removeInputEventListener(getPanEventHandler());
         addInputEventListener(new PPanEventHandler() {
             @Override
             protected void drag(PInputEvent event) {
+                //props.setLastInputEvent(event);
+                if(!props.isNodeDragging() && !props.isNodePressed())
                 super.drag(event);
             }
             @Override
@@ -88,9 +162,41 @@ public class TestJLayerZoom extends PSwingCanvas {
                 super.setAutopan(false);
             }
         });
+
+        // Add Mouse Click listener
+        addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseMoved(PInputEvent event) {
+                super.mouseMoved(event);
+               // props.setLastInputEvent(event);
+            }
+
+            @Override
+            public void mouseClicked(PInputEvent event) {
+                super.mouseClicked(event);
+                props.setLastInputEvent(event);
+                if (event.getButton() == BUTTON3) {
+                    getLayer().addChild(0, pSelector);
+                    pSelector.setOffset(event.getPosition());
+                    pSelector.setVisible(true);
+                    nsp.setFocusField();
+                    pSelector.raiseToTop();
+                }else{
+                    pSelector.setVisible(false);
+                    nsp.reset();
+                }
+            }
+        });
+        // Add node selector panel listener
+        nsp.addNodeSelectorEventListener(new NodeSelectorListener() {
+            @Override
+            public void OnNodeSelected(Class<? extends NodeComponent> nodeClass) {
+                CreateNewNode(nodeClass);
+            }
+        });
     }
 
-    protected void SetupGridLayer(PRoot root, PCamera camera) {
+    protected void SetupCanvas(PRoot root, PCamera camera) {
         final PLayer gridLayer = CreateGridLayer();
 
         // replace current layer with the new grid layer
@@ -105,6 +211,10 @@ public class TestJLayerZoom extends PSwingCanvas {
                 gridLayer.setBounds(camera.getViewBounds()));
         camera.addPropertyChangeListener(PCamera.PROPERTY_VIEW_TRANSFORM, evt ->
                 gridLayer.setBounds(camera.getViewBounds()));
+
+        nsp = new NodeSelectorPanel(props.getRegisteredNodeClasses());
+        pSelector = new PSwing(nsp);
+        pSelector.setVisible(false);
     }
 
     protected PLayer CreateGridLayer() {
@@ -175,14 +285,25 @@ public class TestJLayerZoom extends PSwingCanvas {
     }
 
     public class NodeEditorProperties {
-        private HashMap<UUID, PNode> pNodesMap;
-        private HashMap<UUID, NodeComponent> nodeComponents;
-        private HashMap<UUID, NodeConnector> nodeConnectors;
+        protected HashMap<UUID, PNode> pNodesMap;
+        protected HashMap<UUID, NodeComponent> nodeComponents;
+        protected HashMap<UUID, NodeConnector> nodeConnectors;
+        protected ArrayList<Class<? extends NodeComponent>> registeredNodes;
+
+        // Editor Canvas props
+        protected Point2D lastMousePosition;
+        protected PInputEvent lastInputEvent;
+        protected boolean isNodeDragging;
+        protected boolean mouseOnCanvas;
+        protected boolean isNodePressed;
+
 
         NodeEditorProperties() {
             pNodesMap = new HashMap<>();
             nodeComponents = new HashMap<>();
             nodeConnectors = new HashMap<>();
+            registeredNodes = new ArrayList<>();
+            lastMousePosition = new Point2D.Double(0,0);
         }
 
         /**
@@ -248,6 +369,53 @@ public class TestJLayerZoom extends PSwingCanvas {
             if(!nodeConnectors.containsKey(uuid))
                 return null;
             return nodeConnectors.get(uuid);
+        }
+
+        public void registerNodeClasses(Class<? extends NodeComponent>[] nodeClasses) {
+            this.registeredNodes.addAll(Arrays.asList(nodeClasses));
+        }
+
+        public List<Class<? extends NodeComponent>> getRegisteredNodeClasses() {
+            return this.registeredNodes;
+        }
+
+
+        public PInputEvent getLastInputEvent() {
+            return lastInputEvent;
+        }
+
+        public void setLastInputEvent(PInputEvent lastInputEvent) {
+            if(lastInputEvent != null)
+                this.lastInputEvent = lastInputEvent;
+        }
+
+        public void setNodeDragging(boolean nodeDragging) {
+            isNodeDragging = nodeDragging;
+        }
+
+        public boolean isNodeDragging() {
+            return isNodeDragging;
+        }
+
+        public void resetNodeState() {
+            isNodeDragging = false;
+            isNodePressed = false;
+        }
+
+        public boolean isMouseOnCanvas() {
+            return mouseOnCanvas;
+        }
+
+        public void setMouseOnCanvas(boolean mouseOnCanvas) {
+            this.mouseOnCanvas = mouseOnCanvas;
+        }
+
+        public boolean isNodePressed() {
+            return isNodePressed;
+        }
+
+        public void setNodePressed(boolean nodePressed) {
+            isNodePressed = nodePressed;
         }
     }
 }

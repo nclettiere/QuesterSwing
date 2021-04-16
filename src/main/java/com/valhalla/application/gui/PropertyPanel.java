@@ -8,11 +8,15 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.MouseInputListener;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class PropertyPanel extends JPanel {
+public class PropertyPanel
+        extends JPanel
+        implements MouseInputListener {
 
     protected INodeProperty prop;
     protected EventListenerList listenerList;
@@ -29,18 +33,18 @@ public class PropertyPanel extends JPanel {
         this.node = node;
         this.connectorList = new ArrayList<>();
 
-        setLayout(new MigLayout("debug","[20][grow][20]"));
+        setLayout(new MigLayout("","[20][grow][20]", "[top][top][top]"));
         setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
         setOpaque(false);
 
-        inputPanel = new JPanel(new MigLayout("", "0[grow]0"));
+        inputPanel = new JPanel(new MigLayout("debug", "0[grow]0", "2[top]2"));
         inputPanel.setBorder(new EmptyBorder(0,0,0,0));
         inputPanel.setOpaque(false);
 
-        controlPanel = new JPanel(new MigLayout("", "[max]"));
+        controlPanel = new JPanel(new MigLayout("", "[max]", "[top]"));
         controlPanel.setOpaque(false);
 
-        outputPanel = new JPanel(new MigLayout("debug", "0[20]0"));
+        outputPanel = new JPanel(new MigLayout("debug", "0[20]0", "2[top]2"));
         outputPanel.setBorder(new EmptyBorder(0,0,0,0));
         outputPanel.setOpaque(false);
 
@@ -83,7 +87,7 @@ public class PropertyPanel extends JPanel {
                 @Override
                 public void OnControlUpdate() {
                     //AddProperties();
-                    node.NotifyControlUpdated(PropertyPanel.this);
+                    //node.NotifyControlUpdated(PropertyPanel.this);
                     node.repaint();
                 }
 
@@ -118,7 +122,7 @@ public class PropertyPanel extends JPanel {
                 @Override
                 public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
             });
-            outputPanel.add(new JLabel(""), "grow, w 15!, h 15!, wrap");
+            outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
             System.out.println(i);
             i++;
         }
@@ -158,5 +162,40 @@ public class PropertyPanel extends JPanel {
             }
         }
         return null;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        node.GetNode().SetCurrentAction(NodeBase.NodeAction.PRESSED);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
     }
 }

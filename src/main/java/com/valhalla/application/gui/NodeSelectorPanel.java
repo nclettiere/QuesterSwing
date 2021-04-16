@@ -63,7 +63,7 @@ public class NodeSelectorPanel extends JXPanel {
     protected JTextField searchField;
     protected JPanel groupPanel;
 
-    NodeSelectorPanel(List<Class<? extends NodeComponent>> nodeList) {
+    public NodeSelectorPanel(List<Class<? extends NodeComponent>> nodeList) {
         this.GroupList = new HashMap<>();
         this.nodeList = nodeList;
         this.miscList = new ArrayList<>();
@@ -126,7 +126,7 @@ public class NodeSelectorPanel extends JXPanel {
                 subGroupPanel.add(menuItem, "grow, wrap");
             }
             groupPanel.add(subGroupPanel, "grow, wrap");
-            it.remove(); // avoids a ConcurrentModificationException
+            it.remove();
         }
 
         if(miscList.size() > 0) {

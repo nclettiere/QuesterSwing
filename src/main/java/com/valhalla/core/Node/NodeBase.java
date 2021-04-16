@@ -12,6 +12,7 @@ public class NodeBase implements INode {
     public enum NodeAction {
         NONE,
         CLICKED,
+        PRESSED,
         CTRL_CLICKED,
         DRAGGING,
         DELETE,
@@ -57,6 +58,10 @@ public class NodeBase implements INode {
         listenerList.remove(NodeActionListener.class, listener);
     }
 
+    /**
+     * Loops through all properties connectors and assigns them an index
+     * @return HashMap with an Integer representing the property index and the list of connectors data of each property.
+     */
     public HashMap<Integer, List<INodeData>> getAllConnectorsData() {
         HashMap<Integer, List<INodeData>> connectorsData = new HashMap<>();
         int i = 0;

@@ -1,6 +1,8 @@
 package com.valhalla.application.gui;
 
 import com.valhalla.application.TestJLayerZoom;
+import com.valhalla.core.Node.DisplayImageComponent;
+import com.valhalla.core.Node.MiscComponent;
 import com.valhalla.core.Node.SelectImageComponent;
 import net.miginfocom.swing.MigLayout;
 import org.piccolo2d.extras.PFrame;
@@ -169,7 +171,13 @@ public class ProjectSelectorFrame
         //editor.SetDebugPaint(true);
         //contentPane.add(editor, "grow");
 
-        TestJLayerZoom sic = new TestJLayerZoom();
+       //DisplayImageComponent editor = new DisplayImageComponent();
+       //contentPane.add(editor);
+
+        TestJLayerZoom sic = new TestJLayerZoom(new Class[]{
+                SelectImageComponent.class,
+                DisplayImageComponent.class,
+                MiscComponent.class});
         contentPane.add(sic, "grow");
     }
 }

@@ -35,7 +35,7 @@ public class NodeConnector
     protected INodeData lastConnection;
     protected NodeConnector lastConnectionComp;
 
-    NodeConnector(INodeData nData, NodeComponent node) {
+    public NodeConnector(INodeData nData, NodeComponent node) {
         this.nData = nData;
         this.node = node;
 

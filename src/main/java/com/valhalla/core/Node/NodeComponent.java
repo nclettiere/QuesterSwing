@@ -1,5 +1,6 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.application.TestJLayerZoom;
 import com.valhalla.application.gui.*;
 import com.valhalla.application.gui.NodeEditor;
 import net.miginfocom.swing.MigLayout;
@@ -26,33 +27,35 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
     protected ArrayList<NodeConnector> connectors;
-    protected NodeEditorEx             editorParent;
+    protected TestJLayerZoom           editorParent;
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
 
     // Mouse vars
-    protected boolean isMousePressed;
+    protected boolean isMouseHeaderPressed;
     protected Point   mouseOriginPoint;
 
     NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
-        this.addMouseListener(this);
-        this.addMouseMotionListener(this);
 
         propPanelList = new ArrayList<>();
-        this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
+        this.setLayout(new MigLayout("", "0[grow]0", "0[top]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51 + 22, 10, 2, 12));
         this.setBackground(new Color(0,255,0,0));
         //this.setOpaque(false);
 
 
-        Content = new JPanel(new MigLayout("", "[grow]", "[grow]"));
+        Content = new JPanel(new MigLayout("", "[grow]", "[top]"));
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Content.setOpaque(false);
 
-        add(Content, "w 200!, grow");
+        add(Content, "w 200!");
+
+
+        this.addMouseListener(this);
+        this.addMouseMotionListener(this);
 
         repaint();
     }
@@ -74,7 +77,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         }
     }
 
-    public void SetParentEditor(NodeEditorEx editor) {
+    public void SetParentEditor(TestJLayerZoom editor) {
         this.editorParent = editor;
     }
 
@@ -234,22 +237,24 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        FireNodeOnClickEvent();
+        GetNode().SetCurrentAction(NodeBase.NodeAction.CLICKED);
+        //FireNodeOnClickEvent();
         Select();
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        //FireNodeOnDraggedEvent();
+        GetNode().SetCurrentAction(NodeBase.NodeAction.PRESSED);
         // If dragging node from header (51px height)
+        // Making available for mouse dragging
         if(e.getPoint().y > 12 && e.getPoint().y < 52 + 12 && e.getPoint().x > 15 && e.getPoint().x < getWidth() - 15)
-            this.isMousePressed = true;
+            this.isMouseHeaderPressed = true;
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        this.isMousePressed = false;
-        FireNodeOnDragStopEvent();
+        this.isMouseHeaderPressed = false;
+        GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
     }
 
     @Override
@@ -264,13 +269,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        //if(this.isMousePressed) {
-        //    int x = (int) this.getLocation().getX() + (e.getX()) - (this.getSize().width / 2);
-        //    int y = (int) this.getLocation().getY() + (e.getY()) - (51 / 2);
-        //    setLocation(x,y);
-        //}
-        //FireNodeOnDraggedEvent();
-        GetNode().SetCurrentAction(NodeBase.NodeAction.DRAGGING);
+        if(this.isMouseHeaderPressed) {
+            GetNode().SetCurrentAction(NodeBase.NodeAction.DRAGGING);
+        }
     }
 
     @Override
@@ -297,15 +298,15 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyConnectorClick(INodeData nData) {
-        editorParent.OnConnectorClick(nData);
+        //editorParent.OnConnectorClick(nData);
     }
 
     public void NotifyConnectorDrag(INodeData nData, NodeConnector connector) {
-        editorParent.OnConnectorDrag(this, nData, connector);
+        //editorParent.OnConnectorDrag(this, nData, connector);
     }
 
     public void NotifyConnectorDragStop(INodeData nData) {
-        editorParent.OnConnectorDragStop(nData);
+        //editorParent.OnConnectorDragStop(nData);
     }
 
     public void UpdateData() {
@@ -331,7 +332,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void NotifyConnectionCreated(NodeConnector connectorDropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) {
-        editorParent.CreateConnection(initialConnector, connectorDropped, this.Node.GetUUID(), connectorDropped.GetNode().GetNode().GetUUID(), uuid1, uuid2);
+        //editorParent.CreateConnection(initialConnector, connectorDropped, this.Node.GetUUID(), connectorDropped.GetNode().GetNode().GetUUID(), uuid1, uuid2);
     }
 
     public NodeConnector GetConnectorComponent(UUID uuid) {
@@ -343,7 +344,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         return null;
     }
 
-    public NodeEditorEx GetEditor() {
+    public TestJLayerZoom GetEditor() {
         return editorParent;
     }
 
@@ -371,7 +372,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         //        (int)(getSize().height * zoomFactor)));
     }
 
-    public void NotifyControlUpdated(PropertyPanel pPanel) {
-        editorParent.UpdateNode(this, pPanel);
-    }
+    //public void NotifyControlUpdated(PropertyPanel pPanel) {
+    //    editorParent.UpdateNode(this, pPanel);
+    //}
 }

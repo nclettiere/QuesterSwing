@@ -329,7 +329,7 @@ public class NodeEditorEx
 
         if(nodeComp != null) {
             //nodeComponents.
-            nodeComp.SetParentEditor(this);
+            //nodeComp.SetParentEditor(this);
             PNode pNodeComp = new PSwing(nodeComp);
 
             AddToNodeList(pNodeComp, nodeComp);
