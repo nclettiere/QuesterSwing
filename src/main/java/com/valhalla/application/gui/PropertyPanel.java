@@ -114,10 +114,14 @@ public class PropertyPanel
                     node.NotifyConnectorClick(nData);
                 }
                 @Override
-                public void OnConnectorDrag(UUID uuid, NodeConnector connector) { node.NotifyConnectorDrag(nData, connector); }
+                public void OnConnectorDrag(UUID uuid, NodeConnector connector) {
+                    //node.NotifyConnectorDrag(nData, connector);
+                    node.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
+                }
                 @Override
                 public void OnConnectorDragStop(UUID uuid) {
-                    node.NotifyConnectorDragStop(nData);
+                    node.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
+                    //node.NotifyConnectorDragStop(nData);
                 }
                 @Override
                 public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
