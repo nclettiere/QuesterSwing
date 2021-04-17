@@ -23,7 +23,6 @@ public class ProjectSelectorFrame
     @Override
     public void dispose() {
         super.dispose();
-        //...
     }
 
     private void exitActionPerformed() {

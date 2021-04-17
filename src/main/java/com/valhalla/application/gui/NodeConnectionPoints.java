@@ -5,63 +5,42 @@ import java.awt.geom.Point2D;
 import java.util.UUID;
 
 public class NodeConnectionPoints {
-    private UUID nodeUUID1;
-    private UUID nodeUUID2;
-    private UUID dataUUID1;
-    private UUID dataUUID2;
-    private Point2D p1;
-    private Point2D p2;
+    private UUID connector1UUID;
+    private UUID connector2UUID;
+    private Point2D connectorPoint1;
+    private Point2D connectorPoint2;
 
-    public NodeConnectionPoints(UUID nodeUUID1, UUID nodeUUID2, UUID uuid1, Point2D p1, UUID uuid2, Point2D p2) {
-        this.nodeUUID1 = nodeUUID1;
-        this.nodeUUID2 = nodeUUID2;
-        this.p1 = p1;
-        this.dataUUID1 = uuid1;
-        this.p2 = p2;
-        this.dataUUID2 = uuid2;
+    public NodeConnectionPoints(UUID connector1UUID,
+                                UUID connector2UUID,
+                                Point2D connectorPoint1,
+                                Point2D connectorPoint2) {
+        this.connector1UUID  = connector1UUID;
+        this.connector2UUID  = connector2UUID;
+        this.connectorPoint1 = connectorPoint1;
+        this.connectorPoint2 = connectorPoint2;
     }
 
-    public UUID GetNodeUUID1() {
-        return nodeUUID1;
-    }
-    public UUID GetNodeUUID2() { return nodeUUID2; }
-
-    public Point2D GetPoint1() {
-        return p1;
+    public UUID getConnector1UUID() {
+        return connector1UUID;
     }
 
-    public Point2D GetPoint2() {
-        return p2;
+    public UUID getConnector2UUID() {
+        return connector2UUID;
     }
 
-    public Point2D GetPointOfNode(UUID uuid) {
-        if (uuid == this.nodeUUID1)
-            return p1;
-        else if (uuid == this.nodeUUID2)
-            return p2;
-        else
-            return null;
+    public Point2D getConnectorPoint1() {
+        return connectorPoint1;
     }
 
-    public Point2D GetPointOfData(UUID uuid) {
-        if (uuid == this.dataUUID1)
-            return p1;
-        else if (uuid == this.dataUUID2)
-            return p2;
-        else
-            return null;
+    public Point2D getConnectorPoint2() {
+        return connectorPoint2;
     }
 
-    public UUID GetDataUUID1() {
-        return this.dataUUID1;
+    public void setConnectorPoint1(Point2D connectorPoint1) {
+        this.connectorPoint1 = connectorPoint1;
     }
 
-    public UUID GetDataUUID2() {
-        return this.dataUUID2;
+    public void setConnectorPoint2(Point2D connectorPoint2) {
+        this.connectorPoint2 = connectorPoint2;
     }
-
-    public void SetPoint1(Point2D p1) {
-        this.p1 = p1;
-    }
-    public void SetPoint2(Point2D p2) { this.p2 = p2; }
 }

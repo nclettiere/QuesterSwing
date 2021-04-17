@@ -271,14 +271,14 @@ public class NodeEditor
     }
 
     public void CreateConnection(NodeConnector initialConnector, NodeConnector connectorDropped, UUID nodeUUID1, UUID nodeUUID2, UUID dataUUID1, UUID dataUUID2) {
-        connectionPoints.add(new NodeConnectionPoints(
-                initialConnector.node.GetNode().GetUUID(),
-                connectorDropped.node.GetNode().GetUUID(),
-                dataUUID2,
-                initialConnector.GetRelativePosition(),
-                dataUUID1,
-                connectorDropped.GetRelativePosition()));
-        repaint();
+        //connectionPoints.add(new NodeConnectionPoints(
+        //        initialConnector.node.GetNode().GetUUID(),
+        //        connectorDropped.node.GetNode().GetUUID(),
+        //        dataUUID2,
+        //        initialConnector.GetRelativePosition(),
+        //        dataUUID1,
+        //        connectorDropped.GetRelativePosition()));
+        //repaint();
     }
 
     // OnConnector Click/Drag disables all
@@ -344,40 +344,40 @@ public class NodeEditor
             DrawConnection(graphics);
         }
 
-        for (NodeConnectionPoints connectionPoints : connectionPoints) {
-            if(nodeDragging != null) {
-                if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
-                    //Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
-                    //connectionPoints.SetPoint1(connectorPoint1);
-                }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
-                    //Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
-                    //connectionPoints.SetPoint2(connectorPoint2);
-                }
-            }
-            DrawConnection(graphics, connectionPoints);
-        }
+       // for (NodeConnectionPoints connectionPoints : connectionPoints) {
+       //     if(nodeDragging != null) {
+       //         if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
+       //             //Point connectorPoint1 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID1());
+       //             //connectionPoints.SetPoint1(connectorPoint1);
+       //         }else if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
+       //             //Point connectorPoint2 = nodeDragging.GetConnectorLocation(connectionPoints.GetDataUUID2());
+       //             //connectionPoints.SetPoint2(connectorPoint2);
+       //         }
+       //     }
+       //     DrawConnection(graphics, connectionPoints);
+       // }
 
         super.paintChildren(graphics);
     }
 
 
     private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
-        if(selectedNode != null) {
-            if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
-                    points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
-                graphics.setColor(new Color(240, 175, 50));
-            else
-                graphics.setColor(new Color(255, 255, 255, 180));
-        }else {
-            graphics.setColor(new Color(255, 255, 255, 180));
-        }
+        //if(selectedNode != null) {
+        //    if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
+        //            points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
+        //        graphics.setColor(new Color(240, 175, 50));
+        //    else
+        //        graphics.setColor(new Color(255, 255, 255, 180));
+        //}else {
+        //    graphics.setColor(new Color(255, 255, 255, 180));
+        //}
 
         graphics.setStroke(new BasicStroke(1.3f));
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point2D curveOrigin = points.GetPoint1();
-        Point2D curveEnd = points.GetPoint2();
+        Point2D curveOrigin = null;//points.GetPoint1();
+        Point2D curveEnd = null;//points.GetPoint2();
 
         if(curveOrigin == null || curveEnd == null)
             return;

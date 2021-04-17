@@ -162,34 +162,34 @@ public class NodeEditorEx
                     DrawConnection(g2);
 
                 for (NodeConnectionPoints connectionPoints : connectionPoints) {
-                    if(nodeDragging != null) {
-                        // Input and ouput in the same node!
-                        if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
-                            Point2D connectorPoint1 = nodeDragging
-                                    .GetConnectorComponent(connectionPoints.GetDataUUID1())
-                                    .GetPNode()
-                                    .getGlobalBounds()
-                                    .getOrigin();
-
-                            connectorPoint1 = new Point2D.Double(connectorPoint1.getX() + 5, connectorPoint1.getY() + 5);
-                            connectionPoints.SetPoint1(connectorPoint1);
-                        }
-                        if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
-                            Point2D connectorPoint2 = nodeDragging
-                                    .GetConnectorComponent(connectionPoints.GetDataUUID2())
-                                    .GetPNode()
-                                    .getGlobalBounds()
-                                    .getOrigin();
-                            connectorPoint2 = new Point2D.Double(connectorPoint2.getX() + 5, connectorPoint2.getY() + 5);
-                            connectionPoints.SetPoint2(connectorPoint2);
-                        }
-                        // Input and ouput in the same node!
-                        //if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID() &&
-                        //        connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
-                        //    System.out.println("YUP");
-                        //}
-                    }
-                    DrawConnection(g2, connectionPoints);
+                    //if(nodeDragging != null) {
+                    //    // Input and ouput in the same node!
+                    //    if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID()) {
+                    //        Point2D connectorPoint1 = nodeDragging
+                    //                .GetConnectorComponent(connectionPoints.GetDataUUID1())
+                    //                .GetPNode()
+                    //                .getGlobalBounds()
+                    //                .getOrigin();
+//
+                    //        connectorPoint1 = new Point2D.Double(connectorPoint1.getX() + 5, connectorPoint1.getY() + 5);
+                    //        connectionPoints.SetPoint1(connectorPoint1);
+                    //    }
+                    //    if(connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
+                    //        Point2D connectorPoint2 = nodeDragging
+                    //                .GetConnectorComponent(connectionPoints.GetDataUUID2())
+                    //                .GetPNode()
+                    //                .getGlobalBounds()
+                    //                .getOrigin();
+                    //        connectorPoint2 = new Point2D.Double(connectorPoint2.getX() + 5, connectorPoint2.getY() + 5);
+                    //        connectionPoints.SetPoint2(connectorPoint2);
+                    //    }
+                    //    // Input and ouput in the same node!
+                    //    //if(connectionPoints.GetNodeUUID1() == nodeDragging.GetNode().GetUUID() &&
+                    //    //        connectionPoints.GetNodeUUID2() == nodeDragging.GetNode().GetUUID()) {
+                    //    //    System.out.println("YUP");
+                    //    //}
+                    //}
+                    //DrawConnection(g2, connectionPoints);
                 }
             }
         };
@@ -415,7 +415,7 @@ public class NodeEditorEx
 
     // Dragging
     private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
-        if(selectedNode != null) {
+        /*if(selectedNode != null) {
             if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
                     points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
                 graphics.setColor(new Color(240, 175, 50));
@@ -486,11 +486,11 @@ public class NodeEditorEx
             //ctrlEND
             graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
 
-        }
+        }*/
     }
 
     private void DrawConnection(Graphics2D graphics) {
-        graphics.setColor(new Color(255,255,255, 180));
+        /*graphics.setColor(new Color(255,255,255, 180));
         graphics.setStroke(new BasicStroke(1.3f));
         //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
 
@@ -574,11 +574,11 @@ public class NodeEditorEx
             graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
             //ctrlEND
             graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
-        }
+        }*/
     }
 
     public void CreateConnection(NodeConnector initialConnector, NodeConnector connectorDropped, UUID nodeUUID1, UUID nodeUUID2, UUID dataUUID1, UUID dataUUID2) {
-
+        /*
         Point2D connectorPoint2 = connectorDropped.GetPNode().getGlobalBounds().getOrigin();
         connectorPoint2 = new Point2D.Double(connectorPoint2.getX() + 5, connectorPoint2.getY() + 5);
         connectionPoints.add(new NodeConnectionPoints(
@@ -588,7 +588,7 @@ public class NodeEditorEx
                 draggingConnectorOrigin,
                 dataUUID1,
                 connectorPoint2));
-        repaint();
+        repaint();*/
     }
 
     public void UpdateNodes() {
@@ -601,12 +601,12 @@ public class NodeEditorEx
     }
 
     public void NotifyConnectorsDrop() {
-        Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
+        /*Iterator<Map.Entry<PNode, NodeComponent>> it = nodeComponents.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<PNode, NodeComponent> pair = it.next();
             pair.getValue().ConnectorDropped(draggingConnector, nodeData);
             it.remove();
-        }
+        }*/
     }
 
     public void OnConnectorClick(INodeData nData) {
@@ -761,14 +761,14 @@ public class NodeEditorEx
 
                     public void mouseDragged(final PInputEvent aEvent) {
                         aEvent.setHandled(false);
-                        conn.FireOnConnectorDragEvent();
+                        //conn.FireOnConnectorDragEvent();
                         draggingConnectorFinalPoint = aEvent.getPosition();
                         getLayer().repaint();
                     }
 
                     public void mouseReleased(final PInputEvent aEvent) {
                         aEvent.setHandled(true);
-                        conn.FireOnConnectorDragStopEvent();
+                        //conn.FireOnConnectorDragStopEvent();
                         System.out.println("YES");
                         draggingNodeConnector = null;
                         draggingConnector = null;

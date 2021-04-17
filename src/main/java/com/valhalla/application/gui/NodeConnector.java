@@ -41,9 +41,9 @@ public class NodeConnector
 
         listenerList = new EventListenerList();
 
-        this.addFocusListener(this);
-        this.addMouseListener(this);
-        this.addMouseMotionListener(this);
+        //this.addFocusListener(this);
+        //this.addMouseListener(this);
+        //this.addMouseMotionListener(this);
 
         setToolTipText(nData.GetDisplayName());
         //setBorder(new EmptyBorder(0,10,0,0));
@@ -71,34 +71,6 @@ public class NodeConnector
         listenerList.remove(ConnectorEventListener.class, listener);
     }
 
-    void FireOnConnectorClickEvent() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == ConnectorEventListener.class) {
-                ((ConnectorEventListener) listeners[i+1]).OnConnectorClick(this.nData.GetUUID());
-            }
-        }
-    }
-
-    void FireOnConnectorDragEvent() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == ConnectorEventListener.class) {
-                ((ConnectorEventListener) listeners[i+1]).OnConnectorDrag(this.nData.GetUUID(), this);
-            }
-        }
-    }
-
-
-    void FireOnConnectorDragStopEvent() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == ConnectorEventListener.class) {
-                ((ConnectorEventListener) listeners[i+1]).OnConnectorDragStop(this.nData.GetUUID());
-            }
-        }
-    }
-
     void FireOnConnectionCreated() {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
@@ -108,7 +80,7 @@ public class NodeConnector
         }
     }
 
-    void MatchType(Class<? extends INodeData> dataClass) {
+    public void MatchType(Class<? extends INodeData> dataClass) {
         // If not from the same class disable the connector
         if(!this.nData.getClass().isAssignableFrom(dataClass)) {
             SetDisabled(true);
@@ -208,20 +180,20 @@ public class NodeConnector
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if(!GetDisabled())
-            FireOnConnectorClickEvent();
+        //if(!GetDisabled())
+        //    FireOnConnectorClickEvent();
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if(!GetDisabled())
-            FireOnConnectorClickEvent();
+        //if(!GetDisabled())
+        //    FireOnConnectorClickEvent();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         dragNotified = false;
-        FireOnConnectorDragStopEvent();
+        //FireOnConnectorDragStopEvent();
     }
 
     @Override
@@ -247,7 +219,7 @@ public class NodeConnector
     @Override
     public void mouseDragged(MouseEvent e) {
         if(!GetDisabled()) {
-            FireOnConnectorDragEvent();
+            //FireOnConnectorDragEvent();
             if(!dragNotified) {
                 dragNotified = true;
             }
@@ -269,6 +241,13 @@ public class NodeConnector
                     FireOnConnectionCreated();
                 }
             }
+        }
+    }
+
+    public void Hover(boolean b) {
+        if(!GetDisabled()) {
+            this.mouseEntered = b;
+            repaint();
         }
     }
 }

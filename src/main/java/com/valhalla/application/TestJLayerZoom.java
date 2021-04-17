@@ -1,10 +1,7 @@
 package com.valhalla.application;
 
 import com.valhalla.NodeEditor.NEditorMouseWheelZoomHandler;
-import com.valhalla.application.gui.NodeConnectionPoints;
-import com.valhalla.application.gui.NodeConnector;
-import com.valhalla.application.gui.NodeSelectorListener;
-import com.valhalla.application.gui.NodeSelectorPanel;
+import com.valhalla.application.gui.*;
 import com.valhalla.core.Node.*;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
@@ -79,6 +76,7 @@ public class TestJLayerZoom extends PSwingCanvas {
             switch (nodeAction) {
                 case NONE -> {
                     props.resetNodeState();
+                    getLayer().repaint();
                 }
                 case DRAGGING -> {
                     props.setActionedNode(uuid);
@@ -123,8 +121,8 @@ public class TestJLayerZoom extends PSwingCanvas {
 
             for (INodeData data : connectorDataList) {
                 NodeConnector nConn = new NodeConnector(data, nodeComponent);
-                SetupConnectorListener(nodeComponent, nConn);
                 PNode nConnPNode = new PSwing(nConn);
+                SetupConnectorListener(nodeComponent, nConn, nConnPNode);
                 props.addConnector(nodeCompUUID, nConn, nConnPNode);
                 pNode.addChild(nConnPNode);
 
@@ -150,28 +148,73 @@ public class TestJLayerZoom extends PSwingCanvas {
         }
     }
 
-    protected void SetupConnectorListener(NodeComponent nodeComponent, NodeConnector connector) {
-        connector.AddOnControlUpdateListener(new ConnectorEventListener() {
+    protected void SetupConnectorListener(NodeComponent nodeComponent,
+                                          NodeConnector connector,
+                                          PNode pNodeConnector) {
+        UUID connectorUUID =
+                connector.GetNodeData().GetUUID();
+
+        connector.AddOnControlUpdateListener(
+                (dropped, initialConnector, uuid1, uuid2) ->
+                    CreateConnection(uuid1, uuid2));
+
+        pNodeConnector.addInputEventListener(new PBasicInputEventHandler() {
             @Override
-            public void OnConnectorClick(UUID uuid) {
-                //node.NotifyConnectorClick(nData);
+            public void mouseEntered(PInputEvent event) {
+                super.mouseEntered(event);
+
+                if(props.isConnectorDragging()) {
+                    if(!props.getConnectorDraggingUUID().equals(connectorUUID))
+                        connector.Hover(true);
+                }else {
+                    connector.Hover(true);
+                }
             }
+
             @Override
-            public void OnConnectorDrag(UUID uuid, NodeConnector connector) {
-                //node.NotifyConnectorDrag(nData, connector);
+            public void mouseExited(PInputEvent event) {
+                super.mouseExited(event);
+                connector.Hover(false);
+            }
+
+            @Override
+            public void mouseDragged(PInputEvent event) {
+                event.setHandled(false);
+                if(props.getConnectorDraggingUUID() == null)
+                    MatchConnectorType(connector.GetNodeData().getClass());
+
                 props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
+                super.mouseDragged(event);
             }
+
             @Override
-            public void OnConnectorDragStop(UUID uuid) {
+            public void mouseReleased(PInputEvent event) {
+                event.setHandled(false);
+                NotifyConnectorsDrop();
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
-                //node.NotifyConnectorDragStop(nData);
-            }
-            @Override
-            public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) {
-                nodeComponent.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2);
+                ResetDataTypeMatch();
+                super.mouseReleased(event);
             }
         });
+    }
+
+    protected void CreateConnection(UUID connector1, UUID connector2) {
+        Point2D connector1Point = props
+                .getPNodeConnector(connector1)
+                .getGlobalBounds()
+                .getOrigin();
+        Point2D connector2Point = props
+                .getPNodeConnector(connector2)
+                .getGlobalBounds()
+                .getOrigin();
+        props.getConnectionPoints()
+                .add(new NodeConnectionPoints(
+                    connector1,
+                    connector2,
+                    connector1Point,
+                    connector2Point));
+        repaint();
     }
 
     protected void SetupListeners() {
@@ -319,18 +362,42 @@ public class TestJLayerZoom extends PSwingCanvas {
                 }
 
                 // CONNECTORS ZONE
+
+                // On connector drag
                 if(props.isConnectorDragging())
                     DrawConnection(g2);
+                // Created Connections
+                for (NodeConnectionPoints connPoints : props.getConnectionPoints())
+                    DrawConnection(g2, connPoints);
             }
         };
     }
 
-    // Dragging
+    public void NotifyConnectorsDrop() {
+        final NodeConnector nConn =
+                props.getNodeConnector(props.getConnectorDraggingUUID());
+        final INodeData nodeData = nConn.GetNodeData();
+        for (NodeConnector connector : props.getAllNodeConnectors())
+            connector.ConnectorDropped(nConn, nodeData);
+    }
+
+    public void MatchConnectorType(Class<? extends INodeData> dataType) {
+        for(NodeConnector connector : props.getAllNodeConnectors())
+            connector.MatchType(dataType);
+    }
+
+    public void ResetDataTypeMatch() {
+        for(NodeConnector connector : props.getAllNodeConnectors())
+            connector.ResetMatch();
+    }
+
+    // Created Connections
     private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
         if(props.getActionedNode() != null) {
             NodeComponent selectedNode = props.getNodeComponent(props.getActionedNode());
-            if (points.GetNodeUUID1() == selectedNode.GetNode().GetUUID() ||
-                    points.GetNodeUUID2() == selectedNode.GetNode().GetUUID())
+
+            if (points.getConnector1UUID() == selectedNode.GetNode().GetUUID() ||
+                    points.getConnector2UUID() == selectedNode.GetNode().GetUUID())
                 graphics.setColor(new Color(240, 175, 50));
             else
                 graphics.setColor(new Color(255, 255, 255, 180));
@@ -342,8 +409,8 @@ public class TestJLayerZoom extends PSwingCanvas {
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point2D curveOrigin = points.GetPoint1();
-        Point2D curveEnd = points.GetPoint2();
+        Point2D curveOrigin = points.getConnectorPoint1();
+        Point2D curveEnd = points.getConnectorPoint2();
 
         if(curveOrigin == null || curveEnd == null)
             return;
@@ -401,7 +468,7 @@ public class TestJLayerZoom extends PSwingCanvas {
 //
         //}
     }
-
+    // Dragging
     private void DrawConnection(Graphics2D graphics) {
         NodeConnector draggingConnector = props.getNodeConnector(props.getConnectorDraggingUUID());
         PNode pNodeConnector = props.getPNodeConnector(props.getConnectorDraggingUUID());
@@ -415,7 +482,6 @@ public class TestJLayerZoom extends PSwingCanvas {
 
         //Point2D curveOrigin = draggingConnectorOrigin;
         Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        if(curveOrigin == null) return;
         Point2D curveEnd = props.getLastInputEvent().getPosition();
         // Add the connector size
         curveOrigin = new Point2D.Double(curveOrigin.getX() + 5, curveOrigin.getY() + 5);
@@ -524,8 +590,8 @@ public class TestJLayerZoom extends PSwingCanvas {
         protected HashMap<UUID, PNode>                      pNodesMap;
         protected HashMap<UUID, ConnectorIdentifier>        connectorsMap;
         protected HashMap<UUID, NodeComponent>              nodeComponents;
-        //protected HashMap<UUID, NodeConnector>            nodeConnectors;
-        protected ArrayList<Class<? extends NodeComponent>> registeredNodes;
+        protected List<Class<? extends NodeComponent>>      registeredNodes;
+        protected List<NodeConnectionPoints>                connectionPoints;
 
         // Editor Canvas props
         protected UUID        actionedNode;
@@ -547,6 +613,7 @@ public class TestJLayerZoom extends PSwingCanvas {
             connectorsMap = new HashMap<>();
             nodeComponents = new HashMap<>();
             registeredNodes = new ArrayList<>();
+            connectionPoints = new ArrayList<>();
             lastMousePosition = new Point2D.Double(0,0);
             nodeReseted = true;
         }
@@ -567,7 +634,8 @@ public class TestJLayerZoom extends PSwingCanvas {
         }
 
         public void addConnector(UUID uuid, NodeConnector nodeConnector, PNode pNodeConnector) {
-            if(connectorsMap.containsKey(uuid))
+            UUID connectorUUID = nodeConnector.GetNodeData().GetUUID();
+            if(connectorsMap.containsKey(connectorUUID))
                 return;
             ConnectorIdentifier connectorIdentifier = new ConnectorIdentifier(
                     uuid,
@@ -685,6 +753,14 @@ public class TestJLayerZoom extends PSwingCanvas {
             return nodeComponents.values();
         }
 
+
+        public Iterable<? extends NodeConnector> getAllNodeConnectors() {
+            List<NodeConnector> connectorList = new ArrayList<>();
+            for (ConnectorIdentifier connId : connectorsMap.values())
+                connectorList.add(connId.nodeConnector);
+            return connectorList;
+        }
+
         public boolean isTriggerPointCatch() {
             return triggerPointCatch;
         }
@@ -708,6 +784,10 @@ public class TestJLayerZoom extends PSwingCanvas {
 
         public UUID getConnectorDraggingUUID() {
             return this.connectorDraggingUUID;
+        }
+
+        public List<NodeConnectionPoints> getConnectionPoints() {
+            return connectionPoints;
         }
 
         public class ConnectorIdentifier {

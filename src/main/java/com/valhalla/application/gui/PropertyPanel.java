@@ -65,20 +65,20 @@ public class PropertyPanel
         for (INodeData nData : prop.GetInputs()) {
             NodeConnector nodeConnector = new NodeConnector(nData, node);
             connectorList.add(nodeConnector);
-            nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
-                @Override
-                public void OnConnectorClick(UUID uuid) {
-                    node.NotifyConnectorClick(nData);
-                }
-                @Override
-                public void OnConnectorDrag(UUID uuid, NodeConnector connector) { node.NotifyConnectorDrag(nData, connector); }
-                @Override
-                public void OnConnectorDragStop(UUID uuid) {
-                    node.NotifyConnectorDragStop(nData);
-                }
-                @Override
-                public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
-            });
+            //nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
+            //   //@Override
+            //   //public void OnConnectorClick(UUID uuid) {
+            //   //    node.NotifyConnectorClick(nData);
+            //   //}
+            //   //@Override
+            //   //public void OnConnectorDrag(UUID uuid, NodeConnector connector) { node.NotifyConnectorDrag(nData, connector); }
+            //   //@Override
+            //   //public void OnConnectorDragStop(UUID uuid) {
+            //   //    node.NotifyConnectorDragStop(nData);
+            //   //}
+            //    @Override
+            //    public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
+            //});
             inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         }
 
@@ -108,24 +108,24 @@ public class PropertyPanel
         for (INodeData nData : prop.GetOutputs()) {
             NodeConnector nodeConnector = new NodeConnector(nData, node);
             connectorList.add(nodeConnector);
-            nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
-                @Override
-                public void OnConnectorClick(UUID uuid) {
-                    node.NotifyConnectorClick(nData);
-                }
-                @Override
-                public void OnConnectorDrag(UUID uuid, NodeConnector connector) {
-                    //node.NotifyConnectorDrag(nData, connector);
-                    node.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
-                }
-                @Override
-                public void OnConnectorDragStop(UUID uuid) {
-                    node.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
-                    //node.NotifyConnectorDragStop(nData);
-                }
-                @Override
-                public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
-            });
+            //nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
+            //    //@Override
+            //    //public void OnConnectorClick(UUID uuid) {
+            //    //    node.NotifyConnectorClick(nData);
+            //    //}
+            //    //@Override
+            //    //public void OnConnectorDrag(UUID uuid, NodeConnector connector) {
+            //    //    //node.NotifyConnectorDrag(nData, connector);
+            //    //    node.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
+            //    //}
+            //    //@Override
+            //    //public void OnConnectorDragStop(UUID uuid) {
+            //    //    node.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
+            //    //    //node.NotifyConnectorDragStop(nData);
+            //    //}
+            //    @Override
+            //    public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
+            //});
             outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
             System.out.println(i);
             i++;
