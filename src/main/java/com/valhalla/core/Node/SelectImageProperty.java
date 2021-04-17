@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Random;
 
 public class SelectImageProperty extends PropertyBase {
     SelectImageProperty() {
@@ -50,8 +51,19 @@ public class SelectImageProperty extends PropertyBase {
         //    FireControlUpdateEvent();
         //}
 
-        ImageData imageIn = new ImageData();
-        AddOutput(imageIn);
+        Random r = new Random();
+        int low = 0;
+        int high = 100;
+        int result = r.nextInt(high-low) + low;
+
+        if(result <= 50) {
+            ImageData imageIn = new ImageData();
+            AddOutput(imageIn);
+        }else {
+            if(outputs.size() > 0)
+                outputs.remove(outputs.size() - 1);
+        }
+
         FireControlUpdateEvent();
     }
 }

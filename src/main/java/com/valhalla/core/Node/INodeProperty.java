@@ -5,14 +5,15 @@ import com.valhalla.core.Ref;
 import javax.swing.*;
 import java.util.EventListener;
 import java.util.List;
+import java.util.Set;
 
 public interface INodeProperty extends EventListener {
     Ref<JComponent> GetControl();
     void SetControl(Ref<JComponent> control);
 
-    List<INodeData> GetInputs();
-    List<INodeData> GetOutputs();
-    List<INodeData> GetIO();
+    Set<INodeData> GetInputs();
+    Set<INodeData> GetOutputs();
+    Set<INodeData> GetIO();
 
     void AddInput(INodeData input);
     void RemoveInput(int index);

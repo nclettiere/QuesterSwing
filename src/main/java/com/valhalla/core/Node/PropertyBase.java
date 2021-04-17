@@ -5,17 +5,19 @@ import com.valhalla.core.Ref;
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PropertyBase implements INodeProperty {
     protected Ref<JComponent>   control;
-    protected List<INodeData>   inputs;
-    protected List<INodeData>   outputs;
+    protected Set<INodeData>   inputs;
+    protected Set<INodeData>   outputs;
     protected EventListenerList listenerList;
 
     PropertyBase() {
-        inputs = new ArrayList<>();
-        outputs = new ArrayList<>();
+        inputs = new HashSet<>();
+        outputs = new HashSet<>();
         listenerList = new EventListenerList();
     }
 
@@ -40,18 +42,18 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public List<INodeData> GetInputs() {
+    public Set<INodeData> GetInputs() {
         return inputs;
     }
 
     @Override
-    public List<INodeData> GetOutputs() {
+    public Set<INodeData> GetOutputs() {
         return outputs;
     }
 
     @Override
-    public List<INodeData> GetIO() {
-        List<INodeData> IO = new ArrayList<>();
+    public Set<INodeData> GetIO() {
+        Set<INodeData> IO = new HashSet<>();
         IO.addAll(inputs);
         IO.addAll(outputs);
         return IO;

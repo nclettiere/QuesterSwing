@@ -64,11 +64,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         return Node.groupName;
     }
 
-    // Delete later
-    public ArrayList<PropertyPanel> GetPropertiesPanel() {
-        return propPanelList;
-    }
-
     public void CreateNodeStructure() {
         for (PropertyBase prop : Node.GetProperties()) {
             PropertyPanel panel = new PropertyPanel(prop, this);
@@ -81,34 +76,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         this.editorParent = editor;
     }
 
-    void FireNodeOnDraggedEvent() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == NodeEventListener.class) {
-                ((NodeEventListener) listeners[i+1]).OnNodeComponentDrag(this);
-            }
-        }
+
+    public Iterable<PropertyBase> getAllProperties() {
+        return Node.getProperties();
     }
 
-    void FireNodeOnDragStopEvent() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == NodeEventListener.class) {
-                ((NodeEventListener) listeners[i+1]).OnNodeComponentDragStop(this);
-            }
-        }
-    }
 
-    void FireNodeOnClickEvent() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == NodeEventListener.class) {
-                ((NodeEventListener) listeners[i+1]).OnNodeComponentClick(this);
-            }
-        }
-    }
-
-    private AffineTransform m_zoom;
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -231,10 +204,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     public NodeBase GetNode() {return Node;}
 
-    //public Dimension getPreferredSize( ) {
-    //    return new Dimension(200, 350);
-    //}
-
     @Override
     public void mouseClicked(MouseEvent e) {
         GetNode().SetCurrentAction(NodeBase.NodeAction.CLICKED);
@@ -287,28 +256,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         listenerList.remove(NodeEventListener.class, listener);
     }
 
-    public INodeData GetConnectorData(UUID uuid) {
-        for (PropertyBase prop :  Node.GetProperties()) {
-            for (INodeData nData : prop.GetInputs()) {
-                if(nData.GetUUID() == uuid)
-                    return nData;
-            }
-        }
-        return null;
-    }
-
-    public void NotifyConnectorClick(INodeData nData) {
-        //editorParent.OnConnectorClick(nData);
-    }
-
-    public void NotifyConnectorDrag(INodeData nData, NodeConnector connector) {
-        //editorParent.OnConnectorDrag(this, nData, connector);
-    }
-
-    public void NotifyConnectorDragStop(INodeData nData) {
-        //editorParent.OnConnectorDragStop(nData);
-    }
-
     public void UpdateData() {
         for (PropertyBase prop :  Node.GetProperties()) {
             prop.UpdateBindings();
@@ -331,9 +278,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
             prop.ConnectorDropped(draggingConnector, nodeData);
     }
 
-    public void NotifyConnectionCreated(NodeConnector connectorDropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) {
-        //editorParent.CreateConnection(initialConnector, connectorDropped, this.Node.GetUUID(), connectorDropped.GetNode().GetNode().GetUUID(), uuid1, uuid2);
-    }
 
     public NodeConnector GetConnectorComponent(UUID uuid) {
         for (PropertyPanel propPanel : propPanelList) {
@@ -358,21 +302,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         repaint();
     }
 
-    public void SetZoomFactor(double zoomFactor) {
-        this.zoomFactor = zoomFactor;
-        //setLocation(
-        //        (int)(getLocation().x * zoomFactor),
-        //        (int)(getLocation().y * zoomFactor)
-        //);
-        //setSize(new Dimension(
-        //        (int)(getSize().width * zoomFactor - 10),
-        //        (int)(getSize().height * zoomFactor)));
-        //setPreferredSize(new Dimension(
-        //        (int)(getSize().width * zoomFactor),
-        //        (int)(getSize().height * zoomFactor)));
+    public void Update() {
+        for(PropertyPanel propertyPanel : propPanelList) {
+            propertyPanel.UpdateIOLayout();
+        }
     }
-
-    //public void NotifyControlUpdated(PropertyPanel pPanel) {
-    //    editorParent.UpdateNode(this, pPanel);
-    //}
 }

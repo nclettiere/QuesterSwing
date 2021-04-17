@@ -56,8 +56,29 @@ public class TestJLayerZoom extends PSwingCanvas {
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
-        UpdateNodeConnectors(uuid);
+        UpdateNodeConnectors(uuid, true);
         // Add node listeners
+        NodeComponent finalNodeComp = nodeComp;
+
+        for (PropertyBase nodeProperty : nodeComp.getAllProperties()) {
+            nodeProperty.AddOnControlUpdateListener(new PropertyEventListener() {
+                @Override
+                public void OnControlUpdate() {
+                    UpdateNode(finalNodeComp);
+                }
+
+                @Override
+                public void OnConnect() {
+
+                }
+
+                @Override
+                public void OnDisconnect() {
+
+                }
+            });
+        }
+
         pNode.addInputEventListener(new PBasicInputEventHandler() {
             @Override
             public void mouseDragged(PInputEvent event) {
@@ -67,11 +88,12 @@ public class TestJLayerZoom extends PSwingCanvas {
                     Dimension2D delta = event.getDeltaRelativeTo(pNode);
                     pNode.translate(delta.getWidth(), delta.getHeight());
                     props.setLastInputEvent(event);
+                    UpdateConnectorPosition(finalNodeComp);
+                    getLayer().repaint();
                 }
             }
         });
 
-        NodeComponent finalNodeComp = nodeComp;
         nodeComp.GetNode().AddNodeActionListener(nodeAction -> {
             switch (nodeAction) {
                 case NONE -> {
@@ -82,6 +104,7 @@ public class TestJLayerZoom extends PSwingCanvas {
                     props.setActionedNode(uuid);
                     props.setNodeDragging(true);
                     SelectNode(finalNodeComp, true);
+                    getLayer().repaint();
                 }
                 case PRESSED -> {
                     props.setActionedNode(uuid);
@@ -103,49 +126,131 @@ public class TestJLayerZoom extends PSwingCanvas {
         nsp.reset();
     }
 
-    public void UpdateNodeConnectors(UUID nodeCompUUID) {
+    protected void UpdateNode(NodeComponent nodeComponent) {
+        nodeComponent.Update();
+        UpdateNodeConnectors(nodeComponent.GetNode().GetUUID(), false);
+    }
+
+    protected void UpdateNodeConnectors(UUID nodeCompUUID, boolean firstUpdate) {
         PNode pNode = props.getPNode(nodeCompUUID);
-        if(pNode == null) return;
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
-        if(nodeComponent == null) return;
-        // Get Connector Data
-        HashMap<Integer, List<INodeData>> nodePropsData =
-                nodeComponent.GetNode().getAllConnectorsData();
-        // Create NodeConnectors
-        Iterator<Map.Entry<Integer, List<INodeData>>> it = nodePropsData.entrySet().iterator();
-        int inputOffsetY = 95;
-        int outputOffsetY = 95;
-        while (it.hasNext()) {
-            Map.Entry<Integer, List<INodeData>> pair = it.next();
-            List<INodeData> connectorDataList = pair.getValue();
+        if (pNode == null || nodeComponent == null) return;
 
-            for (INodeData data : connectorDataList) {
-                NodeConnector nConn = new NodeConnector(data, nodeComponent);
-                PNode nConnPNode = new PSwing(nConn);
-                SetupConnectorListener(nodeComponent, nConn, nConnPNode);
-                props.addConnector(nodeCompUUID, nConn, nConnPNode);
-                pNode.addChild(nConnPNode);
+        //if(firstUpdate) {
+            // Get Connector Data
+            HashMap<Integer, Set<INodeData>> nodePropsData =
+                    nodeComponent.GetNode().getAllConnectorsData();
+            // Create NodeConnectors
+            Iterator<Map.Entry<Integer, Set<INodeData>>> it = nodePropsData.entrySet().iterator();
+            int inputOffsetY = 95;
+            int outputOffsetY = 95;
+            while (it.hasNext()) {
+                Map.Entry<Integer, Set<INodeData>> pair = it.next();
+               /* FRESH */ Set<INodeData> connectorDataList = pair.getValue();
 
-                if(data.GetMode() == ConnectorMode.INPUT) {
-                    nConnPNode.setOffset(20, inputOffsetY);
-                    inputOffsetY += 22;
-                }else {
-                    nConnPNode.setOffset(187, outputOffsetY);
-                    outputOffsetY += 22;
+                for (INodeData data : connectorDataList) {
+
+                    boolean skip = false;
+                    if(!firstUpdate) {
+                        skip = true;
+                        for(ConnectorIdentifier connId : props.getConnectorsOfNodeComp(nodeComponent.GetNode().GetUUID())) {
+                            if(!connId.nodeConnector.GetNodeData().equals(data)) {
+                                skip = false;
+                            }
+                        }
+                    }
+
+                    if (skip) continue;
+
+                    NodeConnector nConn = new NodeConnector(data, nodeComponent);
+                    PNode nConnPNode = new PSwing(nConn);
+                    SetupConnectorListener(nodeComponent, nConn, nConnPNode);
+                    props.addConnector(nodeCompUUID, nConn, nConnPNode);
+                    pNode.addChild(nConnPNode);
+
+                    if (data.GetMode() == ConnectorMode.INPUT) {
+                        nConnPNode.setOffset(20, inputOffsetY);
+                        inputOffsetY += 22;
+                    } else {
+                        nConnPNode.setOffset(187, outputOffsetY);
+                        outputOffsetY += 22;
+                    }
                 }
-            }
 
-            // Add a margin to delimit a new property
-            if (inputOffsetY > outputOffsetY) {
-                inputOffsetY += 38;
-                outputOffsetY = inputOffsetY;
-            }else {
-                outputOffsetY += 38;
-                inputOffsetY = outputOffsetY;
-            }
+                // Add a margin to delimit a new property
+                if (inputOffsetY > outputOffsetY) {
+                    inputOffsetY += 38;
+                    outputOffsetY = inputOffsetY;
+                } else {
+                    outputOffsetY += 38;
+                    inputOffsetY = outputOffsetY;
+                }
 
-            it.remove();
-        }
+                it.remove();
+            }
+        //}else {
+        //    // Get fresh connectors
+        //    // May have changed from already connectors on canvas. (deleted, position change...)
+        //    HashMap<Integer, Set<INodeData>> nodePropsData =
+        //            nodeComponent.GetNode().getAllConnectorsData();
+        //    Set<INodeData> freshConnectorNodeDataList = new HashSet<>();
+//
+        //    //Added connectors -> already on canvas
+        //    Set<ConnectorIdentifier> addedNodeConnectors = props.getConnectorsOfNodeComp(nodeCompUUID);
+//
+        //    // Loop through fresh connectors
+        //    // And add to a new list to simplify code.
+        //    Iterator<Map.Entry<Integer, Set<INodeData>>> it = nodePropsData.entrySet().iterator();
+        //    while (it.hasNext()) {
+        //        Map.Entry<Integer, Set<INodeData>> pair = it.next();
+        //        freshConnectorNodeDataList.addAll(pair.getValue());
+        //        it.remove();
+        //    }
+//
+        //    Set<INodeData> addedNodeConnectorsSet = new HashSet<>();
+        //    for (ConnectorIdentifier connId : addedNodeConnectors) {
+        //        addedNodeConnectorsSet.add(connId.nodeConnector.GetNodeData());
+        //    }
+//
+        //    Set<INodeData> dataToAdd = new HashSet<>();
+        //    Set<INodeData> dataToDelete = new HashSet<>();
+        //    for(INodeData addedNodeData: addedNodeConnectorsSet) {
+        //        INodeData present = null;
+        //        for (INodeData freshNodeData : freshConnectorNodeDataList) {
+        //            if(freshNodeData.equals(addedNodeData))
+        //                present = freshNodeData;
+        //        }
+        //
+        //        if(present != null)
+        //            dataToAdd.add(freshNodeData);
+        //        else
+        //            dataToDelete.add()
+        //    }
+//
+        //    List<INodeData> c = new ArrayList<>(freshConnectorNodeDataList);
+        //    c.removeAll(addedNodeConnectorsSet);
+//
+        //    System.out.println(c);
+//
+//
+        //    //for(INodeData connData : freshConnectorNodeDataList) {
+        //    //    PNode connPNode = null;
+        //    //    boolean connectionDeleted = false;
+////
+        //    //    for (ConnectorIdentifier connId : addedNodeConnectors) {
+        //    //        UUID connIdUUID = connId.nodeConnector.GetNodeData().GetUUID();
+        //    //        if(connData.GetUUID().equals(connIdUUID)) {
+////
+        //    //        }
+        //    //    }
+        //    //}
+//
+//
+//
+        //    if (freshConnectorNodeDataList.size() == 0) {
+        //        // Remove all connectors.
+        //    }
+        //}
     }
 
     protected void SetupConnectorListener(NodeComponent nodeComponent,
@@ -156,7 +261,7 @@ public class TestJLayerZoom extends PSwingCanvas {
 
         connector.AddOnControlUpdateListener(
                 (dropped, initialConnector, uuid1, uuid2) ->
-                    CreateConnection(uuid1, uuid2));
+                    CreateConnection(uuid2, uuid1));
 
         pNodeConnector.addInputEventListener(new PBasicInputEventHandler() {
             @Override
@@ -170,13 +275,11 @@ public class TestJLayerZoom extends PSwingCanvas {
                     connector.Hover(true);
                 }
             }
-
             @Override
             public void mouseExited(PInputEvent event) {
                 super.mouseExited(event);
                 connector.Hover(false);
             }
-
             @Override
             public void mouseDragged(PInputEvent event) {
                 event.setHandled(false);
@@ -187,7 +290,6 @@ public class TestJLayerZoom extends PSwingCanvas {
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
                 super.mouseDragged(event);
             }
-
             @Override
             public void mouseReleased(PInputEvent event) {
                 event.setHandled(false);
@@ -217,6 +319,24 @@ public class TestJLayerZoom extends PSwingCanvas {
         repaint();
     }
 
+    protected void UpdateConnectorPosition(NodeComponent nodeComponent) {
+        UUID nCompUUID = nodeComponent.GetNode().GetUUID();
+        Set<ConnectorIdentifier> connectorsOfNode =
+                props.getConnectorsOfNodeComp(nCompUUID);
+
+        for (ConnectorIdentifier connId : connectorsOfNode) {
+            UUID connectorUUID = connId.getNodeConnector().GetNodeData().GetUUID();
+            PNode connectorPNode = connId.getConnectorPNode();
+            for (NodeConnectionPoints connPoint : props.getConnectionPoints()) {
+                if(connPoint.getConnector1UUID().equals(connectorUUID)) {
+                    connPoint.setConnectorPoint1(connectorPNode.getGlobalBounds().getCenter2D());
+                }else if(connPoint.getConnector2UUID().equals(connectorUUID)) {
+                    connPoint.setConnectorPoint2(connectorPNode.getGlobalBounds().getCenter2D());
+                }
+            }
+        }
+    }
+
     protected void SetupListeners() {
         // add custom mouse wheel zoom
         removeInputEventListener(getZoomEventHandler());
@@ -231,6 +351,8 @@ public class TestJLayerZoom extends PSwingCanvas {
                 PNode pS = event.getPickedNode();
                 if(!pS.getPickable() || (pS instanceof PLayer) && !props.isConnectorDragging())
                     super.drag(event);
+                else
+                    event.setHandled(false);
             }
             @Override
             public void setAutopan(boolean autopan) {
@@ -472,7 +594,13 @@ public class TestJLayerZoom extends PSwingCanvas {
     private void DrawConnection(Graphics2D graphics) {
         NodeConnector draggingConnector = props.getNodeConnector(props.getConnectorDraggingUUID());
         PNode pNodeConnector = props.getPNodeConnector(props.getConnectorDraggingUUID());
-        if(draggingConnector == null) return;
+
+        if(draggingConnector == null || pNodeConnector == null) return;
+
+        Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
+        Point2D curveEnd = getMousePosition(true);
+
+        if (curveOrigin == null || curveEnd == null) return;
 
         graphics.setColor(new Color(255,255,255, 180));
         graphics.setStroke(new BasicStroke(1.3f));
@@ -480,12 +608,8 @@ public class TestJLayerZoom extends PSwingCanvas {
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        //Point2D curveOrigin = draggingConnectorOrigin;
-        Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        Point2D curveEnd = props.getLastInputEvent().getPosition();
         // Add the connector size
         curveOrigin = new Point2D.Double(curveOrigin.getX() + 5, curveOrigin.getY() + 5);
-        // curveEnd = new Point2D.Double(curveEnd.getX() - 10, curveEnd.getY() - 10);
 
         Point curveOriginCtrl = new Point();
         Point curveEndCtrl = new Point();
@@ -641,7 +765,7 @@ public class TestJLayerZoom extends PSwingCanvas {
                     uuid,
                     nodeConnector,
                     pNodeConnector);
-            connectorsMap.put(nodeConnector.GetNodeData().GetUUID(), connectorIdentifier);
+            connectorsMap.put(connectorUUID, connectorIdentifier);
         }
 
         /**
@@ -658,6 +782,10 @@ public class TestJLayerZoom extends PSwingCanvas {
                 return;
 
             nodeComponents.put(uuid, nComp);
+        }
+
+        public HashMap<UUID, ConnectorIdentifier> getConnectorsMap() {
+            return connectorsMap;
         }
 
         public PNode getPNode(UUID uuid) {
@@ -709,7 +837,7 @@ public class TestJLayerZoom extends PSwingCanvas {
         }
 
         public void setNodeDragging(boolean nodeDragging) {
-                isNodeDragging = nodeDragging;
+            isNodeDragging = nodeDragging;
         }
 
         public boolean isNodeDragging() {
@@ -790,42 +918,72 @@ public class TestJLayerZoom extends PSwingCanvas {
             return connectionPoints;
         }
 
-        public class ConnectorIdentifier {
-            private UUID          nodeCompUUID;
-            private NodeConnector nodeConnector;
-            private PNode         connectorPNode;
+        public Set<ConnectorIdentifier> getConnectorsOfNodeComp(UUID nodeCompUUID) {
+            HashSet<ConnectorIdentifier> connectors = new HashSet<>();
+            if(nodeComponents.containsKey(nodeCompUUID)) {
+                for (ConnectorIdentifier connId : connectorsMap.values()) {
+                    if(connId.nodeCompUUID.equals(nodeCompUUID))
+                        connectors.add(connId);
+                }
+            }
+            return connectors;
+        }
 
-            public ConnectorIdentifier() {}
-
-            public ConnectorIdentifier(UUID nodeCompUUID, NodeConnector nodeConnector, PNode connectorPNode) {
-                this.nodeCompUUID = nodeCompUUID;
-                this.nodeConnector = nodeConnector;
-                this.connectorPNode = connectorPNode;
+        public void deleteConnector(INodeData nodeData) {
+            if(connectorsMap.containsKey(nodeData.GetUUID())) {
+                connectorsMap.remove(connectorsMap.get(nodeData.GetUUID()));
             }
 
-            public UUID getNodeCompUUID() {
-                return nodeCompUUID;
+            NodeConnectionPoints connPointsToDelete = null;
+            for (NodeConnectionPoints connPoints : connectionPoints) {
+                if(connPoints.getConnector1UUID() == nodeData.GetUUID() ||
+                        connPoints.getConnector2UUID() == nodeData.GetUUID()) {
+                    connPointsToDelete = connPoints;
+                    break;
+                }
             }
 
-            public void setNodeCompUUID(UUID nodeCompUUID) {
-                this.nodeCompUUID = nodeCompUUID;
+            if (connPointsToDelete != null) {
+                connectionPoints.remove(connPointsToDelete);
             }
+        }
+    }
 
-            public NodeConnector getNodeConnector() {
-                return nodeConnector;
-            }
+    public class ConnectorIdentifier {
+        private UUID          nodeCompUUID;
+        private NodeConnector nodeConnector;
+        private PNode         connectorPNode;
 
-            public void setNodeConnector(NodeConnector nodeConnector) {
-                this.nodeConnector = nodeConnector;
-            }
+        public ConnectorIdentifier() {}
 
-            public PNode getConnectorPNode() {
-                return connectorPNode;
-            }
+        public ConnectorIdentifier(UUID nodeCompUUID, NodeConnector nodeConnector, PNode connectorPNode) {
+            this.nodeCompUUID = nodeCompUUID;
+            this.nodeConnector = nodeConnector;
+            this.connectorPNode = connectorPNode;
+        }
 
-            public void setConnectorPNode(PNode connectorPNode) {
-                this.connectorPNode = connectorPNode;
-            }
+        public UUID getNodeCompUUID() {
+            return nodeCompUUID;
+        }
+
+        public void setNodeCompUUID(UUID nodeCompUUID) {
+            this.nodeCompUUID = nodeCompUUID;
+        }
+
+        public NodeConnector getNodeConnector() {
+            return nodeConnector;
+        }
+
+        public void setNodeConnector(NodeConnector nodeConnector) {
+            this.nodeConnector = nodeConnector;
+        }
+
+        public PNode getConnectorPNode() {
+            return connectorPNode;
+        }
+
+        public void setConnectorPNode(PNode connectorPNode) {
+            this.connectorPNode = connectorPNode;
         }
     }
 }

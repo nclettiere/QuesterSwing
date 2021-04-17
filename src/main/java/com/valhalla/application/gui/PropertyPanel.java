@@ -62,73 +62,28 @@ public class PropertyPanel
     }
 
     private void AddProperties() {
-        for (INodeData nData : prop.GetInputs()) {
-            NodeConnector nodeConnector = new NodeConnector(nData, node);
-            connectorList.add(nodeConnector);
-            //nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
-            //   //@Override
-            //   //public void OnConnectorClick(UUID uuid) {
-            //   //    node.NotifyConnectorClick(nData);
-            //   //}
-            //   //@Override
-            //   //public void OnConnectorDrag(UUID uuid, NodeConnector connector) { node.NotifyConnectorDrag(nData, connector); }
-            //   //@Override
-            //   //public void OnConnectorDragStop(UUID uuid) {
-            //   //    node.NotifyConnectorDragStop(nData);
-            //   //}
-            //    @Override
-            //    public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
-            //});
-            inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
-        }
 
         if(prop.GetControl() != null) {
-            prop.AddOnControlUpdateListener(new PropertyEventListener() {
-                @Override
-                public void OnControlUpdate() {
-                    //AddProperties();
-                    //node.NotifyControlUpdated(PropertyPanel.this);
-                    node.repaint();
-                }
-
-                @Override
-                public void OnConnect() {
-                    node.repaint();
-                }
-
-                @Override
-                public void OnDisconnect() {
-                    node.repaint();
-                }
-            });
             controlPanel.add(prop.GetControl().get(), "grow, wrap");
         }
 
-        int i = 1;
+        UpdateIOLayout();
+    }
+
+    public void UpdateIOLayout() {
+        inputPanel.removeAll();
+        outputPanel.removeAll();
+
+        for (INodeData nData : prop.GetInputs()) {
+            NodeConnector nodeConnector = new NodeConnector(nData, node);
+            connectorList.add(nodeConnector);
+            inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
+        }
+
         for (INodeData nData : prop.GetOutputs()) {
             NodeConnector nodeConnector = new NodeConnector(nData, node);
             connectorList.add(nodeConnector);
-            //nodeConnector.AddOnControlUpdateListener(new ConnectorEventListener() {
-            //    //@Override
-            //    //public void OnConnectorClick(UUID uuid) {
-            //    //    node.NotifyConnectorClick(nData);
-            //    //}
-            //    //@Override
-            //    //public void OnConnectorDrag(UUID uuid, NodeConnector connector) {
-            //    //    //node.NotifyConnectorDrag(nData, connector);
-            //    //    node.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
-            //    //}
-            //    //@Override
-            //    //public void OnConnectorDragStop(UUID uuid) {
-            //    //    node.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
-            //    //    //node.NotifyConnectorDragStop(nData);
-            //    //}
-            //    @Override
-            //    public void OnConnectionCreated(NodeConnector dropped, NodeConnector initialConnector, UUID uuid1, UUID uuid2) { node.NotifyConnectionCreated(dropped, initialConnector, uuid1, uuid2); }
-            //});
             outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
-            System.out.println(i);
-            i++;
         }
 
         // Ensure a 'white space' on the input/output lane
@@ -137,11 +92,7 @@ public class PropertyPanel
             outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         if(prop.GetInputCount() == 0)
             inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
-    }
 
-    public void paintComponent(Graphics g) {
-        Graphics2D graphics = (Graphics2D) g;
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
     public void UpdateConnectorsMatch(Class<? extends INodeData> dataType) {

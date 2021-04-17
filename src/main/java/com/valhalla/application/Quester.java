@@ -22,7 +22,7 @@ public class Quester {
 
         // show frame
         pSelect.pack();
-        pSelect.setSize(580,460);
+        pSelect.setSize(1024,720);
         pSelect.setLocationRelativeTo( null );
         pSelect.setVisible( true );
     }

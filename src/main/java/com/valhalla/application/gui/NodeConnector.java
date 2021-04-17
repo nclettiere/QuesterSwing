@@ -50,14 +50,6 @@ public class NodeConnector
         setPreferredSize(new Dimension(15,15));
     }
 
-    public void SetPNode(PNode connectorPNode) {
-        this.connectorPNode = connectorPNode;
-    }
-
-    public PNode GetPNode() {
-        return this.connectorPNode;
-    }
-
     public void AddOnControlUpdateListener(ConnectorEventListener listener) {
         listenerList.add(ConnectorEventListener.class, listener);
     }
@@ -95,7 +87,6 @@ public class NodeConnector
     }
 
     public INodeData GetNodeData() {return this.nData;};
-    public NodeComponent GetNode() {return this.node;};
 
     boolean GetDisabled() {
         return this.disabled;

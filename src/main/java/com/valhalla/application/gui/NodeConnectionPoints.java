@@ -7,6 +7,7 @@ import java.util.UUID;
 public class NodeConnectionPoints {
     private UUID connector1UUID;
     private UUID connector2UUID;
+
     private Point2D connectorPoint1;
     private Point2D connectorPoint2;
 

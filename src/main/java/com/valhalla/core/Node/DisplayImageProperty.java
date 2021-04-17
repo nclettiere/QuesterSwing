@@ -56,7 +56,7 @@ public class DisplayImageProperty extends PropertyBase {
         super.UpdateBindings();
 
         ((ImagePanel)GetControl().get()).addImage(
-                (String)GetInputs().get(0).GetData());
+                (String)((INodeData)GetInputs().toArray()[0]).GetData());
         FireControlUpdateEvent();
     }
 }
