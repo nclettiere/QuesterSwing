@@ -14,6 +14,7 @@ import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.util.PPaintContext;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.lang.reflect.InvocationTargetException;
@@ -56,7 +57,7 @@ public class TestJLayerZoom extends PSwingCanvas {
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
-        UpdateNodeConnectors(uuid, true);
+        SetupNodeConnectors(uuid);
         // Add node listeners
         NodeComponent finalNodeComp = nodeComp;
 
@@ -141,11 +142,14 @@ public class TestJLayerZoom extends PSwingCanvas {
         //UpdateNodeConnectors(nodeComponent.GetNode().GetUUID(), false);
     }
 
-    protected void UpdateNodeConnectors(UUID nodeCompUUID, boolean firstUpdate) {
+    protected void SetupNodeConnectors(UUID nodeCompUUID) {
         PNode pNode = props.getPNode(nodeCompUUID);
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
         if (pNode == null || nodeComponent == null) return;
 
+        // Create IO layout PNodes
+        // This code enables the PNode to stack the connectors PNodes.
+        // Acting as a BoxLayout from top to bottom.
         final PNode inputLayoutNode = new PNode() {
             public void layoutChildren() {
                 final double xOffset = 0;
@@ -174,55 +178,28 @@ public class TestJLayerZoom extends PSwingCanvas {
             }
         };
 
-        HashMap<Integer, List<INodeData>> nodePropsData =
-                nodeComponent.GetNode().getAllConnectorsData();
-        int inputCount  = 0;
-        int outputCount = 0;
-        if(!firstUpdate) {
-            inputCount  = nodeComponent.GetNode().getInputCount()  - 1;
-            outputCount = nodeComponent.GetNode().getOutputCount() - 1;
-        }
-        // Create NodeConnectors
-        Iterator<Map.Entry<Integer, List<INodeData>>> it = nodePropsData.entrySet().iterator();
-        int inputOffsetY = 95 + (22 * inputCount);
-        int outputOffsetY = 95 + (22 * outputCount);
-        while (it.hasNext()) {
-            Map.Entry<Integer, List<INodeData>> pair = it.next();
-            List<INodeData> connectorDataList = pair.getValue();
-
-            for (INodeData data : connectorDataList) {
-                NodeConnector nConn = new NodeConnector(data);
-                PNode nConnPNode = new PSwing(nConn);
-                SetupConnectorListener(nodeComponent, nConn, nConnPNode);
-                props.addConnector(nodeCompUUID, nConn, nConnPNode);
-
-                if (data.GetMode() == ConnectorMode.INPUT) {
-                    inputLayoutNode.addChild(nConnPNode);
-                    //nConnPNode.setOffset(20, inputOffsetY);
-                    //inputOffsetY += 22;
-                } else {
-                    outputLayoutNode.addChild(nConnPNode);
-                    //nConnPNode.setOffset(187, outputOffsetY);
-                    //outputOffsetY += 22;
-                }
-            }
-
-            // Add a margin to delimit a new property
-            if (inputOffsetY > outputOffsetY) {
-                inputOffsetY += 38;
-                outputOffsetY = inputOffsetY;
-            } else {
-                outputOffsetY += 38;
-                inputOffsetY = outputOffsetY;
-            }
-
-            it.remove();
-        }
-
+        // Add the IO layout as child of the NodeComponent's PNode.
         pNode.addChild(inputLayoutNode);
         pNode.addChild(outputLayoutNode);
         inputLayoutNode.setOffset(20, 100);
         outputLayoutNode.setOffset(187, 100);
+
+        // Add and register all node connectors to the nComp
+        HashMap<Integer, List<INodeData>> nodePropsData =
+                nodeComponent.GetNode().getAllConnectorsData();
+
+        // Create NodeConnectors
+        Iterator<Map.Entry<Integer, List<INodeData>>> it = nodePropsData.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, List<INodeData>> pair = it.next();
+            List<INodeData> connectorDataList = pair.getValue();
+            for (INodeData data : connectorDataList)
+                AddConnector(nodeCompUUID, pair.getKey(), data);
+            it.remove();
+        }
+
+        // Remove all handled input events from the IO layout to preventing
+        // an override of connectors PNode's events.
         inputLayoutNode.addInputEventListener(new PBasicInputEventHandler() {
             @Override
             public void mouseDragged(PInputEvent event) {
@@ -251,12 +228,13 @@ public class TestJLayerZoom extends PSwingCanvas {
     protected void SetupConnectorListener(NodeComponent nodeComponent,
                                           NodeConnector connector,
                                           PNode pNodeConnector) {
-        UUID connectorUUID =
-                connector.GetNodeData().GetUUID();
+        UUID connectorUUID = connector.GetNodeData().GetUUID();
 
         connector.AddOnControlUpdateListener(
-                (dropped, initialConnector, uuid1, uuid2) ->
-                    CreateConnection(uuid2, uuid1));
+                (dropped,
+                 initialConnector,
+                 uuid1,
+                 uuid2) -> CreateConnection(uuid2, uuid1));
 
         pNodeConnector.addInputEventListener(new PBasicInputEventHandler() {
             @Override
@@ -289,6 +267,15 @@ public class TestJLayerZoom extends PSwingCanvas {
             public void mouseReleased(PInputEvent event) {
                 event.setHandled(false);
                 NotifyConnectorsDrop();
+                //PNode droppedPNode = event.getPickedNode();
+                //if (droppedPNode != null) {
+                //    if(droppedPNode instanceof PSwing) {
+                //        JComponent nComp = ((PSwing) droppedPNode).getComponent();
+                //        if(nComp instanceof NodeConnector) {
+                //            ((NodeConnector) nComp).ConnectorDropped(connector, connector.GetNodeData());
+                //        }
+                //    }
+                //}
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
                 ResetDataTypeMatch();
                 super.mouseReleased(event);

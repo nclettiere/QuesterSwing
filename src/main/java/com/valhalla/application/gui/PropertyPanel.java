@@ -63,9 +63,8 @@ public class PropertyPanel
 
     private void AddProperties() {
 
-        if(prop.GetControl() != null) {
+        if(prop.GetControl() != null)
             controlPanel.add(prop.GetControl().get(), "grow, wrap");
-        }
 
         UpdateIOLayout();
     }

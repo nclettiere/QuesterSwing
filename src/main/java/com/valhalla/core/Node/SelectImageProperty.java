@@ -17,14 +17,21 @@ public class SelectImageProperty extends PropertyBase {
     SelectImageProperty(Integer propertyIndex, UUID nodeUUID) {
         super(propertyIndex, nodeUUID);
 
-        Ref<JComponent> ref = new Ref<>(new DynamicNodeJPanel());
+        Ref<JComponent> ref = new Ref<>(new JButton("Select Image"));
+
+        /*Ref<JComponent> ref = new Ref<>(new DynamicNodeJPanel());
 
         ((DynamicNodeJPanel)ref.get()).buttonAdd.addActionListener(e -> {
-            addAction(ref.get());
+            addAction();
             FireControlUpdateEvent();
         });
         ((DynamicNodeJPanel)ref.get()).buttonRemove.addActionListener(e -> {
-            removeAction(ref.get());
+            removeAction();
+            FireControlUpdateEvent();
+        });*/
+
+        ((JButton)ref.get()).addActionListener(e -> {
+            selectImageActionPerformed(ref.get());
             FireControlUpdateEvent();
         });
 
@@ -40,54 +47,34 @@ public class SelectImageProperty extends PropertyBase {
         AddOutput(integerData);
     }
 
-    private void addAction(Component parent) {
+    private void addAction() {
         ImageData imageIn = new ImageData();
         AddOutput(imageIn);
         FireConnectorAddedEvent(imageIn);
     }
 
-    private void removeAction(Component parent) {
+    private void removeAction() {
         if(outputs.size() > 0) {
-            if(outputs.size() > 4) {
-                FireConnectorRemovedEvent((INodeData) outputs.toArray()[1]);
-                RemoveOutput(1);
-            }else {
-                FireConnectorRemovedEvent((INodeData) outputs.toArray()[outputs.size() - 1]);
-                RemoveOutput(outputs.size() - 1);
-            }
+            FireConnectorRemovedEvent((INodeData) outputs.toArray()[outputs.size() - 1]);
+            RemoveOutput(outputs.size() - 1);
         }
     }
 
-    private void openActionPerformed(Component parent) {
-        //JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView());
-        //int result = chooser.showOpenDialog(parent);
-//
-        //// if the user selects a file
-        //if (result == JFileChooser.APPROVE_OPTION) {
-        //    // set the output data
-        //    // update the control if needed
-        //    this.GetOutputs().get(0)
-        //            .SetData(chooser.getSelectedFile().getAbsolutePath());
-//
-        //    // Notify for DataBinding
-        //    ((ImageData)this.GetOutputs().get(0)).FireOnBindingDataChanged();
-        //    // Notify Panel of change
-        //    FireControlUpdateEvent();
-        //}
+    private void selectImageActionPerformed(Component parent) {
+        JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView());
+        int result = chooser.showOpenDialog(parent);
 
-        Random r = new Random();
-        int low = 0;
-        int high = 100;
-        int result = r.nextInt(high-low) + low;
+        // if the user selects a file
+        if (result == JFileChooser.APPROVE_OPTION) {
+            // set the output data
+            // update the control if needed
+            this.GetOutputs().get(0)
+                    .SetData(chooser.getSelectedFile().getAbsolutePath());
 
-        if(result <= 50) {
-            ImageData imageIn = new ImageData();
-            AddOutput(imageIn);
-        }else {
-            if(outputs.size() > 0)
-                outputs.remove(outputs.size() - 1);
+            // Notify for DataBinding
+            ((ImageData)this.GetOutputs().get(0)).FireOnBindingDataChanged();
+            // Notify Panel of change
+            FireControlUpdateEvent();
         }
-
-        FireControlUpdateEvent();
     }
 }

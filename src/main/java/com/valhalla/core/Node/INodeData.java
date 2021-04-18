@@ -18,10 +18,12 @@ public interface INodeData {
     Type          GetDataType();
     Color         GetDataColor();
     void          SetDataColor(Color color);
-
     boolean       GetMultipleBindingAllowed();
     void          SetMultipleBindingAllowed(boolean allowed);
 
+    boolean       evaluate();
+    boolean       isDataBindAvailable();
+    boolean       IsBinded();
     INodeData     GetBinding(UUID uuid);
     void          SetBinding(INodeData nData);
     void          AddOnBindingEventListener(BindingEventListener listener);
