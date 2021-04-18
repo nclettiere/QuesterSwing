@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Map;
 import java.util.UUID;
 
 public class DisplayImageProperty extends PropertyBase {
@@ -31,6 +32,11 @@ public class DisplayImageProperty extends PropertyBase {
 
             @Override
             public void OnBindingReleased() {
+
+            }
+
+            @Override
+            public void onDataEvaluationChanged(Map.Entry<Boolean, String> evaluationState) {
 
             }
         });

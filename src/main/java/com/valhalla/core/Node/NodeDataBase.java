@@ -3,10 +3,7 @@ package com.valhalla.core.Node;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class NodeDataBase implements INodeData {
 
@@ -24,6 +21,8 @@ public class NodeDataBase implements INodeData {
         this.bindingMap = new HashMap<>();
         this.listenerList = new EventListenerList();
         this.uuid = UUID.randomUUID();
+        // perform evaluation for clearing incorrect error messages
+        evaluate();
     }
 
     @Override
@@ -128,6 +127,15 @@ public class NodeDataBase implements INodeData {
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {
                 ((BindingEventListener) listeners[i+1]).OnBindingDataChanged(this.GetData());
+            }
+        }
+    }
+
+    void FireOnEvaluationStateChanged(Map.Entry<Boolean, String> state) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == BindingEventListener.class) {
+                ((BindingEventListener) listeners[i+1]).onDataEvaluationChanged(state);
             }
         }
     }

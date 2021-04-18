@@ -10,25 +10,19 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Map;
 
 
 public class NodeConnector
     extends
-    JComponent
-    implements
-    ActionListener,
-    FocusListener,
-    MouseListener,
-    MouseMotionListener {
+    JComponent {
 
     protected boolean mouseEntered;
     protected boolean dragNotified;
     protected INodeData nData;
-
     protected boolean disabled;
-
+    protected boolean evaluationPassing;
     protected EventListenerList listenerList;
-
     protected INodeData lastConnection;
     protected NodeConnector lastConnectionComp;
 
@@ -36,7 +30,26 @@ public class NodeConnector
         this.nData = nData;
         listenerList = new EventListenerList();
 
-        setToolTipText(nData.GetDisplayName());
+        nData.AddOnBindingEventListener(new BindingEventListener() {
+            @Override
+            public void OnBindingDataChanged(Object data) {
+
+            }
+
+            @Override
+            public void OnBindingReleased() {
+
+            }
+
+            @Override
+            public void onDataEvaluationChanged(Map.Entry<Boolean, String> evaluationState) {
+                evaluationPassing = evaluationState.getKey();
+            }
+        });
+
+        nData.evaluate();
+
+        //setToolTipText(nData.GetDisplayName());
         //setBorder(new EmptyBorder(0,10,0,0));
         setPreferredSize(new Dimension(15,15));
     }
@@ -130,74 +143,16 @@ public class NodeConnector
                     nData.GetDataColor().getBlue(), 80));
             graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
         }
-    }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-    }
-
-    @Override
-    public void focusGained(FocusEvent e) {
-
-    }
-
-    @Override
-    public void focusLost(FocusEvent e) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        //if(!GetDisabled())
-        //    FireOnConnectorClickEvent();
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        //if(!GetDisabled())
-        //    FireOnConnectorClickEvent();
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        dragNotified = false;
-        //FireOnConnectorDragStopEvent();
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        if(!GetDisabled()) {
-            this.mouseEntered = true;
-            repaint();
-        }
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        if(!GetDisabled()) {
-            this.mouseEntered = false;
-            repaint();
+        if (!evaluationPassing) {
+            graphics.setColor(Color.RED);
+            graphics.setStroke(new BasicStroke(1));
+            graphics.drawOval(-1, -1, connectorWidth+1, connectorWidth+1);
         }
     }
 
     public void ResetMatch() {
         this.SetDisabled(false);
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if(!GetDisabled()) {
-            //FireOnConnectorDragEvent();
-            if(!dragNotified) {
-                dragNotified = true;
-            }
-        }
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-
     }
 
     public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {

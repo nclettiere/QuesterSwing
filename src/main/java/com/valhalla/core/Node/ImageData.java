@@ -7,10 +7,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class ImageData extends NodeDataBase {
 
@@ -37,6 +34,11 @@ public class ImageData extends NodeDataBase {
                     public void OnBindingReleased() {
 
                     }
+
+                    @Override
+                    public void onDataEvaluationChanged(Map.Entry<Boolean, String> evaluationState) {
+
+                    }
                 });
             }
         }
@@ -50,10 +52,27 @@ public class ImageData extends NodeDataBase {
 
     @Override
     public boolean evaluate() {
-        if(data == null) return false;
+        Map.Entry<Boolean, String> state;
         String dataFile = (String) data;
-        if(dataFile.isEmpty() || dataFile.isBlank()) return false;
-        File file = new File(dataFile);
-        return file.isFile() && file.exists() && file.canRead();
+        if(mode == ConnectorMode.INPUT) {
+            if (data != null) {
+                if (!dataFile.isEmpty() && !dataFile.isBlank()) {
+                    File file = new File(dataFile);
+                    if (file.isFile() && file.exists() && file.canRead())
+                        state = new AbstractMap.SimpleEntry<>(true, "Passing.");
+                    else
+                        state = new AbstractMap.SimpleEntry<>(false, "The file does not exist or cannot be read.");
+                } else {
+                    state = new AbstractMap.SimpleEntry<>(false, "File path is null or empty.");
+                }
+            } else {
+                state = new AbstractMap.SimpleEntry<>(false, "File path is null.");
+            }
+        }else {
+            state = new AbstractMap.SimpleEntry<>(true, "Passing.");
+        }
+
+        FireOnEvaluationStateChanged(state);
+        return state.getKey();
     }
 }
