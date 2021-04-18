@@ -7,10 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.UUID;
 
 public class DisplayImageProperty extends PropertyBase {
-    DisplayImageProperty() {
-        super();
+    DisplayImageProperty(Integer propertyIndex, UUID nodeUUID) {
+        super(propertyIndex, nodeUUID);
 
         Ref<JComponent> ref = new Ref<>(new ImagePanel());
         ((ImagePanel)ref.get()).SetCustomSize(new Dimension(100,100));
@@ -39,7 +40,7 @@ public class DisplayImageProperty extends PropertyBase {
         id.AddOnBindingEventListener(new BindingEventListener() {
             @Override
             public void OnBindingDataChanged(Object data) {
-                UpdateBindings();
+                //UpdateBindings();
             }
 
             @Override
@@ -48,15 +49,6 @@ public class DisplayImageProperty extends PropertyBase {
             }
         });
         AddInput(id);
-        FireControlUpdateEvent();
-    }
-
-    @Override
-    public void UpdateBindings() {
-        super.UpdateBindings();
-
-        ((ImagePanel)GetControl().get()).addImage(
-                (String)((INodeData)GetInputs().toArray()[0]).GetData());
         FireControlUpdateEvent();
     }
 }

@@ -7,6 +7,6 @@ public class DisplayImageNode extends NodeBase {
         groupName = "Images";
         SetName("Display Image");
         SetDescription("Displays an InputStream as Image");
-        AddProperty(new DisplayImageProperty());
+        AddProperty(new DisplayImageProperty(0, uuid));
     }
 }

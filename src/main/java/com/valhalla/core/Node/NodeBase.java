@@ -46,6 +46,20 @@ public class NodeBase implements INode {
         FireOnNodeActionChanged();
     }
 
+    public int getInputCount() {
+        int iCount = 0;
+        for (PropertyBase propertyBase : properties)
+            iCount += propertyBase.inputs.size();
+        return iCount;
+    }
+
+    public int getOutputCount() {
+        int oCount = 0;
+        for (PropertyBase propertyBase : properties)
+            oCount += propertyBase.outputs.size();
+        return oCount;
+    }
+
     public void ResetNodeAction() {
         this.nodeAction = NodeAction.NONE;
     }
@@ -62,8 +76,8 @@ public class NodeBase implements INode {
      * Loops through all properties connectors and assigns them an index
      * @return HashMap with an Integer representing the property index and the list of connectors data of each property.
      */
-    public HashMap<Integer, Set<INodeData>> getAllConnectorsData() {
-        HashMap<Integer, Set<INodeData>> connectorsData = new HashMap<>();
+    public HashMap<Integer, List<INodeData>> getAllConnectorsData() {
+        HashMap<Integer, List<INodeData>> connectorsData = new HashMap<>();
         int i = 0;
         for (PropertyBase prop : properties) {
             connectorsData.put(i, prop.GetIO());

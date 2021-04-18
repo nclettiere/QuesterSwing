@@ -11,9 +11,9 @@ public interface INodeProperty extends EventListener {
     Ref<JComponent> GetControl();
     void SetControl(Ref<JComponent> control);
 
-    Set<INodeData> GetInputs();
-    Set<INodeData> GetOutputs();
-    Set<INodeData> GetIO();
+    List<INodeData> GetInputs();
+    List<INodeData> GetOutputs();
+    List<INodeData> GetIO();
 
     void AddInput(INodeData input);
     void RemoveInput(int index);
@@ -27,4 +27,6 @@ public interface INodeProperty extends EventListener {
     void RemoveOnControlUpdateListener(PropertyEventListener listener);
 
     void FireControlUpdateEvent();
+    void FireConnectorAddedEvent(INodeData connectorData);
+    void FireConnectorRemovedEvent(INodeData connectorData);
 }

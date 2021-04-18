@@ -436,7 +436,7 @@ public class NodeEditor
 
         CubicCurve2D c = new CubicCurve2D.Double();
 
-        Point curveOrigin = draggingConnector.GetRelativePosition();
+        Point curveOrigin = null;//draggingConnector.GetRelativePosition();
         Point curveEnd = getMousePosition();
 
         Point curveOriginCtrl = new Point();

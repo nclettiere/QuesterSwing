@@ -257,9 +257,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void UpdateData() {
-        for (PropertyBase prop :  Node.GetProperties()) {
-            prop.UpdateBindings();
-        }
+        //for (PropertyBase prop :  Node.GetProperties()) {
+        //    //prop.UpdateBindings();
+        //}
         repaint();
     }
 

@@ -68,6 +68,16 @@ public class TestJLayerZoom extends PSwingCanvas {
                 }
 
                 @Override
+                public void ConnectorAdded(UUID nodeUUID, Integer propIndex, INodeData connectorData) {
+                    AddConnector(nodeUUID, propIndex, connectorData);
+                }
+
+                @Override
+                public void ConnectorRemoved(UUID nodeUUID, Integer propIndex, INodeData connectorData) {
+                    RemoveConnector(nodeUUID, propIndex, connectorData);
+                }
+
+                @Override
                 public void OnConnect() {
 
                 }
@@ -128,7 +138,7 @@ public class TestJLayerZoom extends PSwingCanvas {
 
     protected void UpdateNode(NodeComponent nodeComponent) {
         nodeComponent.Update();
-        UpdateNodeConnectors(nodeComponent.GetNode().GetUUID(), false);
+        //UpdateNodeConnectors(nodeComponent.GetNode().GetUUID(), false);
     }
 
     protected void UpdateNodeConnectors(UUID nodeCompUUID, boolean firstUpdate) {
@@ -136,121 +146,106 @@ public class TestJLayerZoom extends PSwingCanvas {
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
         if (pNode == null || nodeComponent == null) return;
 
-        //if(firstUpdate) {
-            // Get Connector Data
-            HashMap<Integer, Set<INodeData>> nodePropsData =
-                    nodeComponent.GetNode().getAllConnectorsData();
-            // Create NodeConnectors
-            Iterator<Map.Entry<Integer, Set<INodeData>>> it = nodePropsData.entrySet().iterator();
-            int inputOffsetY = 95;
-            int outputOffsetY = 95;
-            while (it.hasNext()) {
-                Map.Entry<Integer, Set<INodeData>> pair = it.next();
-               /* FRESH */ Set<INodeData> connectorDataList = pair.getValue();
+        final PNode inputLayoutNode = new PNode() {
+            public void layoutChildren() {
+                final double xOffset = 0;
+                double yOffset = 0;
 
-                for (INodeData data : connectorDataList) {
-
-                    boolean skip = false;
-                    if(!firstUpdate) {
-                        skip = true;
-                        for(ConnectorIdentifier connId : props.getConnectorsOfNodeComp(nodeComponent.GetNode().GetUUID())) {
-                            if(!connId.nodeConnector.GetNodeData().equals(data)) {
-                                skip = false;
-                            }
-                        }
-                    }
-
-                    if (skip) continue;
-
-                    NodeConnector nConn = new NodeConnector(data, nodeComponent);
-                    PNode nConnPNode = new PSwing(nConn);
-                    SetupConnectorListener(nodeComponent, nConn, nConnPNode);
-                    props.addConnector(nodeCompUUID, nConn, nConnPNode);
-                    pNode.addChild(nConnPNode);
-
-                    if (data.GetMode() == ConnectorMode.INPUT) {
-                        nConnPNode.setOffset(20, inputOffsetY);
-                        inputOffsetY += 22;
-                    } else {
-                        nConnPNode.setOffset(187, outputOffsetY);
-                        outputOffsetY += 22;
-                    }
+                final Iterator i = getChildrenIterator();
+                while (i.hasNext()) {
+                    final PNode each = (PNode) i.next();
+                    each.setOffset(xOffset, yOffset - each.getY());
+                    yOffset += each.getHeight() + 7;
                 }
-
-                // Add a margin to delimit a new property
-                if (inputOffsetY > outputOffsetY) {
-                    inputOffsetY += 38;
-                    outputOffsetY = inputOffsetY;
-                } else {
-                    outputOffsetY += 38;
-                    inputOffsetY = outputOffsetY;
-                }
-
-                it.remove();
             }
-        //}else {
-        //    // Get fresh connectors
-        //    // May have changed from already connectors on canvas. (deleted, position change...)
-        //    HashMap<Integer, Set<INodeData>> nodePropsData =
-        //            nodeComponent.GetNode().getAllConnectorsData();
-        //    Set<INodeData> freshConnectorNodeDataList = new HashSet<>();
-//
-        //    //Added connectors -> already on canvas
-        //    Set<ConnectorIdentifier> addedNodeConnectors = props.getConnectorsOfNodeComp(nodeCompUUID);
-//
-        //    // Loop through fresh connectors
-        //    // And add to a new list to simplify code.
-        //    Iterator<Map.Entry<Integer, Set<INodeData>>> it = nodePropsData.entrySet().iterator();
-        //    while (it.hasNext()) {
-        //        Map.Entry<Integer, Set<INodeData>> pair = it.next();
-        //        freshConnectorNodeDataList.addAll(pair.getValue());
-        //        it.remove();
-        //    }
-//
-        //    Set<INodeData> addedNodeConnectorsSet = new HashSet<>();
-        //    for (ConnectorIdentifier connId : addedNodeConnectors) {
-        //        addedNodeConnectorsSet.add(connId.nodeConnector.GetNodeData());
-        //    }
-//
-        //    Set<INodeData> dataToAdd = new HashSet<>();
-        //    Set<INodeData> dataToDelete = new HashSet<>();
-        //    for(INodeData addedNodeData: addedNodeConnectorsSet) {
-        //        INodeData present = null;
-        //        for (INodeData freshNodeData : freshConnectorNodeDataList) {
-        //            if(freshNodeData.equals(addedNodeData))
-        //                present = freshNodeData;
-        //        }
-        //
-        //        if(present != null)
-        //            dataToAdd.add(freshNodeData);
-        //        else
-        //            dataToDelete.add()
-        //    }
-//
-        //    List<INodeData> c = new ArrayList<>(freshConnectorNodeDataList);
-        //    c.removeAll(addedNodeConnectorsSet);
-//
-        //    System.out.println(c);
-//
-//
-        //    //for(INodeData connData : freshConnectorNodeDataList) {
-        //    //    PNode connPNode = null;
-        //    //    boolean connectionDeleted = false;
-////
-        //    //    for (ConnectorIdentifier connId : addedNodeConnectors) {
-        //    //        UUID connIdUUID = connId.nodeConnector.GetNodeData().GetUUID();
-        //    //        if(connData.GetUUID().equals(connIdUUID)) {
-////
-        //    //        }
-        //    //    }
-        //    //}
-//
-//
-//
-        //    if (freshConnectorNodeDataList.size() == 0) {
-        //        // Remove all connectors.
-        //    }
-        //}
+        };
+
+        final PNode outputLayoutNode = new PNode() {
+            public void layoutChildren() {
+                final double xOffset = 0;
+                double yOffset = 0;
+
+                final Iterator i = getChildrenIterator();
+                while (i.hasNext()) {
+                    final PNode each = (PNode) i.next();
+                    each.setOffset(xOffset, yOffset - each.getY());
+                    yOffset += each.getHeight() + 7;
+                }
+            }
+        };
+
+        HashMap<Integer, List<INodeData>> nodePropsData =
+                nodeComponent.GetNode().getAllConnectorsData();
+        int inputCount  = 0;
+        int outputCount = 0;
+        if(!firstUpdate) {
+            inputCount  = nodeComponent.GetNode().getInputCount()  - 1;
+            outputCount = nodeComponent.GetNode().getOutputCount() - 1;
+        }
+        // Create NodeConnectors
+        Iterator<Map.Entry<Integer, List<INodeData>>> it = nodePropsData.entrySet().iterator();
+        int inputOffsetY = 95 + (22 * inputCount);
+        int outputOffsetY = 95 + (22 * outputCount);
+        while (it.hasNext()) {
+            Map.Entry<Integer, List<INodeData>> pair = it.next();
+            List<INodeData> connectorDataList = pair.getValue();
+
+            for (INodeData data : connectorDataList) {
+                NodeConnector nConn = new NodeConnector(data);
+                PNode nConnPNode = new PSwing(nConn);
+                SetupConnectorListener(nodeComponent, nConn, nConnPNode);
+                props.addConnector(nodeCompUUID, nConn, nConnPNode);
+
+                if (data.GetMode() == ConnectorMode.INPUT) {
+                    inputLayoutNode.addChild(nConnPNode);
+                    //nConnPNode.setOffset(20, inputOffsetY);
+                    //inputOffsetY += 22;
+                } else {
+                    outputLayoutNode.addChild(nConnPNode);
+                    //nConnPNode.setOffset(187, outputOffsetY);
+                    //outputOffsetY += 22;
+                }
+            }
+
+            // Add a margin to delimit a new property
+            if (inputOffsetY > outputOffsetY) {
+                inputOffsetY += 38;
+                outputOffsetY = inputOffsetY;
+            } else {
+                outputOffsetY += 38;
+                inputOffsetY = outputOffsetY;
+            }
+
+            it.remove();
+        }
+
+        pNode.addChild(inputLayoutNode);
+        pNode.addChild(outputLayoutNode);
+        inputLayoutNode.setOffset(20, 100);
+        outputLayoutNode.setOffset(187, 100);
+        inputLayoutNode.addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseDragged(PInputEvent event) {
+                event.setHandled(false);
+            }
+
+            @Override
+            public void mouseEntered(PInputEvent event) {
+                event.setHandled(false);
+            }
+
+            @Override
+            public void mouseExited(PInputEvent event) {
+                event.setHandled(false);
+            }
+
+            @Override
+            public void mouseMoved(PInputEvent event) {
+                event.setHandled(false);
+            }
+        });
+        inputLayoutNode.setPickable(false);
+        outputLayoutNode.setPickable(false);
     }
 
     protected void SetupConnectorListener(NodeComponent nodeComponent,
@@ -317,6 +312,35 @@ public class TestJLayerZoom extends PSwingCanvas {
                     connector1Point,
                     connector2Point));
         repaint();
+    }
+
+    protected void AddConnector(UUID nodeComponentUUID, Integer propertyIndex, INodeData connectorData) {
+        if(props.getNodeComponent(nodeComponentUUID) != null) {
+            NodeComponent nComp = props.getNodeComponent(nodeComponentUUID);
+            // Create Connector Comp and PNode
+            NodeConnector nConn = new NodeConnector(connectorData);
+            PNode nConnPNode = new PSwing(nConn);
+            props.addConnector(nodeComponentUUID, nConn, nConnPNode);
+
+            SetupConnectorListener(nComp, nConn, nConnPNode);
+
+            if (connectorData.GetMode() == ConnectorMode.INPUT) {
+                PNode inputLayout = props.getNodeCompInputLayout(nodeComponentUUID);
+                if (inputLayout != null)
+                    inputLayout.addChild(nConnPNode);
+            }else {
+                PNode outputLayout = props.getNodeCompOutputLayout(nodeComponentUUID);
+                if (outputLayout != null)
+                    outputLayout.addChild(nConnPNode);
+            }
+        }
+    }
+
+    protected void RemoveConnector(UUID nodeComponentUUID, Integer propertyIndex, INodeData connectorData) {
+        PNode nConnPNode = props.getPNodeConnector(connectorData.GetUUID());
+        nConnPNode.removeFromParent();
+        nConnPNode.setVisible(false);
+        getLayer().repaint();
     }
 
     protected void UpdateConnectorPosition(NodeComponent nodeComponent) {
@@ -816,6 +840,18 @@ public class TestJLayerZoom extends PSwingCanvas {
 
         public List<Class<? extends NodeComponent>> getRegisteredNodeClasses() {
             return this.registeredNodes;
+        }
+
+        public PNode getNodeCompInputLayout(UUID uuid) {
+            if(!nodeComponents.containsKey(uuid)) return null;
+            PNode nodeCompPNode = pNodesMap.get(uuid);
+            return nodeCompPNode.getChild(0);
+        }
+
+        public PNode getNodeCompOutputLayout(UUID uuid) {
+            if(!nodeComponents.containsKey(uuid)) return null;
+            PNode nodeCompPNode = pNodesMap.get(uuid);
+            return nodeCompPNode.getChild(1);
         }
 
 

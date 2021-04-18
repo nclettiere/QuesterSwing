@@ -21,9 +21,6 @@ public class NodeConnector
     MouseListener,
     MouseMotionListener {
 
-    protected PNode connectorPNode;
-
-    protected NodeComponent node;
     protected boolean mouseEntered;
     protected boolean dragNotified;
     protected INodeData nData;
@@ -35,15 +32,9 @@ public class NodeConnector
     protected INodeData lastConnection;
     protected NodeConnector lastConnectionComp;
 
-    public NodeConnector(INodeData nData, NodeComponent node) {
+    public NodeConnector(INodeData nData) {
         this.nData = nData;
-        this.node = node;
-
         listenerList = new EventListenerList();
-
-        //this.addFocusListener(this);
-        //this.addMouseListener(this);
-        //this.addMouseMotionListener(this);
 
         setToolTipText(nData.GetDisplayName());
         //setBorder(new EmptyBorder(0,10,0,0));
@@ -139,19 +130,6 @@ public class NodeConnector
                     nData.GetDataColor().getBlue(), 80));
             graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
         }
-    }
-
-    public Point GetRelativePosition() {
-        //Get "absolute" coordinates of root pane
-        Point editorAbsPos = node.GetEditor().getRootPane().getContentPane().getLocationOnScreen();
-        //Get "absolute" coordinates of myComp2
-        Point connectorAbsPos = this.getLocationOnScreen();
-        //Subtract coordinates to get relative coordinates
-        Point connectorRelPos = new Point(
-                (int) (connectorAbsPos.getX() - editorAbsPos.getX()),
-                (int) (connectorAbsPos.getY() - editorAbsPos.getY()));
-
-        return connectorRelPos;
     }
 
     @Override

@@ -75,14 +75,14 @@ public class PropertyPanel
         outputPanel.removeAll();
 
         for (INodeData nData : prop.GetInputs()) {
-            NodeConnector nodeConnector = new NodeConnector(nData, node);
-            connectorList.add(nodeConnector);
+            //NodeConnector nodeConnector = new NodeConnector(nData);
+            //connectorList.add(nodeConnector);
             inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         }
 
         for (INodeData nData : prop.GetOutputs()) {
-            NodeConnector nodeConnector = new NodeConnector(nData, node);
-            connectorList.add(nodeConnector);
+            //NodeConnector nodeConnector = new NodeConnector(nData);
+            //connectorList.add(nodeConnector);
             outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         }
 

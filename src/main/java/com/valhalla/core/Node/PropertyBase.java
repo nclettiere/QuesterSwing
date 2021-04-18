@@ -4,20 +4,22 @@ import com.valhalla.core.Ref;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PropertyBase implements INodeProperty {
     protected Ref<JComponent>   control;
-    protected Set<INodeData>   inputs;
-    protected Set<INodeData>   outputs;
+    protected List<INodeData>    inputs;
+    protected List<INodeData>    outputs;
     protected EventListenerList listenerList;
 
-    PropertyBase() {
-        inputs = new HashSet<>();
-        outputs = new HashSet<>();
+    protected Integer propertyIndex;
+    protected UUID    nodeUUID;
+
+    PropertyBase(Integer propertyIndex, UUID nodeUUID) {
+        this.propertyIndex = propertyIndex;
+        this.nodeUUID = nodeUUID;
+        inputs = new ArrayList<>();
+        outputs = new ArrayList<>();
         listenerList = new EventListenerList();
     }
 
@@ -27,6 +29,26 @@ public class PropertyBase implements INodeProperty {
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == PropertyEventListener.class) {
                 ((PropertyEventListener) listeners[i+1]).OnControlUpdate();
+            }
+        }
+    }
+
+    @Override
+    public void FireConnectorAddedEvent(INodeData connectorData) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == PropertyEventListener.class) {
+                ((PropertyEventListener) listeners[i+1]).ConnectorAdded(nodeUUID, propertyIndex, connectorData);
+            }
+        }
+    }
+
+    @Override
+    public void FireConnectorRemovedEvent(INodeData connectorData) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == PropertyEventListener.class) {
+                ((PropertyEventListener) listeners[i+1]).ConnectorRemoved(nodeUUID, propertyIndex, connectorData);
             }
         }
     }
@@ -42,18 +64,18 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public Set<INodeData> GetInputs() {
+    public List<INodeData> GetInputs() {
         return inputs;
     }
 
     @Override
-    public Set<INodeData> GetOutputs() {
+    public List<INodeData> GetOutputs() {
         return outputs;
     }
 
     @Override
-    public Set<INodeData> GetIO() {
-        Set<INodeData> IO = new HashSet<>();
+    public List<INodeData> GetIO() {
+        List<INodeData> IO = new ArrayList<>();
         IO.addAll(inputs);
         IO.addAll(outputs);
         return IO;
@@ -100,6 +122,4 @@ public class PropertyBase implements INodeProperty {
     public void RemoveOnControlUpdateListener(PropertyEventListener listener) {
         listenerList.remove(PropertyEventListener.class, listener);
     }
-
-    public void UpdateBindings() { }
 }

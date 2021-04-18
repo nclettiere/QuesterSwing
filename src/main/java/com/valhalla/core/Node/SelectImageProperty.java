@@ -11,15 +11,21 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Random;
+import java.util.UUID;
 
 public class SelectImageProperty extends PropertyBase {
-    SelectImageProperty() {
-        super();
+    SelectImageProperty(Integer propertyIndex, UUID nodeUUID) {
+        super(propertyIndex, nodeUUID);
 
-        Ref<JComponent> ref = new Ref<>(new JButton("Select"));
+        Ref<JComponent> ref = new Ref<>(new DynamicNodeJPanel());
 
-        ((JButton)ref.get()).addActionListener(e -> {
-            openActionPerformed(ref.get());
+        ((DynamicNodeJPanel)ref.get()).buttonAdd.addActionListener(e -> {
+            addAction(ref.get());
+            FireControlUpdateEvent();
+        });
+        ((DynamicNodeJPanel)ref.get()).buttonRemove.addActionListener(e -> {
+            removeAction(ref.get());
+            FireControlUpdateEvent();
         });
 
         SetControl(ref);
@@ -32,6 +38,24 @@ public class SelectImageProperty extends PropertyBase {
         AddInput(imageIn);
         AddOutput(imageOut);
         AddOutput(integerData);
+    }
+
+    private void addAction(Component parent) {
+        ImageData imageIn = new ImageData();
+        AddOutput(imageIn);
+        FireConnectorAddedEvent(imageIn);
+    }
+
+    private void removeAction(Component parent) {
+        if(outputs.size() > 0) {
+            if(outputs.size() > 4) {
+                FireConnectorRemovedEvent((INodeData) outputs.toArray()[1]);
+                RemoveOutput(1);
+            }else {
+                FireConnectorRemovedEvent((INodeData) outputs.toArray()[outputs.size() - 1]);
+                RemoveOutput(outputs.size() - 1);
+            }
+        }
     }
 
     private void openActionPerformed(Component parent) {
