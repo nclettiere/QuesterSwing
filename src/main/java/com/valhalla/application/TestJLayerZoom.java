@@ -41,7 +41,7 @@ public class TestJLayerZoom extends PSwingCanvas {
     }
 
     public void CreateNewNode(Class<? extends NodeComponent> nCompClass) {
-        NodeComponent nodeComp = null;
+        NodeComponent nodeComp;
         try {
             nodeComp = nCompClass.getConstructor().newInstance();
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
@@ -310,12 +310,33 @@ public class TestJLayerZoom extends PSwingCanvas {
 
     protected void AddConnector(UUID nodeComponentUUID, Integer propertyIndex, INodeData connectorData) {
         if(props.getNodeComponent(nodeComponentUUID) != null) {
-            NodeComponent nComp = props.getNodeComponent(nodeComponentUUID);
+            final NodeComponent nComp = props.getNodeComponent(nodeComponentUUID);
             // Create Connector Comp and PNode
-            NodeConnector nConn = new NodeConnector(connectorData);
-            PNode nConnPNode = new PSwing(nConn);
+            final NodeConnector nConn = new NodeConnector(connectorData);
+            final PNode nConnPNode = new PSwing(nConn);
             props.addConnector(nodeComponentUUID, nConn, nConnPNode);
 
+            // Listeners
+            connectorData.AddOnBindingEventListener(new BindingEventListener() {
+                @Override
+                public void OnBindingDataChanged(Object data) {
+
+                }
+
+                @Override
+                public void OnBindingReleased() {
+
+                }
+
+                @Override
+                public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+                    if(evaluationState != null) {
+                        nComp.addMessage(dataUUID, new NodeMessage(evaluationState));
+                    }else {
+                        nComp.removeMessage(dataUUID);
+                    }
+                }
+            });
             SetupConnectorListener(nComp, nConn, nConnPNode);
 
             if (connectorData.GetMode() == ConnectorMode.INPUT) {
@@ -408,12 +429,7 @@ public class TestJLayerZoom extends PSwingCanvas {
             }
         });
         // Add node selector panel listener
-        nsp.addNodeSelectorEventListener(new NodeSelectorListener() {
-            @Override
-            public void OnNodeSelected(Class<? extends NodeComponent> nodeClass) {
-                CreateNewNode(nodeClass);
-            }
-        });
+        nsp.addNodeSelectorEventListener(nodeClass -> CreateNewNode(nodeClass));
     }
 
     protected void SetupCanvas(PRoot root, PCamera camera) {

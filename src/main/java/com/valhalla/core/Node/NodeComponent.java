@@ -38,12 +38,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected Point   mouseOriginPoint;
 
     protected boolean showMessage;
-    protected ArrayList<NodeMessage> messageList;
+    protected HashMap<UUID, NodeMessage> messageList;
 
     NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
-        this.messageList = new ArrayList<>();
+        this.messageList = new HashMap<>();
 
         propPanelList = new ArrayList<>();
         this.setLayout(new MigLayout("", "0[shrink 0]0", "0[grow]0"));
@@ -53,16 +53,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         Content = new JPanel(new MigLayout("", "0[grow]0", "0[grow]0"));
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Content.setOpaque(false);
-
-        NodeMessage comp1 = new NodeMessage(false);
-        NodeMessage comp2 = new NodeMessage(true);
-        NodeMessage comp3 = new NodeMessage(false);
-        NodeMessage comp4 = new NodeMessage(true);
-
-        messageList.add(comp1);
-        messageList.add(comp2);
-        messageList.add(comp3);
-        messageList.add(comp4);
 
         add(Content, "grow, wrap");
 
@@ -181,19 +171,18 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
          // Draw Message Zone
         if(showMessage) {
-            int i = 0;
-            int count = messageList.size();
+            int i =  messageList.size() - 1;
+            for (NodeMessage nMsg : messageList.values()) {
+                int baseY = getHeight() - (nMsg.getHeight() * (i + 1)) - 2;
 
-            for (NodeMessage nMsg : messageList) {
                 Color color1 = new Color(85, 64, 0);
                 Color color2 = new Color(114, 85, 0);
-                if(nMsg.isError()) {
+                if(nMsg.isError) {
                     color1 = new Color(127,30,30);
                     color2 = new Color(139,52,52);
                 }
-                int baseY = getHeight() - (nMsg.getHeight() * (i+1)) - 2;
                 graphics.setColor(color1);
-                if (i < count - 1)
+                if (i > 0)
                     graphics.fillRoundRect(16, baseY, getWidth() - 34, nMsg.getHeight(), arcs.width, arcs.height);
                 else
                     graphics.fillRect(16, baseY, getWidth() - 34, nMsg.getHeight());
@@ -201,7 +190,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 graphics.fillRect(getWidth() - 28, baseY, 10, 10);
                 graphics.setColor(color2);
                 graphics.drawLine(16, baseY, getWidth() - 18, baseY);
-                i++;
+                i--;
             }
         }
 
@@ -236,11 +225,11 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (showMessage) {
-            for(NodeMessage nMsg : messageList) {
+            for(NodeMessage nMsg : messageList.values()) {
                 remove(nMsg);
             }
         }else {
-            for(NodeMessage nMsg : messageList) {
+            for(NodeMessage nMsg : messageList.values()) {
                 add(nMsg, "grow, bottom, wrap");
             }
         }
@@ -349,5 +338,20 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
     public void RemoveNodeComponentUpdateEvent(NodeComponentEventListener listener) {
         listenerList.remove(NodeComponentEventListener.class, listener);
+    }
+
+    public void addMessage(UUID dataUUID, NodeMessage nodeMessage) {
+        add(nodeMessage, "grow, bottom, wrap");
+        messageList.put(dataUUID, nodeMessage);
+        showMessage = true;
+        repaint();
+    }
+
+    public void removeMessage(UUID dataUUID) {
+        remove(messageList.get(dataUUID));
+        messageList.remove(dataUUID);
+        if(messageList.size() == 0)
+            showMessage = false;
+        repaint();
     }
 }

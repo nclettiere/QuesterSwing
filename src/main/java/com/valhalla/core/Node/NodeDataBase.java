@@ -98,7 +98,7 @@ public class NodeDataBase implements INodeData {
 
     @Override
     public void SetMultipleBindingAllowed(boolean allowed) {
-        this.multipleAllowed = multipleAllowed;
+        this.multipleAllowed = allowed;
     }
 
     @Override
@@ -135,7 +135,7 @@ public class NodeDataBase implements INodeData {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {
-                ((BindingEventListener) listeners[i+1]).onDataEvaluationChanged(state);
+                ((BindingEventListener) listeners[i+1]).onDataEvaluationChanged(uuid, state);
             }
         }
     }

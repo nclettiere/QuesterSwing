@@ -36,7 +36,7 @@ public class DisplayImageProperty extends PropertyBase {
             }
 
             @Override
-            public void onDataEvaluationChanged(Map.Entry<Boolean, String> evaluationState) {
+            public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
 
             }
         });

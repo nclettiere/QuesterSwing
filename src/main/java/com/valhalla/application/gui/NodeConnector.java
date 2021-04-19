@@ -11,6 +11,7 @@ import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Map;
+import java.util.UUID;
 
 
 public class NodeConnector
@@ -42,8 +43,11 @@ public class NodeConnector
             }
 
             @Override
-            public void onDataEvaluationChanged(Map.Entry<Boolean, String> evaluationState) {
-                evaluationPassing = evaluationState.getKey();
+            public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+                if(evaluationState == null)
+                    evaluationPassing = true;
+                else
+                    evaluationPassing = evaluationState.getKey();
             }
         });
 
@@ -90,7 +94,7 @@ public class NodeConnector
         repaint();
     }
 
-    public INodeData GetNodeData() {return this.nData;};
+    public INodeData GetNodeData() {return this.nData;}
 
     boolean GetDisabled() {
         return this.disabled;
@@ -101,7 +105,7 @@ public class NodeConnector
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int connectorWidth = 15;
+        int connectorSize = 15;
 
         if(!GetDisabled()) {
             if (mouseEntered) {
@@ -109,45 +113,45 @@ public class NodeConnector
                         nData.GetDataColor().getRed() + 20,
                         nData.GetDataColor().getGreen() + 20,
                         nData.GetDataColor().getBlue() + 20, 70));
-                graphics.fillOval(0, 0, connectorWidth, connectorWidth);
+                graphics.fillOval(0, 0, connectorSize, connectorSize);
 
                 graphics.setColor(new Color(
                         nData.GetDataColor().getRed() + 20,
                         nData.GetDataColor().getGreen() + 20,
                         nData.GetDataColor().getBlue() + 20, 255));
-                graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
+                graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
             } else {
                 Color cDarker = nData.GetDataColor().darker().darker();
                 graphics.setColor(new Color(
                         cDarker.getRed(),
                         cDarker.getGreen(),
                         cDarker.getBlue()));
-                graphics.fillOval(0, 0, connectorWidth, connectorWidth);
+                graphics.fillOval(0, 0, connectorSize, connectorSize);
 
                 graphics.setColor(new Color(
                         nData.GetDataColor().getRed(),
                         nData.GetDataColor().getGreen(),
                         nData.GetDataColor().getBlue(), 200));
-                graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
+                graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
             }
         }else {
             graphics.setColor(new Color(
                     nData.GetDataColor().getRed(),
                     nData.GetDataColor().getGreen(),
                     nData.GetDataColor().getBlue(), 10));
-            graphics.fillOval(0, 0, connectorWidth, connectorWidth);
+            graphics.fillOval(0, 0, connectorSize, connectorSize);
 
             graphics.setColor(new Color(
                     nData.GetDataColor().getRed(),
                     nData.GetDataColor().getGreen(),
                     nData.GetDataColor().getBlue(), 80));
-            graphics.fillOval(1, 1, connectorWidth - 2, connectorWidth - 2);
+            graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
         }
 
         if (!evaluationPassing) {
             graphics.setColor(Color.RED);
             graphics.setStroke(new BasicStroke(1));
-            graphics.drawOval(-1, -1, connectorWidth+1, connectorWidth+1);
+            graphics.drawOval(-1, -1, connectorSize+2, connectorSize+2);
         }
     }
 

@@ -36,7 +36,7 @@ public class ImageData extends NodeDataBase {
                     }
 
                     @Override
-                    public void onDataEvaluationChanged(Map.Entry<Boolean, String> evaluationState) {
+                    public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
 
                     }
                 });
@@ -59,7 +59,7 @@ public class ImageData extends NodeDataBase {
                 if (!dataFile.isEmpty() && !dataFile.isBlank()) {
                     File file = new File(dataFile);
                     if (file.isFile() && file.exists() && file.canRead())
-                        state = new AbstractMap.SimpleEntry<>(true, "Passing.");
+                        state = null;
                     else
                         state = new AbstractMap.SimpleEntry<>(false, "The file does not exist or cannot be read.");
                 } else {
@@ -73,6 +73,9 @@ public class ImageData extends NodeDataBase {
         }
 
         FireOnEvaluationStateChanged(state);
-        return state.getKey();
+        if(state == null)
+            return true;
+        else
+            return state.getKey();
     }
 }
