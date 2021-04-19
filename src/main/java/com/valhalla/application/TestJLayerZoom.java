@@ -16,6 +16,8 @@ import org.piccolo2d.util.PPaintContext;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.geom.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -238,12 +240,32 @@ public class TestJLayerZoom extends PSwingCanvas {
         UUID connectorUUID = connector.GetNodeData().GetUUID();
 
         connector.AddOnControlUpdateListener(
-                (dropped,
-                 initialConnector,
-                 uuid1,
-                 uuid2) -> CreateConnection(uuid2, uuid1));
+            (dropped,
+             initialConnector,
+             uuid1,
+             uuid2) -> CreateConnection(uuid2, uuid1));
 
         pNodeConnector.addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseClicked(PInputEvent event) {
+                super.mouseClicked(event);
+                // Ctrl pressed \\
+                if (props.getPressedKeyCode() == 17) {
+                    nodeComponent
+                            .GetNode()
+                            .SetCurrentAction(NodeBase.NodeAction.CONNECTION_CTRL_CLICKED);
+                    connector.GetNodeData().breakBindings();
+                    for (NodeConnectionPoints nConnP : props.getConnectionPoints()) {
+                        if (nConnP.getConnector1UUID() == connectorUUID ||
+                                nConnP.getConnector2UUID() == connectorUUID) {
+                            props.getConnectionPoints().remove(nConnP);
+                            break;
+                        }
+                    }
+                    getLayer().repaint();
+                }
+            }
+
             @Override
             public void mouseEntered(PInputEvent event) {
                 super.mouseEntered(event);
@@ -274,15 +296,6 @@ public class TestJLayerZoom extends PSwingCanvas {
             public void mouseReleased(PInputEvent event) {
                 event.setHandled(false);
                 NotifyConnectorsDrop();
-                //PNode droppedPNode = event.getPickedNode();
-                //if (droppedPNode != null) {
-                //    if(droppedPNode instanceof PSwing) {
-                //        JComponent nComp = ((PSwing) droppedPNode).getComponent();
-                //        if(nComp instanceof NodeConnector) {
-                //            ((NodeConnector) nComp).ConnectorDropped(connector, connector.GetNodeData());
-                //        }
-                //    }
-                //}
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
                 ResetDataTypeMatch();
                 super.mouseReleased(event);
@@ -386,7 +399,6 @@ public class TestJLayerZoom extends PSwingCanvas {
         addInputEventListener(new PPanEventHandler() {
             @Override
             protected void drag(PInputEvent event) {
-                //props.setLastInputEvent(event);
                 PNode pS = event.getPickedNode();
                 if(!pS.getPickable() || (pS instanceof PLayer) && !props.isConnectorDragging())
                     super.drag(event);
@@ -399,7 +411,23 @@ public class TestJLayerZoom extends PSwingCanvas {
             }
         });
 
-        // Add Mouse listeners
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                props.setPressedKeyCode(e.getKeyCode());
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                props.resetPressedKeyCode();
+            }
+        });
+
         addInputEventListener(new PBasicInputEventHandler() {
             @Override
             public void mouseMoved(PInputEvent event) {
@@ -429,7 +457,7 @@ public class TestJLayerZoom extends PSwingCanvas {
             }
         });
         // Add node selector panel listener
-        nsp.addNodeSelectorEventListener(nodeClass -> CreateNewNode(nodeClass));
+        nsp.addNodeSelectorEventListener(this::CreateNewNode);
     }
 
     protected void SetupCanvas(PRoot root, PCamera camera) {
@@ -532,6 +560,7 @@ public class TestJLayerZoom extends PSwingCanvas {
     public void NotifyConnectorsDrop() {
         final NodeConnector nConn =
                 props.getNodeConnector(props.getConnectorDraggingUUID());
+        if (nConn == null) return;
         final INodeData nodeData = nConn.GetNodeData();
         for (NodeConnector connector : props.getAllNodeConnectors())
             connector.ConnectorDropped(nConn, nodeData);
@@ -760,6 +789,7 @@ public class TestJLayerZoom extends PSwingCanvas {
         protected boolean     isConnectorDragging;
         protected boolean     mouseOnCanvas;
         protected boolean     isNodePressed;
+        protected int         pressedKeyCode;
 
         protected volatile boolean nodeReseted;
         protected volatile boolean triggerPointCatch;
@@ -992,6 +1022,18 @@ public class TestJLayerZoom extends PSwingCanvas {
             if (connPointsToDelete != null) {
                 connectionPoints.remove(connPointsToDelete);
             }
+        }
+
+        public int getPressedKeyCode() {
+            return pressedKeyCode;
+        }
+
+        public void resetPressedKeyCode() {
+            this.pressedKeyCode = -1;
+        }
+
+        public void setPressedKeyCode(int pressedKeyCode) {
+            this.pressedKeyCode = pressedKeyCode;
         }
     }
 

@@ -10,10 +10,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 public class SelectImageProperty extends PropertyBase {
+    Object selectedData;
+
     SelectImageProperty(Integer propertyIndex, UUID nodeUUID) {
         super(propertyIndex, nodeUUID);
 
@@ -43,6 +46,32 @@ public class SelectImageProperty extends PropertyBase {
 
         ImageData imageIn = new ImageData();
 
+        imageIn.AddOnBindingEventListener(new BindingEventListener() {
+            @Override
+            public void OnBindingDataChanged(Object data) {
+                imageOut.SetData(data);
+                // Notify for DataBinding
+                imageOut.FireOnBindingDataChanged();
+                // Hide control as it is not necessary
+                ref.get().setVisible(false);
+                // Notify Panel of change
+                FireControlUpdateEvent();
+            }
+
+            @Override
+            public void OnBindingReleased() {
+                imageOut.SetData(selectedData);
+                // Notify for DataBinding
+                imageOut.FireOnBindingDataChanged();
+                ref.get().setVisible(true);
+            }
+
+            @Override
+            public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+
+            }
+        });
+
         AddInput(imageIn);
         AddOutput(imageOut);
         AddOutput(integerData);
@@ -69,8 +98,9 @@ public class SelectImageProperty extends PropertyBase {
         if (result == JFileChooser.APPROVE_OPTION) {
             // set the output data
             // update the control if needed
+            selectedData = chooser.getSelectedFile().getAbsolutePath();
             this.GetOutputs().get(0)
-                    .SetData(chooser.getSelectedFile().getAbsolutePath());
+                    .SetData(selectedData);
 
             // Notify for DataBinding
             ((ImageData)this.GetOutputs().get(0)).FireOnBindingDataChanged();

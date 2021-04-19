@@ -146,6 +146,14 @@ public class NodeDataBase implements INodeData {
     }
 
     @Override
+    public void breakBindings() {
+        Object[] listenerArr = listenerList.getListenerList();
+        for (int i = listenerList.getListenerCount() - 1; i > 0; i--) {
+            listenerList.remove(BindingEventListener.class, (BindingEventListener)listenerArr[i]);
+        }
+    }
+
+    @Override
     public void AddOnBindingEventListener(BindingEventListener listener) {
         listenerList.add(BindingEventListener.class, listener);
     }

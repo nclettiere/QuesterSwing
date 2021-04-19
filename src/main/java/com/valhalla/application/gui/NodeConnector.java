@@ -31,25 +31,25 @@ public class NodeConnector
         this.nData = nData;
         listenerList = new EventListenerList();
 
-        nData.AddOnBindingEventListener(new BindingEventListener() {
-            @Override
-            public void OnBindingDataChanged(Object data) {
-
-            }
-
-            @Override
-            public void OnBindingReleased() {
-
-            }
-
-            @Override
-            public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
-                if(evaluationState == null)
-                    evaluationPassing = true;
-                else
-                    evaluationPassing = evaluationState.getKey();
-            }
-        });
+        //nData.AddOnBindingEventListener(new BindingEventListener() {
+        //    @Override
+        //    public void OnBindingDataChanged(Object data) {
+//
+        //    }
+//
+        //    @Override
+        //    public void OnBindingReleased() {
+//
+        //    }
+//
+        //    @Override
+        //    public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+        //        if(evaluationState == null)
+        //            evaluationPassing = true;
+        //        else
+        //            evaluationPassing = evaluationState.getKey();
+        //    }
+        //});
 
         nData.evaluate();
 
@@ -148,11 +148,11 @@ public class NodeConnector
             graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
         }
 
-        if (!evaluationPassing) {
-            graphics.setColor(Color.RED);
-            graphics.setStroke(new BasicStroke(1));
-            graphics.drawOval(-1, -1, connectorSize+2, connectorSize+2);
-        }
+        //if (!evaluationPassing) {
+        //    graphics.setColor(Color.RED);
+        //    graphics.setStroke(new BasicStroke(1));
+        //    graphics.drawOval(-1, -1, connectorSize+2, connectorSize+2);
+        //}
     }
 
     public void ResetMatch() {

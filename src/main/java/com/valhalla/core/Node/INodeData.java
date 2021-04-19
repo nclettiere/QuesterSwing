@@ -26,6 +26,7 @@ public interface INodeData {
     boolean       IsBinded();
     INodeData     GetBinding(UUID uuid);
     void          SetBinding(INodeData nData);
+    void          breakBindings();
     void          AddOnBindingEventListener(BindingEventListener listener);
     void          RemoveOnBindingEventListener(BindingEventListener listener);
 }

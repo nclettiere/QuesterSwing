@@ -11,7 +11,6 @@ import java.util.*;
 
 public class ImageData extends NodeDataBase {
 
-
     public ImageData() {
         super();
         SetName("Image");
