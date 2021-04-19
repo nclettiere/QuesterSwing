@@ -32,6 +32,7 @@ public class SelectImageProperty extends PropertyBase {
 
         ((JButton)ref.get()).addActionListener(e -> {
             selectImageActionPerformed(ref.get());
+            addAction();
             FireControlUpdateEvent();
         });
 

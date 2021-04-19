@@ -33,28 +33,30 @@ public class PropertyPanel
         this.node = node;
         this.connectorList = new ArrayList<>();
 
-        setLayout(new MigLayout("","[20][grow][20]", "[top][top][top]"));
-        setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
+        setLayout(new MigLayout("debug, wmin 200","[left]0[shrink 0]0[right]"));
+        //setBorder(new MatteBorder(0,0,1,0, new Color(255,255,255,30)));
         setOpaque(false);
 
         inputPanel = new JPanel(new MigLayout("debug", "0[grow]0", "2[top]2"));
-        inputPanel.setBorder(new EmptyBorder(0,0,0,0));
+        inputPanel.setBorder(new EmptyBorder(10,0,10,0));
         inputPanel.setOpaque(false);
 
-        controlPanel = new JPanel(new MigLayout("", "[max]", "[top]"));
+        controlPanel = new JPanel(new MigLayout("", "0[grow]0", "0[grow]0"));
+        controlPanel.setBorder(new EmptyBorder(10,10,10,10));
         controlPanel.setOpaque(false);
 
         outputPanel = new JPanel(new MigLayout("debug", "0[20]0", "2[top]2"));
-        outputPanel.setBorder(new EmptyBorder(0,0,0,0));
+        outputPanel.setBorder(new EmptyBorder(10,0,10,0));
         outputPanel.setOpaque(false);
 
-        add(inputPanel);
-        add(controlPanel);
-        add(outputPanel);
+        add(inputPanel,"dock west");
+        add(controlPanel,"dock center, grow");
+        add(outputPanel,"dock east");
 
         AddProperties();
 
     }
+
 
     // delete later
     public ArrayList<NodeConnector> getConnectors() {
@@ -63,10 +65,10 @@ public class PropertyPanel
 
     private void AddProperties() {
 
-        if(prop.GetControl() != null)
-            controlPanel.add(prop.GetControl().get(), "grow, wrap");
-
         UpdateIOLayout();
+
+        if(prop.GetControl() != null)
+            controlPanel.add(prop.GetControl().get(), "dock north");
     }
 
     public void UpdateIOLayout() {

@@ -170,7 +170,7 @@ public class ProjectSelectorFrame
         //editor.SetDebugPaint(true);
         //contentPane.add(editor, "grow");
 
-       //DisplayImageComponent editor = new DisplayImageComponent();
+       //SelectImageComponent editor = new SelectImageComponent();
        //contentPane.add(editor);
 
         TestJLayerZoom sic = new TestJLayerZoom(new Class[]{

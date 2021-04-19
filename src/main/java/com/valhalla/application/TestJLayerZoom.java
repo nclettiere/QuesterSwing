@@ -90,6 +90,13 @@ public class TestJLayerZoom extends PSwingCanvas {
             });
         }
 
+        nodeComp.AddNodeComponentUpdateEvent(nodeComponent -> {
+            PNode outputLayout = props.getNodeCompOutputLayout(nodeComponent.GetNode().GetUUID());
+            Point2D layOffset = outputLayout.getOffset();
+            int nComponentWidth = nodeComponent.getPreferredSize().width;
+            outputLayout.setOffset(nComponentWidth - 35, layOffset.getY());
+        });
+
         pNode.addInputEventListener(new PBasicInputEventHandler() {
             @Override
             public void mouseDragged(PInputEvent event) {
@@ -181,8 +188,8 @@ public class TestJLayerZoom extends PSwingCanvas {
         // Add the IO layout as child of the NodeComponent's PNode.
         pNode.addChild(inputLayoutNode);
         pNode.addChild(outputLayoutNode);
-        inputLayoutNode.setOffset(20, 100);
-        outputLayoutNode.setOffset(187, 100);
+        inputLayoutNode.setOffset(20, 90);
+        outputLayoutNode.setOffset(nodeComponent.getPreferredSize().width - 35, 90);
 
         // Add and register all node connectors to the nComp
         HashMap<Integer, List<INodeData>> nodePropsData =

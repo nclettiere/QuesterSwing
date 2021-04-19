@@ -4,6 +4,7 @@ import com.valhalla.application.TestJLayerZoom;
 import com.valhalla.application.gui.*;
 import com.valhalla.application.gui.NodeEditor;
 import net.miginfocom.swing.MigLayout;
+import org.apache.xpath.operations.Bool;
 import org.piccolo2d.PNode;
 import org.piccolo2d.extras.pswing.PSwing;
 
@@ -16,8 +17,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.util.*;
+import java.util.List;
 
 public class NodeComponent extends JComponent implements MouseInputListener {
     protected NodeBase                 Node;
@@ -36,23 +37,34 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected boolean isMouseHeaderPressed;
     protected Point   mouseOriginPoint;
 
+    protected boolean showMessage;
+    protected ArrayList<NodeMessage> messageList;
+
     NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
+        this.messageList = new ArrayList<>();
 
         propPanelList = new ArrayList<>();
-        this.setLayout(new MigLayout("", "0[grow]0", "0[top]0"));
+        this.setLayout(new MigLayout("", "0[shrink 0]0", "0[grow]0"));
         this.setBorder(BorderFactory.createEmptyBorder(51 + 22, 10, 2, 12));
         this.setBackground(new Color(0,255,0,0));
-        //this.setOpaque(false);
 
-
-        Content = new JPanel(new MigLayout("", "[grow]", "[top]"));
+        Content = new JPanel(new MigLayout("", "0[grow]0", "0[grow]0"));
         Content.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Content.setOpaque(false);
 
-        add(Content, "w 200!");
+        NodeMessage comp1 = new NodeMessage(false);
+        NodeMessage comp2 = new NodeMessage(true);
+        NodeMessage comp3 = new NodeMessage(false);
+        NodeMessage comp4 = new NodeMessage(true);
 
+        messageList.add(comp1);
+        messageList.add(comp2);
+        messageList.add(comp3);
+        messageList.add(comp4);
+
+        add(Content, "grow, wrap");
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -88,17 +100,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
         Dimension arcs = new Dimension(10, 10);
 
-        int accumulatedHeight = 0;
-        for(PropertyPanel panel : propPanelList) {
-            accumulatedHeight += panel.getHeight();
-        }
-
-        // header size + panels size + additional paddings
-        //int height = (51 + 24 + accumulatedHeight + 20 + 2);
         int height = getHeight();
-        //int height = getPreferredSize().height + 51;
-
-        //this.setSize(getWidth() - 50, height);
 
         /* -- Node Base -- */
         if(selected) {
@@ -107,7 +109,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                     15,
                     12,
                     this.getWidth()-32,
-                    height - 23,
+                    height-13,
                     arcs.width,
                     arcs.height);
             graphics.setColor(new Color(242,176,18, 50));
@@ -118,7 +120,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 15,
                 12,
                 this.getWidth()-32,
-                height - 24,
+                height-13,
                 arcs.width,
                 arcs.height);
         /* -- Node Connectors Section -- */
@@ -127,7 +129,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 15+1,
                 12 + 1,
                 this.getWidth()-32-2,
-                height - 24 - 2,
+                height - 13 - 2,
                 arcs.width,
                 arcs.height);
         /* -- Node Control Section -- */
@@ -136,17 +138,17 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                 16+20,
                 12 + 1,
                 this.getWidth()-34-40,
-                height - 2 - 24,
+                height - 13 - 2,
                 arcs.width,
                 arcs.height);
         graphics.fillRect(
                 16+20,
-                height-17,
+                height - 6,
                 4,
                 4);
         graphics.fillRect(
                 this.getWidth()-34-8,
-                height-17,
+                height - 6,
                 4,
                 4);
         /* -- Node Header -- */
@@ -176,6 +178,33 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                  12+49,
                  this.getWidth()-19,
                  12+49);
+
+         // Draw Message Zone
+        if(showMessage) {
+            int i = 0;
+            int count = messageList.size();
+
+            for (NodeMessage nMsg : messageList) {
+                Color color1 = new Color(85, 64, 0);
+                Color color2 = new Color(114, 85, 0);
+                if(nMsg.isError()) {
+                    color1 = new Color(127,30,30);
+                    color2 = new Color(139,52,52);
+                }
+                int baseY = getHeight() - (nMsg.getHeight() * (i+1)) - 2;
+                graphics.setColor(color1);
+                if (i < count - 1)
+                    graphics.fillRoundRect(16, baseY, getWidth() - 34, nMsg.getHeight(), arcs.width, arcs.height);
+                else
+                    graphics.fillRect(16, baseY, getWidth() - 34, nMsg.getHeight());
+                graphics.fillRect(16, baseY, 10, 10);
+                graphics.fillRect(getWidth() - 28, baseY, 10, 10);
+                graphics.setColor(color2);
+                graphics.drawLine(16, baseY, getWidth() - 18, baseY);
+                i++;
+            }
+        }
+
          /* -- Node Kind Indicator (Top-Left) -- */
          Color cKindIndicator = new Color(176,0,159);
          Color cKindIndicatorDarker = cKindIndicator.darker();
@@ -206,9 +235,21 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (showMessage) {
+            for(NodeMessage nMsg : messageList) {
+                remove(nMsg);
+            }
+        }else {
+            for(NodeMessage nMsg : messageList) {
+                add(nMsg, "grow, bottom, wrap");
+            }
+        }
+
         GetNode().SetCurrentAction(NodeBase.NodeAction.CLICKED);
-        //FireNodeOnClickEvent();
         Select();
+        showMessage = !showMessage;
+        FireOnNodeComponentLayoutChanged();
+        repaint();
     }
 
     @Override
@@ -278,20 +319,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
             prop.ConnectorDropped(draggingConnector, nodeData);
     }
 
-
-    public NodeConnector GetConnectorComponent(UUID uuid) {
-        for (PropertyPanel propPanel : propPanelList) {
-            NodeConnector connector =  propPanel.GetConnectorLocation(uuid);
-            if(connector != null)
-                return connector;
-        }
-        return null;
-    }
-
-    public TestJLayerZoom GetEditor() {
-        return editorParent;
-    }
-
     public void Select() {
         this.selected = true;
         repaint();
@@ -306,5 +333,21 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         for(PropertyPanel propertyPanel : propPanelList) {
             propertyPanel.UpdateIOLayout();
         }
+    }
+
+    void FireOnNodeComponentLayoutChanged() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == NodeComponentEventListener.class) {
+                ((NodeComponentEventListener) listeners[i+1]).OnNodeComponentLayoutChanged(this);
+            }
+        }
+    }
+
+    public void AddNodeComponentUpdateEvent(NodeComponentEventListener listener) {
+        listenerList.add(NodeComponentEventListener.class, listener);
+    }
+    public void RemoveNodeComponentUpdateEvent(NodeComponentEventListener listener) {
+        listenerList.remove(NodeComponentEventListener.class, listener);
     }
 }
