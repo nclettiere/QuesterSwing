@@ -2,7 +2,6 @@ package com.valhalla.core.Node;
 
 import com.valhalla.NodeEditor.NEditorMouseWheelZoomHandler;
 import com.valhalla.application.gui.*;
-import com.valhalla.core.Node.*;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
 import org.piccolo2d.PNode;
@@ -14,7 +13,6 @@ import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.util.PPaintContext;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -27,11 +25,14 @@ import static java.awt.event.MouseEvent.*;
 
 public class NodeEditor extends PSwingCanvas {
 
+    protected UUID editorUUID;
     protected NodeEditorProperties props;
     protected NodeSelectorPanel nsp;
     protected PNode pSelector;
+    protected boolean isDebugging;
 
     public NodeEditor(Class<? extends NodeComponent>[] nodeClasses) {
+        this.editorUUID = UUID.randomUUID();
         this.props = new NodeEditorProperties();
         this.props.registerNodeClasses(nodeClasses);
 
@@ -40,6 +41,8 @@ public class NodeEditor extends PSwingCanvas {
 
         SetupCanvas(root, camera);
         SetupListeners();
+
+        props.setEditorCurrentAction(EditorAction.NONE);
     }
 
     public void CreateNewNode(Class<? extends NodeComponent> nCompClass) {
@@ -144,6 +147,8 @@ public class NodeEditor extends PSwingCanvas {
         // ...
         pSelector.setVisible(false);
         nsp.reset();
+
+        fireOnEditorPropertyChanged("NodeCount", props.getNodeCount());
     }
 
     protected void UpdateNode(NodeComponent nodeComponent) {
@@ -290,6 +295,7 @@ public class NodeEditor extends PSwingCanvas {
 
                 props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
+                props.setEditorCurrentAction(EditorAction.DRAGGING_CONNECTOR);
                 super.mouseDragged(event);
             }
             @Override
@@ -400,11 +406,19 @@ public class NodeEditor extends PSwingCanvas {
             @Override
             protected void drag(PInputEvent event) {
                 PNode pS = event.getPickedNode();
-                if(!pS.getPickable() || (pS instanceof PLayer) && !props.isConnectorDragging())
+                if(!pS.getPickable() || (pS instanceof PLayer) && !props.isConnectorDragging()) {
                     super.drag(event);
-                else
+                    props.setEditorCurrentAction(EditorAction.MOVING);
+                }else
                     event.setHandled(false);
             }
+
+            @Override
+            protected void endDrag(PInputEvent event) {
+                super.endDrag(event);
+                props.setEditorCurrentAction(EditorAction.NONE);
+            }
+
             @Override
             public void setAutopan(boolean autopan) {
                 super.setAutopan(false);
@@ -453,6 +467,7 @@ public class NodeEditor extends PSwingCanvas {
                     UnselectNodes();
                     pSelector.setVisible(false);
                     nsp.reset();
+                    props.setEditorCurrentAction(EditorAction.NONE);
                 }
             }
         });
@@ -576,6 +591,10 @@ public class NodeEditor extends PSwingCanvas {
             connector.ResetMatch();
     }
 
+    public UUID getEditorUUID() {
+        return editorUUID;
+    }
+
     // Created Connections
     private void DrawConnection(Graphics2D graphics, NodeConnectionPoints points) {
         if(props.getActionedNode() != null) {
@@ -637,21 +656,20 @@ public class NodeEditor extends PSwingCanvas {
 
         graphics.draw(c);
 
-        //if(GetDebugPaint()) {
-        //    graphics.setColor(Color.GREEN);
-        //    //OriginPoint
-        //    graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
-        //    //EndPoint
-        //    graphics.setColor(Color.YELLOW);
-        //    graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
-//
-        //    graphics.setColor(Color.RED);
-        //    //ctrlOrigin
-        //    graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
-        //    //ctrlEND
-        //    graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
-//
-        //}
+        if(isDebugging) {
+            graphics.setColor(Color.GREEN);
+            //OriginPoint
+            graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
+            //EndPoint
+            graphics.setColor(Color.YELLOW);
+            graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
+
+            graphics.setColor(Color.RED);
+            //ctrlOrigin
+            graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+            //ctrlEND
+            graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        }
     }
     // Dragging
     private void DrawConnection(Graphics2D graphics) {
@@ -732,20 +750,20 @@ public class NodeEditor extends PSwingCanvas {
 
         graphics.draw(c);
 
-        //if(GetDebugPaint()) {
-        //    graphics.setColor(Color.GREEN);
-        //    //OriginPoint
-        //    graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
-        //    //EndPoint
-        //    graphics.setColor(Color.YELLOW);
-        //    graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
+        if(isDebugging) {
+            graphics.setColor(Color.GREEN);
+            //OriginPoint
+            graphics.fillOval((int)curveOrigin.getX(), (int)curveOrigin.getY(), 10, 10);
+            //EndPoint
+            graphics.setColor(Color.YELLOW);
+            graphics.fillOval((int)curveEnd.getX(), (int)curveEnd.getY(), 10, 10);
 
-        //    graphics.setColor(Color.RED);
-        //    //ctrlOrigin
-        //    graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
-        //    //ctrlEND
-        //    graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
-        //}
+            graphics.setColor(Color.RED);
+            //ctrlOrigin
+            graphics.drawOval(curveOriginCtrl.x, curveOriginCtrl.y, 10, 10);
+            //ctrlEND
+            graphics.drawOval(curveEndCtrl.x, curveEndCtrl.y, 10, 10);
+        }
     }
 
     protected void UnselectNode(NodeComponent nodeComponent) {
@@ -773,6 +791,40 @@ public class NodeEditor extends PSwingCanvas {
             nComp.Select();
     }
 
+    void fireOnEditorPropertyChanged(String propertyName, Object value) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == EditorPropertyListener.class) {
+                ((EditorPropertyListener) listeners[i+1]).OnPropertyChanged(propertyName, value);
+            }
+        }
+    }
+
+    public void addEditorPropertyListener(EditorPropertyListener listener) {
+        listenerList.add(EditorPropertyListener.class, listener);
+    }
+    public void removeEditorPropertyListener(EditorPropertyListener listener) {
+        listenerList.remove(EditorPropertyListener.class, listener);
+    }
+
+    public int getNodeCount() {
+        return props.getNodeCount();
+    }
+
+    public boolean isDebugging() {
+        return isDebugging;
+    }
+
+    public void setDebugging(boolean isDebugging) {
+        this.isDebugging = isDebugging;
+        fireOnEditorPropertyChanged("Debugging", isDebugging);
+        repaint();
+    }
+
+    public EditorAction getCurrentAction() {
+        return props.getEditorCurrentAction();
+    }
+
     public class NodeEditorProperties {
         protected HashMap<UUID, PNode>                      pNodesMap;
         protected HashMap<UUID, ConnectorIdentifier>        connectorsMap;
@@ -790,6 +842,8 @@ public class NodeEditor extends PSwingCanvas {
         protected boolean     mouseOnCanvas;
         protected boolean     isNodePressed;
         protected int         pressedKeyCode;
+
+        protected volatile EditorAction editorCurrentAction;
 
         protected volatile boolean nodeReseted;
         protected volatile boolean triggerPointCatch;
@@ -1035,6 +1089,19 @@ public class NodeEditor extends PSwingCanvas {
         public void setPressedKeyCode(int pressedKeyCode) {
             this.pressedKeyCode = pressedKeyCode;
         }
+
+        public int getNodeCount() {
+            return nodeComponents.size();
+        }
+
+        public EditorAction getEditorCurrentAction() {
+            return editorCurrentAction;
+        }
+
+        public void setEditorCurrentAction(EditorAction editorCurrentAction) {
+            this.editorCurrentAction = editorCurrentAction;
+            fireOnEditorPropertyChanged("CurrentAction", editorCurrentAction);
+        }
     }
 
     public class ConnectorIdentifier {
@@ -1073,5 +1140,21 @@ public class NodeEditor extends PSwingCanvas {
         public void setConnectorPNode(PNode connectorPNode) {
             this.connectorPNode = connectorPNode;
         }
+    }
+
+    public enum EditorAction {
+        NONE,
+        MOVING,
+        ZOOM_IN,
+        ZOOM_OUT,
+        NODE_SELECTED,
+        MOVING_NODE,
+        DRAGGING_CONNECTOR,
+        SEARCHING_NODE,
+        DELETE_NODE,
+        CREATED_CONNECTION,
+        BREAK_CONNECTION,
+        SIMULATING,
+        NODE_CONTROL_UPDATED
     }
 }

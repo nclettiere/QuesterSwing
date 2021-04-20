@@ -37,6 +37,7 @@ public class ProjectSelectorFrame
     private void initComponents() {
         JMenuBar menuBar1 = new JMenuBar();
         JMenu fileMenu = new JMenu();
+        JMenu editMenu = new JMenu();
         JMenuItem newMenuItem = new JMenuItem();
         JMenuItem openMenuItem = new JMenuItem();
         JMenuItem saveAsMenuItem = new JMenuItem();
@@ -66,6 +67,9 @@ public class ProjectSelectorFrame
                 fileMenu.setText("File");
                 fileMenu.setMnemonic('F');
 
+                editMenu.setText("Edit");
+                editMenu.setMnemonic('E');
+
                 //---- newMenuItem ----
                 newMenuItem.setText("New");
                 newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -90,9 +94,8 @@ public class ProjectSelectorFrame
 
                 //---- saveAsMenuItem ----
                 openInspectorItem.setText("Open Inspector");
-                openInspectorItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                 openInspectorItem.setMnemonic('I');
-                saveAsMenuItem.addActionListener(e -> openInspector());
+                openInspectorItem.addActionListener(e -> openInspector());
                 fileMenu.add(openInspectorItem);
                 fileMenu.addSeparator();
 
@@ -111,7 +114,17 @@ public class ProjectSelectorFrame
                 exitMenuItem.addActionListener(e -> exitActionPerformed());
                 fileMenu.add(exitMenuItem);
             }
+            {
+                JMenuItem setDebugMenuItem = new JMenuItem();
+                setDebugMenuItem.setText("Toggle Editor Debug Mode");
+                setDebugMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                setDebugMenuItem.setMnemonic('D');
+                setDebugMenuItem.addActionListener(e -> setEditorDebug());
+                editMenu.add(setDebugMenuItem);
+                editMenu.addSeparator();
+            }
             menuBar1.add(fileMenu);
+            menuBar1.add(editMenu);
         }
 
         setJMenuBar(menuBar1);
@@ -198,5 +211,9 @@ public class ProjectSelectorFrame
 
     public void openInspector() {
         parent.openNodeEditorInspector(nEditor);
+    }
+
+    public void setEditorDebug() {
+        nEditor.setDebugging(!nEditor.isDebugging());
     }
 }
