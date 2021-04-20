@@ -4,4 +4,5 @@ import java.util.EventListener;
 
 public interface EditorPropertyListener extends EventListener {
     void OnPropertyChanged(String propertyName, Object value);
+    void OnNodeSelectionChanged(NodeBase nodeBase);
 }

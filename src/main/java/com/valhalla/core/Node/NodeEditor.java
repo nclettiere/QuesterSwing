@@ -123,10 +123,15 @@ public class NodeEditor extends PSwingCanvas {
                     props.resetNodeState();
                     getLayer().repaint();
                 }
+                case CLICKED -> {
+                    SelectNode(finalNodeComp, true);
+                    props.setEditorCurrentAction(EditorAction.NODE_SELECTED);
+                }
                 case DRAGGING -> {
                     props.setActionedNode(uuid);
                     props.setNodeDragging(true);
                     SelectNode(finalNodeComp, true);
+                    props.setEditorCurrentAction(EditorAction.DRAGGING_NODE);
                     getLayer().repaint();
                 }
                 case PRESSED -> {
@@ -137,6 +142,7 @@ public class NodeEditor extends PSwingCanvas {
                     props.setActionedNode(uuid);
                     props.setConnectorDragging(true);
                     props.setTriggerPointCatch(true);
+                    props.setEditorCurrentAction(EditorAction.DRAGGING_CONNECTOR);
                     getLayer().repaint();
                 }
             }
@@ -295,7 +301,6 @@ public class NodeEditor extends PSwingCanvas {
 
                 props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
-                props.setEditorCurrentAction(EditorAction.DRAGGING_CONNECTOR);
                 super.mouseDragged(event);
             }
             @Override
@@ -782,6 +787,7 @@ public class NodeEditor extends PSwingCanvas {
             for (NodeComponent nComp : props.getAllNodeComponents())
                 nComp.Unselect();
         nodeComponent.Select();
+        fireOnNodeSelectionChanged(nodeComponent.GetNode());
     }
     protected void SelectNodes(boolean unselectFirst, NodeComponent ... nodeComponents) {
         if(unselectFirst)
@@ -789,6 +795,15 @@ public class NodeEditor extends PSwingCanvas {
                 nComp.Unselect();
         for (NodeComponent nComp : nodeComponents)
             nComp.Select();
+    }
+
+    void fireOnNodeSelectionChanged(NodeBase node) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == EditorPropertyListener.class) {
+                ((EditorPropertyListener) listeners[i+1]).OnNodeSelectionChanged(node);
+            }
+        }
     }
 
     void fireOnEditorPropertyChanged(String propertyName, Object value) {
@@ -1149,6 +1164,7 @@ public class NodeEditor extends PSwingCanvas {
         ZOOM_OUT,
         NODE_SELECTED,
         MOVING_NODE,
+        DRAGGING_NODE,
         DRAGGING_CONNECTOR,
         SEARCHING_NODE,
         DELETE_NODE,

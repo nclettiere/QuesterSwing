@@ -1,9 +1,6 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.core.Node.EditorPropertyListener;
-import com.valhalla.core.Node.EditorTableModel;
-import com.valhalla.core.Node.NodeComponentEventListener;
-import com.valhalla.core.Node.NodeEditor;
+import com.valhalla.core.Node.*;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -50,6 +47,7 @@ public class NodeEditorInspector
         sp1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         JTable nodesTable = new JTable();
+        nodesTable.setModel(new NodeTableModel(nodeEditor));
         nodesTable.setShowGrid(true);
         nodesTable.setDragEnabled(false);
         JScrollPane sp2 = new JScrollPane(nodesTable);

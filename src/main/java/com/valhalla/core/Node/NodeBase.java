@@ -55,6 +55,20 @@ public class NodeBase implements INode {
         return oCount;
     }
 
+    public int getIOCount() {
+        int iCount = 0;
+        for (PropertyBase propertyBase : properties)
+            iCount += propertyBase.inputs.size();
+        int oCount = 0;
+        for (PropertyBase propertyBase : properties)
+            oCount += propertyBase.outputs.size();
+        return iCount + oCount;
+    }
+
+    public int getPropertyCount() {
+        return properties.size();
+    }
+
     public void ResetNodeAction() {
         this.nodeAction = NodeAction.NONE;
     }

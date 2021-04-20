@@ -42,6 +42,11 @@ public class EditorTableModel extends AbstractTableModel {
             public void OnPropertyChanged(String propertyName, Object value) {
                 setProperty(propertyName, value);
             }
+
+            @Override
+            public void OnNodeSelectionChanged(NodeBase nodeBase) {
+
+            }
         });
     }
 
