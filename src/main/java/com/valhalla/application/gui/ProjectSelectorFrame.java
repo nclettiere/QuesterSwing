@@ -1,8 +1,9 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.application.TestJLayerZoom;
+import com.valhalla.application.Quester;
 import com.valhalla.core.Node.DisplayImageComponent;
 import com.valhalla.core.Node.MiscComponent;
+import com.valhalla.core.Node.NodeEditor;
 import com.valhalla.core.Node.SelectImageComponent;
 import net.miginfocom.swing.MigLayout;
 import org.piccolo2d.extras.PFrame;
@@ -13,9 +14,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class ProjectSelectorFrame
-    extends JFrame
-{
-    public ProjectSelectorFrame() {
+    extends JFrame {
+
+    protected Quester parent;
+    protected NodeEditor nEditor;
+
+    public ProjectSelectorFrame(Quester parent) {
+        this.parent = parent;
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         initComponents();
     }
@@ -38,9 +43,16 @@ public class ProjectSelectorFrame
         JMenuItem closeMenuItem = new JMenuItem();
         JMenuItem exitMenuItem = new JMenuItem();
 
+        JMenuItem openInspectorItem = new JMenuItem();
+
         JPanel appHeaderPanel = new JPanel();
         JTabbedPane tabbedPane = new JTabbedPane();
         ImagePanel logoImage;
+
+        nEditor = new NodeEditor(new Class[]{
+                SelectImageComponent.class,
+                DisplayImageComponent.class,
+                MiscComponent.class});
 
         //======== this ========
         setTitle("Quester");
@@ -74,6 +86,14 @@ public class ProjectSelectorFrame
                 saveAsMenuItem.setMnemonic('S');
                 //saveAsMenuItem.addActionListener(e -> saveAsActionPerformed());
                 fileMenu.add(saveAsMenuItem);
+                fileMenu.addSeparator();
+
+                //---- saveAsMenuItem ----
+                openInspectorItem.setText("Open Inspector");
+                openInspectorItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                openInspectorItem.setMnemonic('I');
+                saveAsMenuItem.addActionListener(e -> openInspector());
+                fileMenu.add(openInspectorItem);
                 fileMenu.addSeparator();
 
                 //---- closeMenuItem ----
@@ -173,10 +193,10 @@ public class ProjectSelectorFrame
        //SelectImageComponent editor = new SelectImageComponent();
        //contentPane.add(editor);
 
-        TestJLayerZoom sic = new TestJLayerZoom(new Class[]{
-                SelectImageComponent.class,
-                DisplayImageComponent.class,
-                MiscComponent.class});
-        contentPane.add(sic, "grow");
+        contentPane.add(nEditor, "grow");
+    }
+
+    public void openInspector() {
+        parent.openNodeEditorInspector(nEditor);
     }
 }

@@ -1,4 +1,4 @@
-package com.valhalla.application;
+package com.valhalla.core.Node;
 
 import com.valhalla.NodeEditor.NEditorMouseWheelZoomHandler;
 import com.valhalla.application.gui.*;
@@ -25,13 +25,13 @@ import java.util.List;
 
 import static java.awt.event.MouseEvent.*;
 
-public class TestJLayerZoom extends PSwingCanvas {
+public class NodeEditor extends PSwingCanvas {
 
     protected NodeEditorProperties props;
     protected NodeSelectorPanel nsp;
     protected PNode pSelector;
 
-    public TestJLayerZoom(Class<? extends NodeComponent>[] nodeClasses) {
+    public NodeEditor(Class<? extends NodeComponent>[] nodeClasses) {
         this.props = new NodeEditorProperties();
         this.props.registerNodeClasses(nodeClasses);
 

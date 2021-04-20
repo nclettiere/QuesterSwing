@@ -17,8 +17,8 @@ public class NewProjectFrame
         GridLayout gridLayout = new GridLayout(0,2);
         JTabbedPane tabs = new JTabbedPane();
 
-        contentPanel.setLayout(gridLayout);
-        tabs.add("main", new ProjectSelectorFrame());
+        //contentPanel.setLayout(gridLayout);
+        //tabs.add("main", new ProjectSelectorFrame(this));
 
         contentPanel.add(tabs);
 

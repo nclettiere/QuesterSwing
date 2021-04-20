@@ -1,11 +1,6 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.application.gui.NodeEditor;
-
 import javax.swing.event.EventListenerList;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.security.PublicKey;
 import java.util.*;
 
 public class NodeBase implements INode {

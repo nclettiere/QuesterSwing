@@ -1,8 +1,6 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.application.TestJLayerZoom;
 import com.valhalla.application.gui.*;
-import com.valhalla.application.gui.NodeEditor;
 import net.miginfocom.swing.MigLayout;
 import org.apache.xpath.operations.Bool;
 import org.piccolo2d.PNode;
@@ -28,7 +26,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
     protected ArrayList<NodeConnector> connectors;
-    protected TestJLayerZoom           editorParent;
+    protected NodeEditor               editorParent;
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
@@ -74,7 +72,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         }
     }
 
-    public void SetParentEditor(TestJLayerZoom editor) {
+    public void SetParentEditor(NodeEditor editor) {
         this.editorParent = editor;
     }
 
