@@ -96,9 +96,9 @@ public class PropertyPanel
 
     }
 
-    public void UpdateConnectorsMatch(Class<? extends INodeData> dataType) {
+    public void UpdateConnectorsMatch(INodeData nodeData) {
         for (NodeConnector connector : connectorList)
-            connector.MatchType(dataType);
+            connector.MatchType(nodeData);
     }
 
     public void ResetConnectorMatch() {

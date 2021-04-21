@@ -22,10 +22,10 @@ public interface INodeData {
     void          SetMultipleBindingAllowed(boolean allowed);
 
     boolean       evaluate();
-    boolean       isDataBindAvailable();
+    boolean       isDataBindAvailable(INodeData nodeData);
     boolean       IsBinded();
     INodeData     GetBinding(UUID uuid);
-    void          SetBinding(INodeData nData);
+    boolean       SetBinding(INodeData nData);
     void          breakBindings();
     void          AddOnBindingEventListener(BindingEventListener listener);
     void          RemoveOnBindingEventListener(BindingEventListener listener);

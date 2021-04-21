@@ -297,7 +297,7 @@ public class NodeEditor extends PSwingCanvas {
             public void mouseDragged(PInputEvent event) {
                 event.setHandled(false);
                 if(props.getConnectorDraggingUUID() == null)
-                    MatchConnectorType(connector.GetNodeData().getClass());
+                    MatchConnectorType(connector.GetNodeData());
 
                 props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
@@ -586,9 +586,9 @@ public class NodeEditor extends PSwingCanvas {
             connector.ConnectorDropped(nConn, nodeData);
     }
 
-    public void MatchConnectorType(Class<? extends INodeData> dataType) {
+    public void MatchConnectorType(INodeData nodeData) {
         for(NodeConnector connector : props.getAllNodeConnectors())
-            connector.MatchType(dataType);
+            connector.MatchType(nodeData);
     }
 
     public void ResetDataTypeMatch() {

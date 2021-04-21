@@ -31,26 +31,6 @@ public class NodeConnector
         this.nData = nData;
         listenerList = new EventListenerList();
 
-        //nData.AddOnBindingEventListener(new BindingEventListener() {
-        //    @Override
-        //    public void OnBindingDataChanged(Object data) {
-//
-        //    }
-//
-        //    @Override
-        //    public void OnBindingReleased() {
-//
-        //    }
-//
-        //    @Override
-        //    public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
-        //        if(evaluationState == null)
-        //            evaluationPassing = true;
-        //        else
-        //            evaluationPassing = evaluationState.getKey();
-        //    }
-        //});
-
         nData.evaluate();
 
         //setToolTipText(nData.GetDisplayName());
@@ -80,9 +60,13 @@ public class NodeConnector
         }
     }
 
-    public void MatchType(Class<? extends INodeData> dataClass) {
+    public void MatchType(INodeData nData) {
         // If not from the same class disable the connector
-        if(!this.nData.getClass().isAssignableFrom(dataClass)) {
+        if(!this.nData.isDataBindAvailable(nData)) {
+            SetDisabled(true);
+            return;
+        }
+        if(!this.nData.getClass().isAssignableFrom(nData.getClass())) {
             SetDisabled(true);
             return;
         }
@@ -163,10 +147,13 @@ public class NodeConnector
         if(!GetDisabled()) {
             if(mouseEntered) {
                 if(nData.getClass().isAssignableFrom(nodeData.getClass())) {
-                    nData.SetBinding(nodeData);
-                    lastConnection = nodeData;
-                    lastConnectionComp = draggingConnector;
-                    FireOnConnectionCreated();
+                    if(nData.isDataBindAvailable(nodeData)) {
+                        if (nData.SetBinding(nodeData)) {
+                            lastConnection = nodeData;
+                            lastConnectionComp = draggingConnector;
+                            FireOnConnectionCreated();
+                        }
+                    }
                 }
             }
         }

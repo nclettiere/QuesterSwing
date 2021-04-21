@@ -291,9 +291,9 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         repaint();
     }
 
-    public void MatchConnectorType(Class<? extends INodeData> dataType) {
+    public void MatchConnectorType(INodeData nodeData) {
         for(PropertyPanel prop : propPanelList)
-            prop.UpdateConnectorsMatch(dataType);
+            prop.UpdateConnectorsMatch(nodeData);
     }
 
     public void ResetDataTypesState() {
@@ -346,8 +346,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public void removeMessage(UUID dataUUID) {
-        remove(messageList.get(dataUUID));
-        messageList.remove(dataUUID);
+        try {
+            remove(messageList.get(dataUUID));
+            messageList.remove(dataUUID);
+        }catch(Exception e) {
+
+        }
         if(messageList.size() == 0)
             showMessage = false;
         repaint();

@@ -107,7 +107,7 @@ public class NodeDataBase implements INodeData {
     }
 
     @Override
-    public boolean isDataBindAvailable() {
+    public boolean isDataBindAvailable(INodeData nodeData) {
         return true;
     }
 
@@ -120,6 +120,36 @@ public class NodeDataBase implements INodeData {
     public INodeData GetBinding(UUID uuid) {
         if(!bindingMap.containsKey(uuid)) return null;
         return bindingMap.get(uuid);
+    }
+
+    @Override
+    public boolean SetBinding(INodeData nData) {
+        if(bindingMap.containsKey(nData.GetUUID())) return false;
+
+        bindingMap.put(nData.GetUUID(), nData);
+
+        if(nData.GetUUID() != this.GetUUID()) {
+            if (isDataBindAvailable(nData)) {
+                nData.AddOnBindingEventListener(new BindingEventListener() {
+                    @Override
+                    public void OnBindingDataChanged(Object data) {
+                        SetData(nData.GetData());
+                    }
+
+                    @Override
+                    public void OnBindingReleased() {
+
+                    }
+
+                    @Override
+                    public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+
+                    }
+                });
+            }
+        }
+        FireOnBindingDataChanged();
+        return true;
     }
 
     void FireOnBindingDataChanged() {
@@ -138,11 +168,6 @@ public class NodeDataBase implements INodeData {
                 ((BindingEventListener) listeners[i+1]).onDataEvaluationChanged(uuid, state);
             }
         }
-    }
-
-    @Override
-    public void SetBinding(INodeData nData) {
-        FireOnBindingDataChanged();
     }
 
     @Override

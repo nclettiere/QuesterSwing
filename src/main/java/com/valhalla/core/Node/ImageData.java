@@ -20,33 +20,13 @@ public class ImageData extends NodeDataBase {
     }
 
     @Override
-    public void SetBinding(INodeData nData) {
-        if(nData.GetUUID() != this.GetUUID()) {
-            if (isDataBindAvailable()) {
-                nData.AddOnBindingEventListener(new BindingEventListener() {
-                    @Override
-                    public void OnBindingDataChanged(Object data) {
-                        SetData(nData.GetData());
-                    }
-
-                    @Override
-                    public void OnBindingReleased() {
-
-                    }
-
-                    @Override
-                    public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
-
-                    }
-                });
-            }
-        }
-        super.SetBinding(nData);
+    public void SetMultipleBindingAllowed(boolean allowed) {
+        super.SetMultipleBindingAllowed(false);
     }
 
     @Override
-    public boolean isDataBindAvailable() {
-        return !(bindingMap.size() > 1);
+    public boolean isDataBindAvailable(INodeData nodeData) {
+        return !(bindingMap.size() > 0);
     }
 
     @Override
