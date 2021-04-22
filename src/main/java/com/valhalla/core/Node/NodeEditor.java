@@ -262,9 +262,6 @@ public class NodeEditor extends PSwingCanvas {
                 super.mouseClicked(event);
                 // Ctrl pressed \\
                 if (props.getPressedKeyCode() == 17) {
-                    nodeComponent
-                            .GetNode()
-                            .SetCurrentAction(NodeBase.NodeAction.CONNECTION_CTRL_CLICKED);
                     connector.GetNodeData().breakBindings();
                     for (NodeConnectionPoints nConnP : props.getConnectionPoints()) {
                         if (nConnP.getConnector1UUID() == connectorUUID ||
@@ -273,6 +270,10 @@ public class NodeEditor extends PSwingCanvas {
                             break;
                         }
                     }
+
+                    nodeComponent
+                            .GetNode()
+                            .SetCurrentAction(NodeBase.NodeAction.CONNECTION_CTRL_CLICKED);
                     getLayer().repaint();
                 }
             }
@@ -309,6 +310,7 @@ public class NodeEditor extends PSwingCanvas {
                 NotifyConnectorsDrop();
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
                 ResetDataTypeMatch();
+                connector.Hover(false);
                 super.mouseReleased(event);
             }
         });

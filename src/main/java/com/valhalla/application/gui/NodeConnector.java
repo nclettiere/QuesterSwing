@@ -66,11 +66,19 @@ public class NodeConnector
             SetDisabled(true);
             return;
         }
+        if(this.nData.GetMode() == nData.GetMode()) {
+            SetDisabled(true);
+            return;
+        }
         if(!this.nData.getClass().isAssignableFrom(nData.getClass())) {
             SetDisabled(true);
             return;
         }
         SetDisabled(false);
+    }
+
+    public void ResetMatch() {
+        this.SetDisabled(false);
     }
 
     void SetDisabled(boolean disabled) {
@@ -131,29 +139,15 @@ public class NodeConnector
                     nData.GetDataColor().getBlue(), 80));
             graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
         }
-
-        //if (!evaluationPassing) {
-        //    graphics.setColor(Color.RED);
-        //    graphics.setStroke(new BasicStroke(1));
-        //    graphics.drawOval(-1, -1, connectorSize+2, connectorSize+2);
-        //}
-    }
-
-    public void ResetMatch() {
-        this.SetDisabled(false);
     }
 
     public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
         if(!GetDisabled()) {
             if(mouseEntered) {
-                if(nData.getClass().isAssignableFrom(nodeData.getClass())) {
-                    if(nData.isDataBindAvailable(nodeData)) {
-                        if (nData.SetBinding(nodeData)) {
-                            lastConnection = nodeData;
-                            lastConnectionComp = draggingConnector;
-                            FireOnConnectionCreated();
-                        }
-                    }
+                if (nData.SetBinding(nodeData)) {
+                    lastConnection = nodeData;
+                    lastConnectionComp = draggingConnector;
+                    FireOnConnectionCreated();
                 }
             }
         }

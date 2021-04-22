@@ -125,31 +125,34 @@ public class NodeDataBase implements INodeData {
     @Override
     public boolean SetBinding(INodeData nData) {
         if(bindingMap.containsKey(nData.GetUUID())) return false;
-
         bindingMap.put(nData.GetUUID(), nData);
 
         if(nData.GetUUID() != this.GetUUID()) {
             if (isDataBindAvailable(nData)) {
-                nData.AddOnBindingEventListener(new BindingEventListener() {
-                    @Override
-                    public void OnBindingDataChanged(Object data) {
-                        SetData(nData.GetData());
-                    }
+                if(nData.getClass().isAssignableFrom(this.getClass())){
 
-                    @Override
-                    public void OnBindingReleased() {
+                    nData.AddOnBindingEventListener(new BindingEventListener() {
+                        @Override
+                        public void OnBindingDataChanged(Object data) {
+                            SetData(data);
+                        }
 
-                    }
+                        @Override
+                        public void OnBindingReleased() {
 
-                    @Override
-                    public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+                        }
 
-                    }
-                });
+                        @Override
+                        public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+
+                        }
+                    });
+
+                    return true;
+                }
             }
         }
-        FireOnBindingDataChanged();
-        return true;
+        return false;
     }
 
     void FireOnBindingDataChanged() {
@@ -176,6 +179,7 @@ public class NodeDataBase implements INodeData {
         for (int i = listenerList.getListenerCount() - 1; i > 0; i--) {
             listenerList.remove(BindingEventListener.class, (BindingEventListener)listenerArr[i]);
         }
+        bindingMap.clear();
     }
 
     @Override
