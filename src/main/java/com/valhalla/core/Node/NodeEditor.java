@@ -7,6 +7,7 @@ import org.piccolo2d.PLayer;
 import org.piccolo2d.PNode;
 import org.piccolo2d.PRoot;
 import org.piccolo2d.event.PBasicInputEventHandler;
+import org.piccolo2d.event.PDragSequenceEventHandler;
 import org.piccolo2d.event.PInputEvent;
 import org.piccolo2d.event.PPanEventHandler;
 import org.piccolo2d.extras.pswing.PSwing;
@@ -102,18 +103,38 @@ public class NodeEditor extends PSwingCanvas {
             outputLayout.setOffset(nComponentWidth - 35, layOffset.getY());
         });
 
-        pNode.addInputEventListener(new PBasicInputEventHandler() {
+        pNode.addInputEventListener(new PDragSequenceEventHandler() {
+            protected Point2D nodeStartPosition;
+            protected double gridSpacing = 20;
+
+            protected void startDrag(final PInputEvent event) {
+                super.startDrag(event);
+                pNode.raiseToTop();
+                nodeStartPosition = pNode.getOffset();
+            }
+
             @Override
             public void mouseDragged(PInputEvent event) {
                 if (props.isNodeDragging() && !props.isConnectorDragging()) {
-                    event.setHandled(true);
-                    super.mouseDragged(event);
-                    Dimension2D delta = event.getDeltaRelativeTo(pNode);
-                    pNode.translate(delta.getWidth(), delta.getHeight());
-                    props.setLastInputEvent(event);
+
+                    final Point2D start = getCamera().localToView(
+                            (Point2D) getMousePressedCanvasPoint().clone());
+                    final Point2D current = event.getPositionRelativeTo(getLayer());
+                    final Point2D dest = new Point2D.Double();
+
+                    dest.setLocation(nodeStartPosition.getX() + current.getX() - start.getX(), nodeStartPosition.getY()
+                            + current.getY() - start.getY());
+
+                    dest.setLocation(dest.getX() - dest.getX() % gridSpacing, dest.getY() - dest.getY() % gridSpacing);
+
+                    pNode.setOffset(dest.getX(), dest.getY());
                     UpdateConnectorPosition(finalNodeComp);
-                    getLayer().repaint();
                 }
+            }
+
+            @Override
+            public void setMinDragStartDistance(double minDistance) {
+                super.setMinDragStartDistance(100d);
             }
         });
 
@@ -409,15 +430,33 @@ public class NodeEditor extends PSwingCanvas {
         addInputEventListener(new NEditorMouseWheelZoomHandler());
         // add custom pan event handler
         removeInputEventListener(getPanEventHandler());
+
+
         addInputEventListener(new PPanEventHandler() {
+            protected PNode draggedNode;
+            protected Point2D nodeStartPosition;
+
+            protected boolean shouldStartDragInteraction(final PInputEvent event) {
+                if (super.shouldStartDragInteraction(event)) {
+                    return (!event.getPickedNode().getPickable() && !props.isConnectorDragging() || event.getPickedNode() == getLayer());//&& !(event.getPickedNode() instanceof NodeConnector);
+                }
+                return false;
+            }
+
+            protected void startDrag(final PInputEvent event) {
+                super.startDrag(event);
+                draggedNode = event.getPickedNode();
+                if (draggedNode != null) {
+                    draggedNode.raiseToTop();
+                    nodeStartPosition = draggedNode.getOffset();
+                }
+            }
+
             @Override
             protected void drag(PInputEvent event) {
-                PNode pS = event.getPickedNode();
-                if(!pS.getPickable() || (pS instanceof PLayer) && !props.isConnectorDragging()) {
-                    super.drag(event);
-                    props.setEditorCurrentAction(EditorAction.MOVING);
-                }else
-                    event.setHandled(false);
+                super.drag(event);
+                props.setEditorCurrentAction(EditorAction.MOVING);
+                event.setHandled(false);
             }
 
             @Override
