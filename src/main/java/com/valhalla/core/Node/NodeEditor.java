@@ -6,15 +6,15 @@ import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
 import org.piccolo2d.PNode;
 import org.piccolo2d.PRoot;
-import org.piccolo2d.event.PBasicInputEventHandler;
-import org.piccolo2d.event.PDragSequenceEventHandler;
-import org.piccolo2d.event.PInputEvent;
-import org.piccolo2d.event.PPanEventHandler;
+import org.piccolo2d.event.*;
+import org.piccolo2d.extras.event.PNotificationCenter;
+import org.piccolo2d.extras.event.PSelectionEventHandler;
 import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.util.PPaintContext;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.*;
@@ -60,6 +60,7 @@ public class NodeEditor extends PSwingCanvas {
         // Add nodes to the props list
         props.addNode(uuid, pNode);
         props.addComponent(nodeComp);
+        props.addToSelectableList(pNode);
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
@@ -105,7 +106,6 @@ public class NodeEditor extends PSwingCanvas {
 
         pNode.addInputEventListener(new PDragSequenceEventHandler() {
             protected Point2D nodeStartPosition;
-            protected double gridSpacing = 20;
 
             protected void startDrag(final PInputEvent event) {
                 super.startDrag(event);
@@ -125,7 +125,7 @@ public class NodeEditor extends PSwingCanvas {
                     dest.setLocation(nodeStartPosition.getX() + current.getX() - start.getX(), nodeStartPosition.getY()
                             + current.getY() - start.getY());
 
-                    dest.setLocation(dest.getX() - dest.getX() % gridSpacing, dest.getY() - dest.getY() % gridSpacing);
+                    dest.setLocation(dest.getX() - dest.getX() % props.getGridSpacing(), dest.getY() - dest.getY() % props.getGridSpacing());
 
                     pNode.setOffset(dest.getX(), dest.getY());
                     UpdateConnectorPosition(finalNodeComp);
@@ -436,6 +436,11 @@ public class NodeEditor extends PSwingCanvas {
             protected PNode draggedNode;
             protected Point2D nodeStartPosition;
 
+            @Override
+            public void setEventFilter(PInputEventFilter newEventFilter) {
+                super.setEventFilter(new PInputEventFilter(InputEvent.BUTTON3_MASK));
+            }
+
             protected boolean shouldStartDragInteraction(final PInputEvent event) {
                 if (super.shouldStartDragInteraction(event)) {
                     return (!event.getPickedNode().getPickable() && !props.isConnectorDragging() || event.getPickedNode() == getLayer());//&& !(event.getPickedNode() instanceof NodeConnector);
@@ -517,6 +522,15 @@ public class NodeEditor extends PSwingCanvas {
                 }
             }
         });
+
+
+        final PSelectionEventHandler selectionEventHandler = new PSelectionEventHandler(getCamera(), getLayer());
+        addInputEventListener(selectionEventHandler);
+        getRoot().getDefaultInputManager().setKeyboardFocus(selectionEventHandler);
+
+        PNotificationCenter.defaultCenter().addListener(this, "selectionChanged",
+                PSelectionEventHandler.SELECTION_CHANGED_NOTIFICATION, selectionEventHandler);
+
         // Add node selector panel listener
         nsp.addNodeSelectorEventListener(this::CreateNewNode);
     }
@@ -546,17 +560,16 @@ public class NodeEditor extends PSwingCanvas {
         final Line2D gridLine = new Line2D.Double();
         final Stroke gridStroke = new BasicStroke(1);
         final Color gridPaint = Color.BLACK;
-        final double gridSpacing = 15;
         final double gridSpacingThick = 150;
 
         return new PLayer() {
             protected void paint(final PPaintContext paintContext) {
                 // make sure grid gets drawn on snap to grid boundaries. And
                 // expand a little to make sure that entire view is filled.
-                final double bx = getX() - getX() % gridSpacing - gridSpacing;
-                final double by = getY() - getY() % gridSpacing - gridSpacing;
-                final double rightBorder = getX() + getWidth() + gridSpacing;
-                final double bottomBorder = getY() + getHeight() + gridSpacing;
+                final double bx = getX() - getX() % props.getGridSpacing() - props.getGridSpacing();
+                final double by = getY() - getY() % props.getGridSpacing() - props.getGridSpacing();
+                final double rightBorder = getX() + getWidth() + props.getGridSpacing();
+                final double bottomBorder = getY() + getHeight() + props.getGridSpacing();
 
                 final double bxT = getX() - getX() % gridSpacingThick - gridSpacingThick;
                 final double byT = getY() - getY() % gridSpacingThick - gridSpacingThick;
@@ -576,14 +589,14 @@ public class NodeEditor extends PSwingCanvas {
                 g2.setStroke(gridStroke);
                 g2.setColor(new Color(70, 70, 70));
 
-                for (double x = bx; x < rightBorder; x += gridSpacing) {
+                for (double x = bx; x < rightBorder; x += props.getGridSpacing()) {
                     gridLine.setLine(x, by, x, bottomBorder);
                     if (clip.intersectsLine(gridLine)) {
                         g2.draw(gridLine);
                     }
                 }
 
-                for (double y = by; y < bottomBorder; y += gridSpacing) {
+                for (double y = by; y < bottomBorder; y += props.getGridSpacing()) {
                     gridLine.setLine(bx, y, rightBorder, y);
                     if (clip.intersectsLine(gridLine)) {
                         g2.draw(gridLine);
@@ -844,8 +857,10 @@ public class NodeEditor extends PSwingCanvas {
         protected HashMap<UUID, NodeComponent>              nodeComponents;
         protected List<Class<? extends NodeComponent>>      registeredNodes;
         protected List<NodeConnectionPoints>                connectionPoints;
+        protected ArrayList                                 selectablePNodes;
 
         // Editor Canvas props
+        protected double      gridSpacing;
         protected UUID        actionedNode;
         protected UUID        connectorDraggingUUID;
         protected Point2D     lastMousePosition;
@@ -868,9 +883,11 @@ public class NodeEditor extends PSwingCanvas {
             connectorsMap = new HashMap<>();
             nodeComponents = new HashMap<>();
             registeredNodes = new ArrayList<>();
+            selectablePNodes = new ArrayList();
             connectionPoints = new ArrayList<>();
             lastMousePosition = new Point2D.Double(0,0);
             nodeReseted = true;
+            gridSpacing = 15;
         }
 
         /**
@@ -1004,6 +1021,14 @@ public class NodeEditor extends PSwingCanvas {
             nodeReseted = true;
         }
 
+        public double getGridSpacing() {
+            return gridSpacing;
+        }
+
+        public void setGridSpacing(double gridSpacing) {
+            this.gridSpacing = gridSpacing;
+        }
+
         public boolean isMouseOnCanvas() {
             return mouseOnCanvas;
         }
@@ -1089,6 +1114,18 @@ public class NodeEditor extends PSwingCanvas {
             if (connPointsToDelete != null) {
                 connectionPoints.remove(connPointsToDelete);
             }
+        }
+
+        public ArrayList getSelectablePNodes() {
+            return selectablePNodes;
+        }
+
+        public void addToSelectableList(PNode pNode) {
+            selectablePNodes.add(pNode);
+        }
+
+        public void removeFromSelectableList(PNode pNode) {
+            selectablePNodes.remove(pNode);
         }
 
         public int getPressedKeyCode() {
