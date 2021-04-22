@@ -291,7 +291,6 @@ public class NodeEditor extends PSwingCanvas {
                             break;
                         }
                     }
-
                     nodeComponent
                             .GetNode()
                             .SetCurrentAction(NodeBase.NodeAction.CONNECTION_CTRL_CLICKED);
