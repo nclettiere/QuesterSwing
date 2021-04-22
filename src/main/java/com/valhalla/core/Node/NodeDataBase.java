@@ -125,12 +125,10 @@ public class NodeDataBase implements INodeData {
     @Override
     public boolean SetBinding(INodeData nData) {
         if(bindingMap.containsKey(nData.GetUUID())) return false;
-        bindingMap.put(nData.GetUUID(), nData);
-
         if(nData.GetUUID() != this.GetUUID()) {
             if (isDataBindAvailable(nData)) {
                 if(nData.getClass().isAssignableFrom(this.getClass())){
-
+                    bindingMap.put(nData.GetUUID(), nData);
                     nData.AddOnBindingEventListener(new BindingEventListener() {
                         @Override
                         public void OnBindingDataChanged(Object data) {

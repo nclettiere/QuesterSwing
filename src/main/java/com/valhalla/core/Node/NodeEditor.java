@@ -630,26 +630,15 @@ public class NodeEditor extends PSwingCanvas {
         Point curveEndCtrl = new Point();
 
         float delta = ((float)(curveEnd.getX()) / (float)(curveOrigin.getX())) - 1.0f;
+        if(delta < 0f)
+            delta = delta * -1;
+        if(delta > 0.8f)
+            delta = 0.8f;
 
-        if(delta < 0) {
-            if(curveEnd.getY() < curveOrigin.getY()) {
-
-                curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
-                curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
-                curveEndCtrl.x    = (int) curveEnd.getX() - 300;
-                curveEndCtrl.y    = (int) curveEnd.getY() - 300;
-            }else {
-                curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
-                curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
-                curveEndCtrl.x    = (int) curveEnd.getX() - 300;
-                curveEndCtrl.y    = (int) curveEnd.getY() + 300;
-            }
-        }else {
-            curveOriginCtrl.x = (int)((curveOrigin.getX() + 30) + (50 * delta));
-            curveOriginCtrl.y = (int)(curveOrigin.getY() + (50 * delta));
-            curveEndCtrl.x    = (int)((curveEnd.getX() - 30) - (50 * delta));
-            curveEndCtrl.y    = (int)(curveEnd.getY() - (50 * delta));
-        }
+        curveOriginCtrl.x = (int) curveOrigin.getX() + (int)(300 * delta);
+        curveOriginCtrl.y = (int) curveOrigin.getY();
+        curveEndCtrl.x = (int) curveEnd.getX() - (int)(300 * delta);
+        curveEndCtrl.y = (int) curveEnd.getY();
 
         c.setCurve(
                 curveOrigin.getX(),
@@ -703,47 +692,15 @@ public class NodeEditor extends PSwingCanvas {
         Point curveEndCtrl = new Point();
 
         float delta = ((float)(curveEnd.getX()) / (float)(curveOrigin.getX())) - 1.0f;
+        if(delta < 0f)
+            delta = delta * -1;
+        if(delta > 0.8f)
+            delta = 0.8f;
 
-        if(draggingConnector.GetNodeData().GetMode() == ConnectorMode.OUTPUT) {
-            if (delta < 0) {
-                if (curveEnd.getY() < curveOrigin.getY()) {
-
-                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
-                    curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
-                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
-                    curveEndCtrl.y = (int) curveEnd.getY() - 300;
-                }else {
-                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
-                    curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
-                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
-                    curveEndCtrl.y = (int) curveEnd.getY() + 300;
-                }
-            }else {
-                curveOriginCtrl.x = (int) ((curveOrigin.getX() + 30) + (50 * delta));
-                curveOriginCtrl.y = (int) (curveOrigin.getY() + (50 * delta));
-                curveEndCtrl.x = (int) ((curveEnd.getX() - 30) - (50 * delta));
-                curveEndCtrl.y = (int) (curveEnd.getY() - (50 * delta));
-            }
-        }else {
-            if (delta < 0) {
-                curveOriginCtrl.x = (int) ((curveOrigin.getX() + 30) + (50 * delta));
-                curveOriginCtrl.y = (int) (curveOrigin.getY() + (50 * delta));
-                curveEndCtrl.x = (int) ((curveEnd.getX() - 30) - (50 * delta));
-                curveEndCtrl.y = (int) (curveEnd.getY() - (50 * delta));
-            } else {
-                if (curveEnd.getY() < curveOrigin.getY()) {
-                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
-                    curveOriginCtrl.y = (int) curveOrigin.getY() + 200;
-                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
-                    curveEndCtrl.y = (int) curveEnd.getY() + 300;
-                } else {
-                    curveOriginCtrl.x = (int) curveOrigin.getX() + 400;
-                    curveOriginCtrl.y = (int) curveOrigin.getY() - 200;
-                    curveEndCtrl.x = (int) curveEnd.getX() - 300;
-                    curveEndCtrl.y = (int) curveEnd.getY() - 300;
-                }
-            }
-        }
+        curveOriginCtrl.x = (int) curveOrigin.getX() + (int)(300 * delta);
+        curveOriginCtrl.y = (int) curveOrigin.getY();
+        curveEndCtrl.x = (int) curveEnd.getX() - (int)(300 * delta);
+        curveEndCtrl.y = (int) curveEnd.getY();
 
         c.setCurve(
                 curveOrigin.getX(),
