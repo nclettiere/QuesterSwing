@@ -46,101 +46,7 @@ public class NodeEditor extends PSwingCanvas {
         SetupCanvas(root, camera);
         SetupListeners();
 
-        // Create a selection event handler
-        final PSelectionEventHandler selectionEventHandler = new PSelectionEventHandler(camera, getLayer()) {
-            // The rectangle that is currently getting created.
-            protected PPath rectangle;
-
-            // The mouse press location for the current pressed, drag, release
-            // sequence.
-            protected Point2D pressPoint;
-
-            // The current drag location.
-            protected Point2D dragPoint;
-
-            @Override
-            public void setEventFilter(PInputEventFilter newEventFilter) {
-                super.setEventFilter(new PInputEventFilter(InputEvent.BUTTON1_MASK));
-            }
-
-            public void mousePressed(final PInputEvent e) {
-                super.mousePressed(e);
-
-                final PLayer layer = getLayer();
-
-                // Initialize the locations.
-                pressPoint = e.getPosition();
-                dragPoint = pressPoint;
-
-                // create a new rectangle and add it to the canvas layer so that
-                // we can see it.
-                rectangle = new PPath.Float();
-                rectangle.setPaint(new Color(0,0,0,0));
-                rectangle.setStrokePaint(new Color(140,140,140));
-                rectangle.setStroke(new BasicStroke((float) (1 / e.getCamera().getViewScale())));
-                layer.addChild(rectangle);
-
-                // update the rectangle shape.
-                updateRectangle(e);
-            }
-
-            public void mouseDragged(final PInputEvent e) {
-                super.mouseDragged(e);
-                // update the drag point location.
-                dragPoint = e.getPosition();
-
-                // update the rectangle shape.
-                updateRectangle(e);
-
-            }
-
-            public void mouseReleased(final PInputEvent e) {
-                super.mouseReleased(e);
-                // update the rectangle shape.
-                getLayer().removeChild(rectangle);
-                rectangle = null;
-            }
-
-            public void updateRectangle(PInputEvent e) {
-                // create a new bounds that contains both the press and current
-                // drag point.
-                final PBounds b = new PBounds();
-                b.add(pressPoint);
-                b.add(dragPoint);
-
-                ArrayList arr = new ArrayList();
-
-                getLayer().findIntersectingNodes(b, arr);
-
-                rectangle.findIntersectingNodes(b, arr);
-                for (NodeComponent nComp : props.getAllNodeComponents()) {
-                    NodeComponent foundComp = null;
-                    for (Object o : arr) {
-                        if (o instanceof PSwing) {
-                            PSwing ps = (PSwing) o;
-                            if (ps.getComponent() instanceof NodeComponent) {
-                                foundComp = (NodeComponent) ps.getComponent();
-                            }
-                        }
-                    }
-                    if (foundComp != null) {
-                        foundComp.Select();
-                    }
-                }
-
-                // Set the rectangles bounds.
-                rectangle.reset();
-                rectangle.append(b, false);
-                rectangle.closePath();
-            }
-        };
-        addInputEventListener(selectionEventHandler);
-        root.getDefaultInputManager().setKeyboardFocus(selectionEventHandler);
-
-        PNotificationCenter.defaultCenter().addListener(this, "selectionChanged",
-                PSelectionEventHandler.SELECTION_CHANGED_NOTIFICATION, selectionEventHandler);
-
-        props.setEditorCurrentAction(EditorAction.NONE);
+       props.setEditorCurrentAction(EditorAction.NONE);
     }
 
     public void CreateNewNode(Class<? extends NodeComponent> nCompClass) {
@@ -397,8 +303,8 @@ public class NodeEditor extends PSwingCanvas {
 
             @Override
             public void mouseEntered(PInputEvent event) {
+                event.setHandled(false);
                 super.mouseEntered(event);
-
                 if(props.isConnectorDragging()) {
                     if(!props.getConnectorDraggingUUID().equals(connectorUUID))
                         connector.Hover(true);
@@ -408,8 +314,8 @@ public class NodeEditor extends PSwingCanvas {
             }
             @Override
             public void mouseExited(PInputEvent event) {
+                event.setHandled(false);
                 super.mouseExited(event);
-                connector.Hover(false);
             }
             @Override
             public void mouseDragged(PInputEvent event) {
@@ -419,6 +325,7 @@ public class NodeEditor extends PSwingCanvas {
 
                 props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
+
                 super.mouseDragged(event);
             }
             @Override
@@ -538,25 +445,25 @@ public class NodeEditor extends PSwingCanvas {
 
             protected boolean shouldStartDragInteraction(final PInputEvent event) {
                 if (super.shouldStartDragInteraction(event)) {
-                    return (!event.getPickedNode().getPickable() && !props.isConnectorDragging() || event.getPickedNode() == getLayer());//&& !(event.getPickedNode() instanceof NodeConnector);
+                    return (event.getPickedNode() == getLayer());
                 }
                 return false;
             }
 
             protected void startDrag(final PInputEvent event) {
-                super.startDrag(event);
                 draggedNode = event.getPickedNode();
                 if (draggedNode != null) {
                     draggedNode.raiseToTop();
                     nodeStartPosition = draggedNode.getOffset();
                 }
+                super.startDrag(event);
             }
 
             @Override
             protected void drag(PInputEvent event) {
-                super.drag(event);
                 props.setEditorCurrentAction(EditorAction.MOVING);
                 event.setHandled(false);
+                super.drag(event);
             }
 
             @Override
@@ -589,20 +496,116 @@ public class NodeEditor extends PSwingCanvas {
         });
 
         addInputEventListener(new PBasicInputEventHandler() {
+            // The rectangle that is currently getting created.
+            protected PPath rectangle;
+            // The mouse press location for the current pressed, drag, release
+            // sequence.
+            protected Point2D pressPoint;
+            // The current drag location.
+            protected Point2D dragPoint;
+            // The selected nodes array
+            protected ArrayList<PNode> pNodeList = new ArrayList<>();
+
+            @Override
+            public void setEventFilter(PInputEventFilter newEventFilter) {
+                super.setEventFilter(new PInputEventFilter(InputEvent.BUTTON1_MASK));
+            }
+
+            public void mousePressed(final PInputEvent e) {
+                if (props.isConnectorDragging() || props.isNodeDragging() ||
+                        e.getPickedNode() != getLayer())
+                {
+                    e.setHandled(false);
+                    return;
+                }
+
+                super.mousePressed(e);
+
+                final PLayer layer = getLayer();
+
+                // Initialize the locations.
+                pressPoint = e.getPosition();
+                dragPoint = pressPoint;
+
+                // create a new rectangle and add it to the canvas layer so that
+                // we can see it.
+                rectangle = new PPath.Float();
+                rectangle.setPaint(new Color(0,0,0,0));
+                rectangle.setStrokePaint(new Color(140,140,140));
+                rectangle.setStroke(new BasicStroke((float) (1 / e.getCamera().getViewScale())));
+                layer.addChild(rectangle);
+
+                // update the rectangle shape.
+                updateRectangle(e);
+            }
+
+            public void mouseDragged(final PInputEvent e) {
+                if (props.isConnectorDragging() || props.isNodeDragging() ||
+                        e.getPickedNode() != getLayer())
+                {
+                    e.setHandled(false);
+                    return;
+                }
+
+                super.mouseDragged(e);
+                // update the drag point location.
+                dragPoint = e.getPosition();
+                // update the rectangle shape.
+                updateRectangle(e);
+
+            }
+
+            public void mouseReleased(final PInputEvent e) {
+                super.mouseReleased(e);
+                if (rectangle == null) return;
+                // update the rectangle shape.
+                getLayer().removeChild(rectangle);
+                rectangle = null;
+            }
+
+            public void updateRectangle(PInputEvent e) {
+                // create a new bounds that contains both the press and current
+                // drag point.
+                final PBounds b = new PBounds();
+                b.add(pressPoint);
+                b.add(dragPoint);
+
+                // Set the rectangles bounds.
+                rectangle.reset();
+                rectangle.append(b, false);
+                rectangle.closePath();
+
+                // Find if a NodeComponent is in the area of the rectangle
+                // if so, select the node if not unselect it.
+                getLayer().findIntersectingNodes(b, pNodeList);
+                for (PNode pnode : props.getAllPNodes()) {
+                    PSwing ps = (PSwing) pnode;
+                    NodeComponent nComp = (NodeComponent) ps.getComponent();
+                    if (pNodeList.contains(pnode))
+                        nComp.Select();
+                    else
+                        nComp.Unselect();
+                }
+
+                getLayer().repaint();
+                pNodeList.clear();
+            }
             @Override
             public void mouseMoved(PInputEvent event) {
-                super.mouseMoved(event);
+                event.setHandled(false);
+                props.setLastMousePosition(event.getPosition());
                 props.setLastInputEvent(event);
+
                 if(props.isTriggerPointCatch()) {
                     props.setCatchedPoint(event.getPosition());
                     props.setTriggerPointCatch(false);
                 }
+                super.mouseMoved(event);
             }
 
             @Override
             public void mouseClicked(PInputEvent event) {
                 super.mouseClicked(event);
-                props.setLastInputEvent(event);
                 if (event.getButton() == BUTTON3) {
                     getLayer().addChild(0, pSelector);
                     pSelector.setOffset(event.getPosition());
@@ -817,7 +820,8 @@ public class NodeEditor extends PSwingCanvas {
         if(draggingConnector == null || pNodeConnector == null) return;
 
         Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        Point2D curveEnd = getMousePosition(true);
+        Point2D curveEnd = new Point2D.Double(getMousePosition(true).x + props.getLastInputEvent().getPositionRelativeTo(pNodeConnector).getX(), getMousePosition(true).y + props.getLastInputEvent().getPositionRelativeTo(pNodeConnector).getY()); ;
+        System.out.println(curveEnd);
 
         if (curveOrigin == null || curveEnd == null) return;
 
@@ -1161,6 +1165,14 @@ public class NodeEditor extends PSwingCanvas {
 
         public Point2D getCatchedPoint() {
             return catchedPoint;
+        }
+
+        public Point2D getLastMousePosition() {
+            return lastMousePosition;
+        }
+
+        public void setLastMousePosition(Point2D lastMousePosition) {
+            this.lastMousePosition = lastMousePosition;
         }
 
         public void setCatchedPoint(Point2D catchedPoint) {
