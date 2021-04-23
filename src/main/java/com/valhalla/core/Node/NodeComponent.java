@@ -2,7 +2,6 @@ package com.valhalla.core.Node;
 
 import com.valhalla.application.gui.*;
 import net.miginfocom.swing.MigLayout;
-import org.apache.xpath.operations.Bool;
 import org.piccolo2d.PNode;
 import org.piccolo2d.extras.pswing.PSwing;
 

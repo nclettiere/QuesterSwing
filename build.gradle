@@ -28,18 +28,10 @@ dependencies {
     provided 'com.formdev:flatlaf:1.1.2'
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-swing
     provided group: 'com.miglayout', name: 'miglayout-swing', version: '5.2'
-    // https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-transcoder
-    provided group: 'org.apache.xmlgraphics', name: 'batik-transcoder', version: '1.14'
     // https://mvnrepository.com/artifact/org.piccolo2d/piccolo2d-core
     provided group: 'org.piccolo2d', name: 'piccolo2d-core', version: '3.0.1'
     // https://mvnrepository.com/artifact/org.piccolo2d/piccolo2d-extras
     provided group: 'org.piccolo2d', name: 'piccolo2d-extras', version: '3.0.1'
-    // https://mvnrepository.com/artifact/org.graphstream/gs-core
-    provided group: 'org.graphstream', name: 'gs-core', version: '2.0'
-    // https://mvnrepository.com/artifact/org.swinglabs/jxlayer
-    provided group: 'org.swinglabs', name: 'jxlayer', version: '3.0.4'
-    // https://mvnrepository.com/artifact/org.swinglabs/swingx
-    provided group: 'org.swinglabs', name: 'swingx', version: '1.6.1'
 }
 
 application {

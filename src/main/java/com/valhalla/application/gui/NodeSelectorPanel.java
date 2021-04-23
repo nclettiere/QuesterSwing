@@ -4,8 +4,6 @@ import com.valhalla.core.Node.NodeComponent;
 import com.valhalla.core.Node.NodeEventListener;
 import com.valhalla.core.Node.NodeSelectorItem;
 import net.miginfocom.swing.MigLayout;
-import org.jdesktop.swingx.JXPanel;
-import org.jdesktop.swingx.border.DropShadowBorder;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -55,7 +53,7 @@ class NodeDisplayData {
     }
 }
 
-public class NodeSelectorPanel extends JXPanel {
+public class NodeSelectorPanel extends JPanel {
     protected List<Class<? extends NodeComponent>> nodeList;
     protected List<NodeDisplayData> miscList;
     protected HashMap<String, List<NodeDisplayData>> GroupList;
