@@ -16,10 +16,12 @@ public class NodeDataBase implements INodeData {
     protected Object                   data;
     protected Color                    color;
     protected EventListenerList        listenerList;
+    protected PropertyBase             parentProperty;
 
-    public NodeDataBase() {
+    public NodeDataBase(PropertyBase parentProperty) {
         this.bindingMap = new HashMap<>();
         this.listenerList = new EventListenerList();
+        this.parentProperty = parentProperty;
         this.uuid = UUID.randomUUID();
         // perform evaluation for clearing incorrect error messages
         evaluate();
@@ -102,6 +104,16 @@ public class NodeDataBase implements INodeData {
     }
 
     @Override
+    public PropertyBase getParentProperty() {
+        return parentProperty;
+    }
+
+    @Override
+    public int getDataPropertyIndex() {
+        return parentProperty.getIndexOf(this);
+    }
+
+    @Override
     public boolean evaluate() {
         return true;
     }
@@ -125,10 +137,17 @@ public class NodeDataBase implements INodeData {
     @Override
     public boolean SetBinding(INodeData nData) {
         if(bindingMap.containsKey(nData.GetUUID())) return false;
+
         if(nData.GetUUID() != this.GetUUID()) {
+            if (nData.GetMode() == ConnectorMode.INPUT &&
+                    this.mode == ConnectorMode.OUTPUT) {
+                nData.SetData(this);
+                return true;
+            }
             if (isDataBindAvailable(nData)) {
-                if(nData.getClass().isAssignableFrom(this.getClass())){
+                if (nData.getClass().isAssignableFrom(this.getClass())) {
                     bindingMap.put(nData.GetUUID(), nData);
+                    SetData(nData.GetData());
                     nData.AddOnBindingEventListener(new BindingEventListener() {
                         @Override
                         public void OnBindingDataChanged(Object data) {
@@ -141,7 +160,7 @@ public class NodeDataBase implements INodeData {
                         }
 
                         @Override
-                        public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+                        public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
 
                         }
                     });
@@ -166,7 +185,7 @@ public class NodeDataBase implements INodeData {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {
-                ((BindingEventListener) listeners[i+1]).onDataEvaluationChanged(uuid, state);
+                ((BindingEventListener) listeners[i+1]).onDataEvaluationChanged(this, state);
             }
         }
     }

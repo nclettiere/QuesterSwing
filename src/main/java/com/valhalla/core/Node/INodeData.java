@@ -20,7 +20,8 @@ public interface INodeData {
     void          SetDataColor(Color color);
     boolean       GetMultipleBindingAllowed();
     void          SetMultipleBindingAllowed(boolean allowed);
-
+    PropertyBase  getParentProperty();
+    int           getDataPropertyIndex();
     boolean       evaluate();
     boolean       isDataBindAvailable(INodeData nodeData);
     boolean       IsBinded();

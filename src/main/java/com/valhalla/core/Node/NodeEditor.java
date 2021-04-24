@@ -305,28 +305,32 @@ public class NodeEditor extends PSwingCanvas {
             public void mouseEntered(PInputEvent event) {
                 event.setHandled(false);
                 super.mouseEntered(event);
-                if(props.isConnectorDragging()) {
-                    if(!props.getConnectorDraggingUUID().equals(connectorUUID))
-                        connector.Hover(true);
-                }else {
-                    connector.Hover(true);
-                }
+                connector.Hover(true);
             }
             @Override
             public void mouseExited(PInputEvent event) {
+                connector.Hover(false);
                 event.setHandled(false);
                 super.mouseExited(event);
             }
+
+            @Override
+            public void mouseMoved(PInputEvent event) {
+                event.setHandled(false);
+                super.mouseMoved(event);
+            }
+
             @Override
             public void mouseDragged(PInputEvent event) {
-                event.setHandled(false);
+                super.mouseDragged(event);
+                event.setHandled(true);
+                if (props.getConnectorDraggingUUID() != connector.GetNodeData().GetUUID() && props.getConnectorDraggingUUID() != null) return;
                 if(props.getConnectorDraggingUUID() == null)
                     MatchConnectorType(connector.GetNodeData());
 
                 props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
-
-                super.mouseDragged(event);
+                props.setLastMousePosition(event.getPositionRelativeTo(getLayer()));
             }
             @Override
             public void mouseReleased(PInputEvent event) {
@@ -344,11 +348,11 @@ public class NodeEditor extends PSwingCanvas {
         Point2D connector1Point = props
                 .getPNodeConnector(connector1)
                 .getGlobalBounds()
-                .getOrigin();
+                .getCenter2D();
         Point2D connector2Point = props
                 .getPNodeConnector(connector2)
                 .getGlobalBounds()
-                .getOrigin();
+                .getCenter2D();
         props.getConnectionPoints()
                 .add(new NodeConnectionPoints(
                     connector1,
@@ -379,11 +383,11 @@ public class NodeEditor extends PSwingCanvas {
                 }
 
                 @Override
-                public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+                public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
                     if(evaluationState != null) {
-                        nComp.addMessage(dataUUID, new NodeMessage(evaluationState));
+                        nComp.addMessage(data.GetUUID(), new NodeMessage(data, evaluationState));
                     }else {
-                        nComp.removeMessage(dataUUID);
+                        nComp.removeMessage();
                     }
                 }
             });
@@ -820,7 +824,7 @@ public class NodeEditor extends PSwingCanvas {
         if(draggingConnector == null || pNodeConnector == null) return;
 
         Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        Point2D curveEnd = new Point2D.Double(getMousePosition(true).x + props.getLastInputEvent().getPositionRelativeTo(pNodeConnector).getX(), getMousePosition(true).y + props.getLastInputEvent().getPositionRelativeTo(pNodeConnector).getY()); ;
+        Point2D curveEnd = props.getLastMousePosition();
         System.out.println(curveEnd);
 
         if (curveOrigin == null || curveEnd == null) return;

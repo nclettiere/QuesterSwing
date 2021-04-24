@@ -20,7 +20,7 @@ public class DisplayImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageData id = new ImageData();
+        ImageData id = new ImageData(this);
         id.SetMode(ConnectorMode.INPUT);
         id.AddOnBindingEventListener(new BindingEventListener() {
             @Override
@@ -36,7 +36,7 @@ public class DisplayImageProperty extends PropertyBase {
             }
 
             @Override
-            public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+            public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
 
             }
         });

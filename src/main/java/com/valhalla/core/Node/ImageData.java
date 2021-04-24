@@ -1,5 +1,7 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.application.gui.Utils;
+
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.io.File;
@@ -11,8 +13,8 @@ import java.util.*;
 
 public class ImageData extends NodeDataBase {
 
-    public ImageData() {
-        super();
+    public ImageData(PropertyBase parentProperty) {
+        super(parentProperty);
         SetName("Image");
         SetDisplayName("Image");
         SetData("");
@@ -37,8 +39,12 @@ public class ImageData extends NodeDataBase {
             if (data != null) {
                 if (!dataFile.isEmpty() && !dataFile.isBlank()) {
                     File file = new File(dataFile);
-                    if (file.isFile() && file.exists() && file.canRead())
-                        state = null;
+                    if (file.isFile() && file.exists() && file.canRead()) {
+                        if (Utils.isImage(dataFile))
+                            state = null;
+                        else
+                            state = new AbstractMap.SimpleEntry<>(true, "The file is not an image.");
+                    }
                     else
                         state = new AbstractMap.SimpleEntry<>(false, "The file does not exist or cannot be read.");
                 } else {

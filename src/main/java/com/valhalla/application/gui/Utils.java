@@ -60,4 +60,9 @@ public class Utils {
             return null;
         }
     }
+
+    public static boolean isImage(String imagePath){
+        Image image = new ImageIcon(imagePath).getImage();
+        return image.getWidth(null) != -1;
+    }
 }

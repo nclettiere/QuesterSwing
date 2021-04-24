@@ -148,15 +148,14 @@ public class NodeConnector
                     lastConnection = nodeData;
                     lastConnectionComp = draggingConnector;
                     FireOnConnectionCreated();
+                    nData.evaluate();
                 }
             }
         }
     }
 
     public void Hover(boolean b) {
-        if(!GetDisabled()) {
-            this.mouseEntered = b;
-            repaint();
-        }
+        this.mouseEntered = b;
+        repaint();
     }
 }

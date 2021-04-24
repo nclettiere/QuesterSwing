@@ -9,8 +9,8 @@ import java.util.UUID;
 
 public class IntegerData extends NodeDataBase {
 
-    public IntegerData() {
-        super();
+    public IntegerData(PropertyBase parentProperty) {
+        super(parentProperty);
         SetName("Integer");
         SetDisplayName("Integer");
         SetData(0);

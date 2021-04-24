@@ -25,10 +25,13 @@ public class NodeBase implements INode {
     protected NodeAction nodeAction;
     protected EventListenerList listenerList;
 
+    protected boolean allowSelfBinding;
+
     NodeBase() {
         this.listenerList = new EventListenerList();
         this.properties = new ArrayList<>();
         this.nodeAction = NodeAction.NONE;
+        this.allowSelfBinding = true;
         SetUUID(UUID.randomUUID());
     }
 
@@ -109,6 +112,16 @@ public class NodeBase implements INode {
     }
 
     @Override
+    public boolean isAllowSelfBinding() {
+        return allowSelfBinding;
+    }
+
+    @Override
+    public void setAllowSelfBinding(boolean allowSelfBinding) {
+        this.allowSelfBinding = allowSelfBinding;
+    }
+
+    @Override
     public UUID GetUUID() {
         return uuid;
     }
@@ -149,7 +162,8 @@ public class NodeBase implements INode {
     }
 
     @Override
-    public void AddProperty(PropertyBase propertyClass) {
-        properties.add(propertyClass);
+    public void AddProperty(PropertyBase property) {
+        property.setAllowSelfBinding(allowSelfBinding);
+        properties.add(property);
     }
 }

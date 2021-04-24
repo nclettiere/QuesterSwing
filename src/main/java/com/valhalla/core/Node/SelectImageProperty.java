@@ -41,10 +41,10 @@ public class SelectImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageData imageOut = new ImageData();
-        IntegerData integerData = new IntegerData();
+        ImageData imageOut = new ImageData(this);
+        IntegerData integerData = new IntegerData(this);
 
-        ImageData imageIn = new ImageData();
+        ImageData imageIn = new ImageData(this);
 
         imageIn.AddOnBindingEventListener(new BindingEventListener() {
             @Override
@@ -67,7 +67,7 @@ public class SelectImageProperty extends PropertyBase {
             }
 
             @Override
-            public void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState) {
+            public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
 
             }
         });
@@ -78,7 +78,7 @@ public class SelectImageProperty extends PropertyBase {
     }
 
     private void addAction() {
-        ImageData imageIn = new ImageData();
+        ImageData imageIn = new ImageData(this);
         AddOutput(imageIn);
         FireConnectorAddedEvent(imageIn);
     }

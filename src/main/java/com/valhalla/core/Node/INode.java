@@ -14,5 +14,8 @@ public interface INode extends Serializable {
 
     List<PropertyBase> GetProperties();
     void SetProperties(List<PropertyBase> properties);
-    void AddProperty(PropertyBase propertyClass);
+    void AddProperty(PropertyBase property);
+
+    boolean isAllowSelfBinding();
+    void setAllowSelfBinding(boolean allowSelfBinding);
 }

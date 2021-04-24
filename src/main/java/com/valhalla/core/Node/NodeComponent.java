@@ -6,6 +6,7 @@ import org.piccolo2d.PNode;
 import org.piccolo2d.extras.pswing.PSwing;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -35,12 +36,13 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected Point   mouseOriginPoint;
 
     protected boolean showMessage;
-    protected HashMap<UUID, NodeMessage> messageList;
+    protected Map.Entry<UUID, NodeMessage> nodeMessage;
+
+    protected JPanel messagePanel;
 
     NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
-        this.messageList = new HashMap<>();
 
         propPanelList = new ArrayList<>();
         this.setLayout(new MigLayout("", "0[shrink 0]0", "0[grow]0"));
@@ -52,6 +54,12 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         Content.setOpaque(false);
 
         add(Content, "grow, wrap");
+
+        messagePanel = new JPanel(new MigLayout("", "0[grow]0", "0[grow]0"));
+        messagePanel.setOpaque(false);
+        messagePanel.setBorder(new EmptyBorder(0,0,0,0));
+
+        add(messagePanel, "grow, wrap");
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -167,28 +175,22 @@ public class NodeComponent extends JComponent implements MouseInputListener {
                  12+49);
 
          // Draw Message Zone
-        if(showMessage) {
-            int i =  messageList.size() - 1;
-            for (NodeMessage nMsg : messageList.values()) {
-                int baseY = getHeight() - (nMsg.getHeight() * (i + 1)) - 2;
-
-                Color color1 = new Color(85, 64, 0);
-                Color color2 = new Color(114, 85, 0);
-                if(nMsg.isError) {
-                    color1 = new Color(127,30,30);
-                    color2 = new Color(139,52,52);
-                }
-                graphics.setColor(color1);
-                if (i > 0)
-                    graphics.fillRoundRect(16, baseY, getWidth() - 34, nMsg.getHeight(), arcs.width, arcs.height);
-                else
-                    graphics.fillRect(16, baseY, getWidth() - 34, nMsg.getHeight());
-                graphics.fillRect(16, baseY, 10, 10);
-                graphics.fillRect(getWidth() - 28, baseY, 10, 10);
-                graphics.setColor(color2);
-                graphics.drawLine(16, baseY, getWidth() - 18, baseY);
-                i--;
+        if(showMessage && nodeMessage != null) {
+            NodeMessage nMsg = nodeMessage.getValue();
+            int baseY = getHeight() - (nMsg.getHeight()) - 2;
+            Color color1 = new Color(85, 64, 0);
+            Color color2 = new Color(114, 85, 0);
+            if(nMsg.isError) {
+                color1 = new Color(127,30,30);
+                color2 = new Color(139,52,52);
             }
+
+            graphics.setColor(color1);
+            graphics.fillRoundRect(16, baseY, getWidth() - 34, nMsg.getHeight(), arcs.width, arcs.height);
+            graphics.fillRect(16, baseY, 10, 10);
+            graphics.fillRect(getWidth() - 28, baseY, 10, 10);
+            graphics.setColor(color2);
+            graphics.drawLine(16, baseY, getWidth() - 18, baseY);
         }
 
          /* -- Node Kind Indicator (Top-Left) -- */
@@ -221,19 +223,8 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (showMessage) {
-            for(NodeMessage nMsg : messageList.values()) {
-                remove(nMsg);
-            }
-        }else {
-            for(NodeMessage nMsg : messageList.values()) {
-                add(nMsg, "grow, bottom, wrap");
-            }
-        }
-
         GetNode().SetCurrentAction(NodeBase.NodeAction.CLICKED);
         Select();
-        showMessage = !showMessage;
         FireOnNodeComponentLayoutChanged();
         repaint();
     }
@@ -275,35 +266,6 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         mouseOriginPoint = e.getPoint();
     }
 
-    public void AddOnNodeEventListener(NodeEventListener listener) {
-        listenerList.add(NodeEventListener.class, listener);
-    }
-
-    public void RemoveOnNodeEventListener(NodeEventListener listener) {
-        listenerList.remove(NodeEventListener.class, listener);
-    }
-
-    public void UpdateData() {
-        //for (PropertyBase prop :  Node.GetProperties()) {
-        //    //prop.UpdateBindings();
-        //}
-        repaint();
-    }
-
-    public void MatchConnectorType(INodeData nodeData) {
-        for(PropertyPanel prop : propPanelList)
-            prop.UpdateConnectorsMatch(nodeData);
-    }
-
-    public void ResetDataTypesState() {
-        for(PropertyPanel prop : propPanelList)
-            prop.ResetConnectorMatch();
-    }
-
-    public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
-        for(PropertyPanel prop : propPanelList)
-            prop.ConnectorDropped(draggingConnector, nodeData);
-    }
 
     public void Select() {
         this.selected = true;
@@ -337,22 +299,18 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         listenerList.remove(NodeComponentEventListener.class, listener);
     }
 
-    public void addMessage(UUID dataUUID, NodeMessage nodeMessage) {
-        add(nodeMessage, "grow, bottom, wrap");
-        messageList.put(dataUUID, nodeMessage);
+    public void addMessage(UUID dataUUID, NodeMessage nMsg) {
+        removeMessage();
+        nodeMessage = new AbstractMap.SimpleEntry<>(dataUUID, nMsg);
+        messagePanel.add(nMsg, "grow, bottom, wrap");
         showMessage = true;
         repaint();
     }
 
-    public void removeMessage(UUID dataUUID) {
-        try {
-            remove(messageList.get(dataUUID));
-            messageList.remove(dataUUID);
-        }catch(Exception e) {
-
-        }
-        if(messageList.size() == 0)
-            showMessage = false;
+    public void removeMessage() {
+        messagePanel.removeAll();
+        nodeMessage = null;
+        showMessage = false;
         repaint();
     }
 }

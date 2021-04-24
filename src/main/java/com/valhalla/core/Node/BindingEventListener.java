@@ -7,5 +7,5 @@ import java.util.UUID;
 public interface BindingEventListener extends EventListener {
     void OnBindingDataChanged(Object data);
     void OnBindingReleased();
-    void onDataEvaluationChanged(UUID dataUUID, Map.Entry<Boolean, String> evaluationState);
+    void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState);
 }

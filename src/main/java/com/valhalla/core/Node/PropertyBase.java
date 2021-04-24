@@ -15,6 +15,8 @@ public class PropertyBase implements INodeProperty {
     protected Integer propertyIndex;
     protected UUID    nodeUUID;
 
+    protected boolean allowSelfBinding;
+
     PropertyBase(Integer propertyIndex, UUID nodeUUID) {
         this.propertyIndex = propertyIndex;
         this.nodeUUID = nodeUUID;
@@ -121,5 +123,32 @@ public class PropertyBase implements INodeProperty {
     @Override
     public void RemoveOnControlUpdateListener(PropertyEventListener listener) {
         listenerList.remove(PropertyEventListener.class, listener);
+    }
+
+    public void setAllowSelfBinding(boolean allowSelfBinding) {
+        this.allowSelfBinding = allowSelfBinding;
+    }
+
+    public boolean isAllowSelfBinding() {
+        return allowSelfBinding;
+    }
+
+    public int getIndexOf(INodeData data) {
+        int i = 0;
+        if (data.GetMode() == ConnectorMode.INPUT) {
+            for (INodeData nData : inputs) {
+                if (data == nData)
+                    break;
+                i++;
+            }
+        }else {
+            for (INodeData nData : outputs) {
+                if (data == nData)
+                    break;
+                i++;
+            }
+        }
+
+        return i;
     }
 }
