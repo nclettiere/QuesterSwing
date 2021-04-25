@@ -1,5 +1,6 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.NodeSocket;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -12,15 +13,16 @@ public class NodeMessage extends JPanel {
     public boolean isError;
     public String message;
 
-    public NodeMessage(INodeData data, Map.Entry<Boolean, String> evaluationState) {
-        this.isError = evaluationState.getKey();
-        this.message = evaluationState.getValue();
+    public NodeMessage(NodeSocket.SocketState socketState) {
+        this.isError = socketState.errorLevel == NodeSocket.StateErrorLevel.ERROR;
+        this.message = socketState.stateMessage;
+
         this.setLayout(new MigLayout("", "0[grow]0", "0[grow]0"));
         this.setBorder(new EmptyBorder(10,10,10,10));
         this.setOpaque(false);
 
-        int dataIndex = data.getDataPropertyIndex() + 1;
-        String mode = (data.GetMode() == ConnectorMode.INPUT) ? "input" : "output";
+        int dataIndex = 0;//data.getDataPropertyIndex() + 1;
+        String mode = (socketState.direction == NodeSocket.SocketDirection.IN) ? "input" : "output";
         String connectorRef = mode + " " + dataIndex;
 
         String lblText = "<html><i style='color:#d4a26e'>Warning</i><p style='word-wrap: break-word;'>"+ message +" <i style='color:#d4a26e'><a href='#'> ("+connectorRef+")</a></i></p></html>";

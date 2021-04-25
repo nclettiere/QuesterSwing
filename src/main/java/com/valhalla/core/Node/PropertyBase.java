@@ -1,5 +1,6 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.NodeSocket;
 import com.valhalla.core.Ref;
 
 import javax.swing.*;
@@ -8,8 +9,8 @@ import java.util.*;
 
 public class PropertyBase implements INodeProperty {
     protected Ref<JComponent>   control;
-    protected List<INodeData>    inputs;
-    protected List<INodeData>    outputs;
+    protected List<NodeSocket>  inputs;
+    protected List<NodeSocket>  outputs;
     protected EventListenerList listenerList;
 
     protected Integer propertyIndex;
@@ -36,21 +37,21 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public void FireConnectorAddedEvent(INodeData connectorData) {
+    public void FireConnectorAddedEvent(NodeSocket socket) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == PropertyEventListener.class) {
-                ((PropertyEventListener) listeners[i+1]).ConnectorAdded(nodeUUID, propertyIndex, connectorData);
+                ((PropertyEventListener) listeners[i+1]).ConnectorAdded(nodeUUID, propertyIndex, socket);
             }
         }
     }
 
     @Override
-    public void FireConnectorRemovedEvent(INodeData connectorData) {
+    public void FireConnectorRemovedEvent(NodeSocket socket) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == PropertyEventListener.class) {
-                ((PropertyEventListener) listeners[i+1]).ConnectorRemoved(nodeUUID, propertyIndex, connectorData);
+                ((PropertyEventListener) listeners[i+1]).ConnectorRemoved(nodeUUID, propertyIndex, socket);
             }
         }
     }
@@ -66,26 +67,26 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public List<INodeData> GetInputs() {
+    public List<NodeSocket> GetInputs() {
         return inputs;
     }
 
     @Override
-    public List<INodeData> GetOutputs() {
+    public List<NodeSocket> GetOutputs() {
         return outputs;
     }
 
     @Override
-    public List<INodeData> GetIO() {
-        List<INodeData> IO = new ArrayList<>();
+    public List<NodeSocket> GetIO() {
+        List<NodeSocket> IO = new ArrayList<>();
         IO.addAll(inputs);
         IO.addAll(outputs);
         return IO;
     }
 
     @Override
-    public void AddInput(INodeData input) {
-        input.SetMode(ConnectorMode.INPUT);
+    public void AddInput(NodeSocket input) {
+        input.setDirection(NodeSocket.SocketDirection.IN);
         inputs.add(input);
     }
 
@@ -95,8 +96,8 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public void AddOutput(INodeData output) {
-        output.SetMode(ConnectorMode.OUTPUT);
+    public void AddOutput(NodeSocket output) {
+        output.setDirection(NodeSocket.SocketDirection.OUT);
         outputs.add(output);
     }
 
@@ -133,16 +134,16 @@ public class PropertyBase implements INodeProperty {
         return allowSelfBinding;
     }
 
-    public int getIndexOf(INodeData data) {
+    public int getIndexOf(NodeSocket data) {
         int i = 0;
-        if (data.GetMode() == ConnectorMode.INPUT) {
-            for (INodeData nData : inputs) {
+        if (data.getDirection() == NodeSocket.SocketDirection.IN) {
+            for (NodeSocket nData : inputs) {
                 if (data == nData)
                     break;
                 i++;
             }
         }else {
-            for (INodeData nData : outputs) {
+            for (NodeSocket nData : outputs) {
                 if (data == nData)
                     break;
                 i++;

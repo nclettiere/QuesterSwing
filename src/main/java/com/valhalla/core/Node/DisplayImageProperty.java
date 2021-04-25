@@ -1,5 +1,8 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.ImageSocket;
+import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.SocketEventListener;
 import com.valhalla.application.gui.ImagePanel;
 import com.valhalla.core.Ref;
 
@@ -20,23 +23,20 @@ public class DisplayImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageData id = new ImageData(this);
-        id.SetMode(ConnectorMode.INPUT);
-        id.AddOnBindingEventListener(new BindingEventListener() {
+        ImageSocket id = new ImageSocket(NodeSocket.SocketDirection.IN);
+        id.addOnBindingEventListener(new SocketEventListener() {
             @Override
-            public void OnBindingDataChanged(Object data) {
-                if(id.evaluate())
-                    ((ImagePanel) ref.get()).addImage((String) id.GetData());
+            public void onBindingDataChanged(Object data) {
+                ((ImagePanel) ref.get()).addImage(id.props.getData());
                 FireControlUpdateEvent();
             }
 
             @Override
-            public void OnBindingReleased() {
-
+            public void onBindingBreak() {
             }
 
             @Override
-            public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
+            public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
 
             }
         });

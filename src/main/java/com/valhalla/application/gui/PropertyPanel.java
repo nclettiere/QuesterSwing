@@ -1,5 +1,6 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.NodeEditor.NodeSocket;
 import com.valhalla.core.Node.*;
 import net.miginfocom.swing.MigLayout;
 import org.w3c.dom.Node;
@@ -75,15 +76,11 @@ public class PropertyPanel
         inputPanel.removeAll();
         outputPanel.removeAll();
 
-        for (INodeData nData : prop.GetInputs()) {
-            //NodeConnector nodeConnector = new NodeConnector(nData);
-            //connectorList.add(nodeConnector);
+        for (NodeSocket sock : prop.GetInputs()) {
             inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         }
 
-        for (INodeData nData : prop.GetOutputs()) {
-            //NodeConnector nodeConnector = new NodeConnector(nData);
-            //connectorList.add(nodeConnector);
+        for (NodeSocket sock : prop.GetOutputs()) {
             outputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
         }
 
@@ -94,30 +91,6 @@ public class PropertyPanel
         if(prop.GetInputCount() == 0)
             inputPanel.add(new JLabel(""), "grow, w 20!, h 20!, wrap");
 
-    }
-
-    public void UpdateConnectorsMatch(INodeData nodeData) {
-        for (NodeConnector connector : connectorList)
-            connector.MatchType(nodeData);
-    }
-
-    public void ResetConnectorMatch() {
-        for (NodeConnector connector : connectorList)
-            connector.ResetMatch();
-    }
-
-    public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
-        for (NodeConnector connector : connectorList)
-            connector.ConnectorDropped(draggingConnector, nodeData);
-    }
-
-    public NodeConnector GetConnectorLocation(UUID uuid) {
-        for (NodeConnector connector : connectorList) {
-            if(connector.GetNodeData().GetUUID() == uuid) {
-                return connector;
-            }
-        }
-        return null;
     }
 
     @Override

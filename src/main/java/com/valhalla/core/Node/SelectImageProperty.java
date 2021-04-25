@@ -1,7 +1,11 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.ImageSocket;
+import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.SocketEventListener;
 import com.valhalla.application.gui.ImagePanel;
 import com.valhalla.core.Ref;
+import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -22,70 +26,58 @@ public class SelectImageProperty extends PropertyBase {
 
         Ref<JComponent> ref = new Ref<>(new JButton("Select Image"));
 
-        /*Ref<JComponent> ref = new Ref<>(new DynamicNodeJPanel());
-
-        ((DynamicNodeJPanel)ref.get()).buttonAdd.addActionListener(e -> {
-            addAction();
-            FireControlUpdateEvent();
-        });
-        ((DynamicNodeJPanel)ref.get()).buttonRemove.addActionListener(e -> {
-            removeAction();
-            FireControlUpdateEvent();
-        });*/
-
         ((JButton)ref.get()).addActionListener(e -> {
             selectImageActionPerformed(ref.get());
-            addAction();
+            //addAction();
             FireControlUpdateEvent();
         });
 
         SetControl(ref);
 
-        ImageData imageOut = new ImageData(this);
-        IntegerData integerData = new IntegerData(this);
+        ImageSocket imageOut = new ImageSocket(NodeSocket.SocketDirection.OUT);
+        //IntegerData integerData = new IntegerData(this);
+        ImageSocket imageIn =  new ImageSocket(NodeSocket.SocketDirection.IN);
 
-        ImageData imageIn = new ImageData(this);
-
-        imageIn.AddOnBindingEventListener(new BindingEventListener() {
+        imageIn.addOnBindingEventListener(new SocketEventListener() {
             @Override
-            public void OnBindingDataChanged(Object data) {
-                imageOut.SetData(data);
+            public void onBindingDataChanged(Object data) {
+                imageOut.props.setData((String) data);
                 // Notify for DataBinding
-                imageOut.FireOnBindingDataChanged();
+                imageOut.fireOnBindingDataChanged();
                 // Hide control as it is not necessary
                 ref.get().setVisible(false);
                 // Notify Panel of change
                 FireControlUpdateEvent();
+                imageOut.evaluate();
             }
 
             @Override
-            public void OnBindingReleased() {
-                imageOut.SetData(selectedData);
-                // Notify for DataBinding
-                imageOut.FireOnBindingDataChanged();
+            public void onBindingBreak() {
+                imageOut.props.setData((String) selectedData);
                 ref.get().setVisible(true);
+                imageOut.evaluate();
             }
 
             @Override
-            public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
-
+            public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
+                FireControlUpdateEvent();
             }
         });
 
         AddInput(imageIn);
         AddOutput(imageOut);
-        AddOutput(integerData);
+        //AddOutput(integerData);
     }
 
     private void addAction() {
-        ImageData imageIn = new ImageData(this);
+        ImageSocket imageIn = new ImageSocket(NodeSocket.SocketDirection.OUT);
         AddOutput(imageIn);
         FireConnectorAddedEvent(imageIn);
     }
 
     private void removeAction() {
         if(outputs.size() > 0) {
-            FireConnectorRemovedEvent((INodeData) outputs.toArray()[outputs.size() - 1]);
+            FireConnectorRemovedEvent((NodeSocket) outputs.toArray()[outputs.size() - 1]);
             RemoveOutput(outputs.size() - 1);
         }
     }
@@ -99,11 +91,10 @@ public class SelectImageProperty extends PropertyBase {
             // set the output data
             // update the control if needed
             selectedData = chooser.getSelectedFile().getAbsolutePath();
-            this.GetOutputs().get(0)
-                    .SetData(selectedData);
+            this.GetOutputs().get(0).props.setData(selectedData);
 
             // Notify for DataBinding
-            ((ImageData)this.GetOutputs().get(0)).FireOnBindingDataChanged();
+            this.GetOutputs().get(0).fireOnBindingDataChanged();
             // Notify Panel of change
             FireControlUpdateEvent();
         }

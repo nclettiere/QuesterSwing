@@ -35,7 +35,6 @@ public class ImageData extends NodeDataBase {
     public boolean evaluate() {
         Map.Entry<Boolean, String> state;
         String dataFile = (String) data;
-        if(mode == ConnectorMode.INPUT) {
             if (data != null) {
                 if (!dataFile.isEmpty() && !dataFile.isBlank()) {
                     File file = new File(dataFile);
@@ -53,9 +52,6 @@ public class ImageData extends NodeDataBase {
             } else {
                 state = new AbstractMap.SimpleEntry<>(false, "File path is null.");
             }
-        }else {
-            state = new AbstractMap.SimpleEntry<>(true, "Passing.");
-        }
 
         FireOnEvaluationStateChanged(state);
         if(state == null)

@@ -1,6 +1,8 @@
 package com.valhalla.core.Node;
 
 import com.valhalla.NodeEditor.NEditorMouseWheelZoomHandler;
+import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.SocketEventListener;
 import com.valhalla.application.gui.*;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
@@ -79,12 +81,12 @@ public class NodeEditor extends PSwingCanvas {
                 }
 
                 @Override
-                public void ConnectorAdded(UUID nodeUUID, Integer propIndex, INodeData connectorData) {
+                public void ConnectorAdded(UUID nodeUUID, Integer propIndex, NodeSocket connectorData) {
                     AddConnector(nodeUUID, propIndex, connectorData);
                 }
 
                 @Override
-                public void ConnectorRemoved(UUID nodeUUID, Integer propIndex, INodeData connectorData) {
+                public void ConnectorRemoved(UUID nodeUUID, Integer propIndex, NodeSocket connectorData) {
                     RemoveConnector(nodeUUID, propIndex, connectorData);
                 }
 
@@ -229,15 +231,15 @@ public class NodeEditor extends PSwingCanvas {
         outputLayoutNode.setOffset(nodeComponent.getPreferredSize().width - 35, 90);
 
         // Add and register all node connectors to the nComp
-        HashMap<Integer, List<INodeData>> nodePropsData =
+        HashMap<Integer, List<NodeSocket>> nodePropsData =
                 nodeComponent.GetNode().getAllConnectorsData();
 
         // Create NodeConnectors
-        Iterator<Map.Entry<Integer, List<INodeData>>> it = nodePropsData.entrySet().iterator();
+        Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Integer, List<INodeData>> pair = it.next();
-            List<INodeData> connectorDataList = pair.getValue();
-            for (INodeData data : connectorDataList)
+            Map.Entry<Integer, List<NodeSocket>> pair = it.next();
+            List<NodeSocket> connectorDataList = pair.getValue();
+            for (NodeSocket data : connectorDataList)
                 AddConnector(nodeCompUUID, pair.getKey(), data);
             it.remove();
         }
@@ -272,7 +274,7 @@ public class NodeEditor extends PSwingCanvas {
     protected void SetupConnectorListener(NodeComponent nodeComponent,
                                           NodeConnector connector,
                                           PNode pNodeConnector) {
-        UUID connectorUUID = connector.GetNodeData().GetUUID();
+        UUID connectorUUID = connector.GetNodeSocket().getUUID();
 
         connector.AddOnControlUpdateListener(
             (dropped,
@@ -286,7 +288,9 @@ public class NodeEditor extends PSwingCanvas {
                 super.mouseClicked(event);
                 // Ctrl pressed \\
                 if (props.getPressedKeyCode() == 17) {
-                    connector.GetNodeData().breakBindings();
+
+                    connector.GetNodeSocket().breakBindings();
+
                     for (NodeConnectionPoints nConnP : props.getConnectionPoints()) {
                         if (nConnP.getConnector1UUID() == connectorUUID ||
                                 nConnP.getConnector2UUID() == connectorUUID) {
@@ -324,11 +328,11 @@ public class NodeEditor extends PSwingCanvas {
             public void mouseDragged(PInputEvent event) {
                 super.mouseDragged(event);
                 event.setHandled(true);
-                if (props.getConnectorDraggingUUID() != connector.GetNodeData().GetUUID() && props.getConnectorDraggingUUID() != null) return;
+                if (props.getConnectorDraggingUUID() != connector.GetNodeSocket().getUUID() && props.getConnectorDraggingUUID() != null) return;
                 if(props.getConnectorDraggingUUID() == null)
-                    MatchConnectorType(connector.GetNodeData());
+                    MatchConnectorType(connector.GetNodeSocket());
 
-                props.setConnectorDraggingUUID(connector.GetNodeData().GetUUID());
+                props.setConnectorDraggingUUID(connector.GetNodeSocket().getUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
                 props.setLastMousePosition(event.getPositionRelativeTo(getLayer()));
             }
@@ -362,30 +366,29 @@ public class NodeEditor extends PSwingCanvas {
         repaint();
     }
 
-    protected void AddConnector(UUID nodeComponentUUID, Integer propertyIndex, INodeData connectorData) {
+    protected void AddConnector(UUID nodeComponentUUID, Integer propertyIndex, NodeSocket socket) {
         if(props.getNodeComponent(nodeComponentUUID) != null) {
             final NodeComponent nComp = props.getNodeComponent(nodeComponentUUID);
             // Create Connector Comp and PNode
-            final NodeConnector nConn = new NodeConnector(connectorData);
+            final NodeConnector nConn = new NodeConnector(socket);
             final PNode nConnPNode = new PSwing(nConn);
             props.addConnector(nodeComponentUUID, nConn, nConnPNode);
 
             // Listeners
-            connectorData.AddOnBindingEventListener(new BindingEventListener() {
+            socket.addOnBindingEventListener(new SocketEventListener() {
                 @Override
-                public void OnBindingDataChanged(Object data) {
+                public void onBindingDataChanged(Object data) {
 
                 }
 
                 @Override
-                public void OnBindingReleased() {
-
+                public void onBindingBreak() {
                 }
 
                 @Override
-                public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
-                    if(evaluationState != null) {
-                        nComp.addMessage(data.GetUUID(), new NodeMessage(data, evaluationState));
+                public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
+                    if(socketState.errorLevel != NodeSocket.StateErrorLevel.PASSING) {
+                        nComp.addMessage(socket.getUUID(), new NodeMessage(socketState));
                     }else {
                         nComp.removeMessage();
                     }
@@ -393,7 +396,7 @@ public class NodeEditor extends PSwingCanvas {
             });
             SetupConnectorListener(nComp, nConn, nConnPNode);
 
-            if (connectorData.GetMode() == ConnectorMode.INPUT) {
+            if (socket.getDirection() == NodeSocket.SocketDirection.IN) {
                 PNode inputLayout = props.getNodeCompInputLayout(nodeComponentUUID);
                 if (inputLayout != null)
                     inputLayout.addChild(nConnPNode);
@@ -405,8 +408,8 @@ public class NodeEditor extends PSwingCanvas {
         }
     }
 
-    protected void RemoveConnector(UUID nodeComponentUUID, Integer propertyIndex, INodeData connectorData) {
-        PNode nConnPNode = props.getPNodeConnector(connectorData.GetUUID());
+    protected void RemoveConnector(UUID nodeComponentUUID, Integer propertyIndex, NodeSocket connectorData) {
+        PNode nConnPNode = props.getPNodeConnector(connectorData.getUUID());
         nConnPNode.removeFromParent();
         nConnPNode.setVisible(false);
         getLayer().repaint();
@@ -418,7 +421,7 @@ public class NodeEditor extends PSwingCanvas {
                 props.getConnectorsOfNodeComp(nCompUUID);
 
         for (ConnectorIdentifier connId : connectorsOfNode) {
-            UUID connectorUUID = connId.getNodeConnector().GetNodeData().GetUUID();
+            UUID connectorUUID = connId.getNodeConnector().GetNodeSocket().getUUID();
             PNode connectorPNode = connId.getConnectorPNode();
             for (NodeConnectionPoints connPoint : props.getConnectionPoints()) {
                 if(connPoint.getConnector1UUID().equals(connectorUUID)) {
@@ -732,12 +735,12 @@ public class NodeEditor extends PSwingCanvas {
         final NodeConnector nConn =
                 props.getNodeConnector(props.getConnectorDraggingUUID());
         if (nConn == null) return;
-        final INodeData nodeData = nConn.GetNodeData();
+        final NodeSocket nodeData = nConn.GetNodeSocket();
         for (NodeConnector connector : props.getAllNodeConnectors())
             connector.ConnectorDropped(nConn, nodeData);
     }
 
-    public void MatchConnectorType(INodeData nodeData) {
+    public void MatchConnectorType(NodeSocket nodeData) {
         for(NodeConnector connector : props.getAllNodeConnectors())
             connector.MatchType(nodeData);
     }
@@ -1004,7 +1007,7 @@ public class NodeEditor extends PSwingCanvas {
         }
 
         public void addConnector(UUID uuid, NodeConnector nodeConnector, PNode pNodeConnector) {
-            UUID connectorUUID = nodeConnector.GetNodeData().GetUUID();
+            UUID connectorUUID = nodeConnector.GetNodeSocket().getUUID();
             if(connectorsMap.containsKey(connectorUUID))
                 return;
             ConnectorIdentifier connectorIdentifier = new ConnectorIdentifier(
@@ -1206,15 +1209,15 @@ public class NodeEditor extends PSwingCanvas {
             return connectors;
         }
 
-        public void deleteConnector(INodeData nodeData) {
-            if(connectorsMap.containsKey(nodeData.GetUUID())) {
-                connectorsMap.remove(connectorsMap.get(nodeData.GetUUID()));
+        public void deleteConnector(NodeSocket socket) {
+            if(connectorsMap.containsKey(socket.getUUID())) {
+                connectorsMap.remove(connectorsMap.get(socket.getUUID()));
             }
 
             NodeConnectionPoints connPointsToDelete = null;
             for (NodeConnectionPoints connPoints : connectionPoints) {
-                if(connPoints.getConnector1UUID() == nodeData.GetUUID() ||
-                        connPoints.getConnector2UUID() == nodeData.GetUUID()) {
+                if(connPoints.getConnector1UUID() == socket.getUUID() ||
+                        connPoints.getConnector2UUID() == socket.getUUID()) {
                     connPointsToDelete = connPoints;
                     break;
                 }

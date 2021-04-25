@@ -110,11 +110,13 @@ public class NodeDataBase implements INodeData {
 
     @Override
     public int getDataPropertyIndex() {
-        return parentProperty.getIndexOf(this);
+        //return parentProperty.getIndexOf(this);
+        return 0;
     }
 
     @Override
     public boolean evaluate() {
+        //FireOnEvaluationStateChanged();
         return true;
     }
 
@@ -139,31 +141,33 @@ public class NodeDataBase implements INodeData {
         if(bindingMap.containsKey(nData.GetUUID())) return false;
 
         if(nData.GetUUID() != this.GetUUID()) {
+
             if (nData.GetMode() == ConnectorMode.INPUT &&
                     this.mode == ConnectorMode.OUTPUT) {
                 nData.SetData(this);
+                evaluate();
                 return true;
             }
             if (isDataBindAvailable(nData)) {
                 if (nData.getClass().isAssignableFrom(this.getClass())) {
                     bindingMap.put(nData.GetUUID(), nData);
                     SetData(nData.GetData());
-                    nData.AddOnBindingEventListener(new BindingEventListener() {
-                        @Override
-                        public void OnBindingDataChanged(Object data) {
-                            SetData(data);
-                        }
-
-                        @Override
-                        public void OnBindingReleased() {
-
-                        }
-
-                        @Override
-                        public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
-
-                        }
-                    });
+                    //nData.AddOnBindingEventListener(new BindingEventListener() {
+                    //    @Override
+                    //    public void OnBindingDataChanged(Object data) {
+                    //        SetData(data);
+                    //    }
+//
+                    //    @Override
+                    //    public void onBindingBreak() {
+                    //        SetData(null);
+                    //    }
+//
+                    //    @Override
+                    //    public void onDataEvaluationChanged(INodeData data, Map.Entry<Boolean, String> evaluationState) {
+//
+                    //    }
+                    //});
 
                     return true;
                 }
@@ -190,13 +194,23 @@ public class NodeDataBase implements INodeData {
         }
     }
 
+    void FireOnBindingBreak() {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = 0; i < listeners.length; i = i+2) {
+            if (listeners[i] == BindingEventListener.class) {
+                ((BindingEventListener) listeners[i+1]).onBindingBreak();
+            }
+        }
+    }
+
     @Override
     public void breakBindings() {
-        Object[] listenerArr = listenerList.getListenerList();
+        BindingEventListener[] listenerArr = listenerList.getListeners(BindingEventListener.class);
         for (int i = listenerList.getListenerCount() - 1; i > 0; i--) {
-            listenerList.remove(BindingEventListener.class, (BindingEventListener)listenerArr[i]);
+            listenerList.remove(BindingEventListener.class, listenerArr[i]);
         }
         bindingMap.clear();
+        FireOnBindingBreak();
     }
 
     @Override

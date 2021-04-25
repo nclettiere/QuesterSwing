@@ -1,5 +1,6 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.NodeEditor.NodeSocket;
 import com.valhalla.core.Node.*;
 import org.piccolo2d.PNode;
 import org.piccolo2d.event.PInputEventListener;
@@ -20,18 +21,18 @@ public class NodeConnector
 
     protected boolean mouseEntered;
     protected boolean dragNotified;
-    protected INodeData nData;
+    protected NodeSocket socket;
     protected boolean disabled;
     protected boolean evaluationPassing;
     protected EventListenerList listenerList;
-    protected INodeData lastConnection;
+    protected NodeSocket lastConnection;
     protected NodeConnector lastConnectionComp;
 
-    public NodeConnector(INodeData nData) {
-        this.nData = nData;
+    public NodeConnector(NodeSocket socket) {
+        this.socket = socket;
         listenerList = new EventListenerList();
 
-        nData.evaluate();
+        socket.evaluate();
 
         //setToolTipText(nData.GetDisplayName());
         //setBorder(new EmptyBorder(0,10,0,0));
@@ -55,22 +56,23 @@ public class NodeConnector
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == ConnectorEventListener.class) {
-                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this, lastConnectionComp, this.nData.GetUUID(), lastConnection.GetUUID());
+                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this, lastConnectionComp, this.socket.getUUID(), lastConnection.getUUID());
             }
         }
     }
 
-    public void MatchType(INodeData nData) {
+    public void MatchType(NodeSocket socket) {
         // If not from the same class disable the connector
-        if(!this.nData.isDataBindAvailable(nData)) {
+        if(!this.socket.isDataBindAvailable(socket)) {
             SetDisabled(true);
             return;
         }
-        if(this.nData.GetMode() == nData.GetMode()) {
+        if(this.socket.getDirection() == socket.getDirection()) {
             SetDisabled(true);
             return;
         }
-        if(!this.nData.getClass().isAssignableFrom(nData.getClass())) {
+        if(!this.socket.props.getDataClass().isAssignableFrom(
+                socket.props.getDataClass())) {
             SetDisabled(true);
             return;
         }
@@ -86,7 +88,7 @@ public class NodeConnector
         repaint();
     }
 
-    public INodeData GetNodeData() {return this.nData;}
+    public NodeSocket GetNodeSocket() {return this.socket;}
 
     boolean GetDisabled() {
         return this.disabled;
@@ -102,18 +104,18 @@ public class NodeConnector
         if(!GetDisabled()) {
             if (mouseEntered) {
                 graphics.setColor(new Color(
-                        nData.GetDataColor().getRed() + 20,
-                        nData.GetDataColor().getGreen() + 20,
-                        nData.GetDataColor().getBlue() + 20, 70));
+                        socket.getSocketColor().getRed() + 20,
+                        socket.getSocketColor().getGreen() + 20,
+                        socket.getSocketColor().getBlue() + 20, 70));
                 graphics.fillOval(0, 0, connectorSize, connectorSize);
 
                 graphics.setColor(new Color(
-                        nData.GetDataColor().getRed() + 20,
-                        nData.GetDataColor().getGreen() + 20,
-                        nData.GetDataColor().getBlue() + 20, 255));
+                        socket.getSocketColor().getRed() + 20,
+                        socket.getSocketColor().getGreen() + 20,
+                        socket.getSocketColor().getBlue() + 20, 255));
                 graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
             } else {
-                Color cDarker = nData.GetDataColor().darker().darker();
+                Color cDarker = socket.getSocketColor().darker().darker();
                 graphics.setColor(new Color(
                         cDarker.getRed(),
                         cDarker.getGreen(),
@@ -121,34 +123,34 @@ public class NodeConnector
                 graphics.fillOval(0, 0, connectorSize, connectorSize);
 
                 graphics.setColor(new Color(
-                        nData.GetDataColor().getRed(),
-                        nData.GetDataColor().getGreen(),
-                        nData.GetDataColor().getBlue(), 200));
+                        socket.getSocketColor().getRed(),
+                        socket.getSocketColor().getGreen(),
+                        socket.getSocketColor().getBlue(), 200));
                 graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
             }
         }else {
             graphics.setColor(new Color(
-                    nData.GetDataColor().getRed(),
-                    nData.GetDataColor().getGreen(),
-                    nData.GetDataColor().getBlue(), 10));
+                    socket.getSocketColor().getRed(),
+                    socket.getSocketColor().getGreen(),
+                    socket.getSocketColor().getBlue(), 10));
             graphics.fillOval(0, 0, connectorSize, connectorSize);
 
             graphics.setColor(new Color(
-                    nData.GetDataColor().getRed(),
-                    nData.GetDataColor().getGreen(),
-                    nData.GetDataColor().getBlue(), 80));
+                    socket.getSocketColor().getRed(),
+                    socket.getSocketColor().getGreen(),
+                    socket.getSocketColor().getBlue(), 80));
             graphics.fillOval(1, 1, connectorSize - 2, connectorSize - 2);
         }
     }
 
-    public void ConnectorDropped(NodeConnector draggingConnector, INodeData nodeData) {
+    public void ConnectorDropped(NodeConnector draggingConnector, NodeSocket socket) {
         if(!GetDisabled()) {
             if(mouseEntered) {
-                if (nData.SetBinding(nodeData)) {
-                    lastConnection = nodeData;
+                if (socket.props.addBinding(socket, false)) {
+                    lastConnection = socket;
                     lastConnectionComp = draggingConnector;
                     FireOnConnectionCreated();
-                    nData.evaluate();
+                    socket.evaluate();
                 }
             }
         }
