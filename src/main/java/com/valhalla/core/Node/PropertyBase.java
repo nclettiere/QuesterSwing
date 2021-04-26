@@ -9,8 +9,8 @@ import java.util.*;
 
 public class PropertyBase implements INodeProperty {
     protected Ref<JComponent>   control;
-    protected List<NodeSocket>  inputs;
-    protected List<NodeSocket>  outputs;
+    protected List<NodeSocket<?>>  inputs;
+    protected List<NodeSocket<?>>  outputs;
     protected EventListenerList listenerList;
 
     protected Integer propertyIndex;
@@ -37,7 +37,7 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public void FireConnectorAddedEvent(NodeSocket socket) {
+    public void FireConnectorAddedEvent(NodeSocket<?> socket) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == PropertyEventListener.class) {
@@ -47,7 +47,7 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public void FireConnectorRemovedEvent(NodeSocket socket) {
+    public void FireConnectorRemovedEvent(NodeSocket<?> socket) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == PropertyEventListener.class) {
@@ -67,18 +67,18 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public List<NodeSocket> GetInputs() {
+    public List<NodeSocket<?>> GetInputs() {
         return inputs;
     }
 
     @Override
-    public List<NodeSocket> GetOutputs() {
+    public List<NodeSocket<?>> GetOutputs() {
         return outputs;
     }
 
     @Override
-    public List<NodeSocket> GetIO() {
-        List<NodeSocket> IO = new ArrayList<>();
+    public List<NodeSocket<?>> GetIO() {
+        List<NodeSocket<?>> IO = new ArrayList<>();
         IO.addAll(inputs);
         IO.addAll(outputs);
         return IO;

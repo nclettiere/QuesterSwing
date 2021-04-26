@@ -37,7 +37,6 @@ public class ImagePanel extends JPanel {
 
     public void addImage(String filename) {
         File file = new File(filename);
-        BufferedImage image = null;
         try {
             img = ImageIO.read(file);
         } catch (IOException e) {

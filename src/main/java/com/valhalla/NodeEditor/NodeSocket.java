@@ -1,7 +1,5 @@
 package com.valhalla.NodeEditor;
 
-import com.valhalla.core.Node.BindingEventListener;
-import com.valhalla.core.Node.INodeData;
 import com.valhalla.core.Node.PropertyBase;
 
 import javax.swing.event.EventListenerList;
@@ -15,9 +13,9 @@ public class NodeSocket<T> {
     protected Color socketColor;
 
     NodeSocket(T initialData, SocketDirection direction) {
-        this.props = new SocketProperties<T>(this, direction);
-        props.setData(initialData);
         this.listenerList = new EventListenerList();
+        this.props = new SocketProperties<T>(this, direction);
+        this.props.setData(initialData);
         this.socketColor = Color.WHITE;
     }
 
@@ -45,8 +43,9 @@ public class NodeSocket<T> {
         props.removeBinding(nodeSocket);
     }
 
-    public void evaluate() {
+    public boolean evaluate() {
         fireOnBindingDataChanged();
+        return true;
     }
 
     public boolean isDataBindAvailable() {
@@ -111,11 +110,11 @@ public class NodeSocket<T> {
 
     public class SocketProperties<T> {
         protected UUID uuid;
-        protected T data;
+        protected Object data;
         protected SocketDirection direction;
         protected NodeSocket<T> socket;
         protected SocketState state;
-        protected HashMap<NodeSocket, SocketDirection> bindings;
+        protected HashMap<NodeSocket<T>, SocketDirection> bindings;
 
         public SocketProperties(NodeSocket<T> socket) {
             this.socket = socket;
@@ -133,16 +132,16 @@ public class NodeSocket<T> {
         }
 
         public T getData() {
-            return data;
+            return (T) data;
         }
 
-        public void setData(T data) {
+        public void setData(Object data) {
             if (this.data != null && data != null) {
                 if (!data.getClass().isAssignableFrom(getDataClass()))
                     return;
             }
             this.data = data;
-            fireOnBindingDataChanged();
+            socket.fireOnBindingDataChanged();
         }
 
         public UUID getUuid() {
@@ -154,15 +153,16 @@ public class NodeSocket<T> {
             return data.getClass();
         }
 
-        public void setBindings(HashMap<NodeSocket, SocketDirection> bindings) {
+        public void setBindings(HashMap<NodeSocket<T>, SocketDirection> bindings) {
             this.bindings = bindings;
         }
 
-        public boolean addBinding(NodeSocket nodeSocket, boolean oneWay) {
-            if (!nodeSocket.props.getDataClass().isAssignableFrom(getDataClass()))
+        public boolean addBinding(NodeSocket<T> nodeSocket, boolean oneWay) {
+            if (nodeSocket.getUUID() == socket.getUUID() ||
+                    !nodeSocket.props.getDataClass().isAssignableFrom(getDataClass()))
                 return false;
 
-            this.bindings.put(nodeSocket, direction);
+            this.bindings.put(nodeSocket, nodeSocket.getDirection());
 
             if (direction == SocketDirection.IN) {
                 nodeSocket.addOnBindingEventListener(new SocketEventListener() {
@@ -179,14 +179,17 @@ public class NodeSocket<T> {
                     @Override
                     public void onDataEvaluationChanged(NodeSocket data, NodeSocket.SocketState socketState) {
                         state = socketState;
-                        fireOnEvaluationStateChanged();
+                        socket.fireOnEvaluationStateChanged();
                     }
                 });
+                setData(nodeSocket.props.getData());
             }
 
             if (!oneWay) {
                 nodeSocket.props.addBinding(socket, true);
             }
+
+            socket.fireOnBindingDataChanged();
 
             return true;
         }
@@ -201,6 +204,7 @@ public class NodeSocket<T> {
 
         public void setState(SocketState state) {
             this.state = state;
+            socket.fireOnEvaluationStateChanged();
         }
 
         public SocketDirection getDirection() {

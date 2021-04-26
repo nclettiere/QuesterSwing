@@ -12,9 +12,11 @@ public class ImageSocket extends NodeSocket<String> {
     }
 
     @Override
-    public void evaluate() {
+    public boolean evaluate() {
         SocketState state = new SocketState(this.props.getDirection());
         String dataFile = props.getData();
+
+        boolean evaluationPassed = true;
 
         if (dataFile != null) {
             if (!dataFile.isEmpty() && !dataFile.isBlank()) {
@@ -25,22 +27,26 @@ public class ImageSocket extends NodeSocket<String> {
                     else {
                         state.setErrorLevel(StateErrorLevel.ERROR);
                         state.setStateMessage("The file is not an image.");
+                        evaluationPassed = false;
                     }
                 } else {
                     state.setErrorLevel(StateErrorLevel.WARNING);
                     state.setStateMessage("The file does not exist or cannot be read.");
+                    evaluationPassed = false;
                 }
             }else {
                 state.setErrorLevel(StateErrorLevel.WARNING);
                 state.setStateMessage("File path is null or empty.");
+                evaluationPassed = false;
             }
         } else {
             state.setErrorLevel(StateErrorLevel.WARNING);
             state.setStateMessage("File path is null.");
+            evaluationPassed = false;
         }
+        this.props.setState(state);
 
-        // calls this.props.fireOnEvaluationStateChanged();
-        super.evaluate();
+        return evaluationPassed;
     }
 
     @Override

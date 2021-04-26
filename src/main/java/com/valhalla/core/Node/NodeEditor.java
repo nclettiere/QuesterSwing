@@ -14,6 +14,7 @@ import org.piccolo2d.extras.event.PSelectionEventHandler;
 import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.nodes.PPath;
+import org.piccolo2d.nodes.PText;
 import org.piccolo2d.util.PBounds;
 import org.piccolo2d.util.PNodeFilter;
 import org.piccolo2d.util.PPaintContext;
@@ -81,12 +82,12 @@ public class NodeEditor extends PSwingCanvas {
                 }
 
                 @Override
-                public void ConnectorAdded(UUID nodeUUID, Integer propIndex, NodeSocket connectorData) {
+                public void ConnectorAdded(UUID nodeUUID, Integer propIndex, NodeSocket<?> connectorData) {
                     AddConnector(nodeUUID, propIndex, connectorData);
                 }
 
                 @Override
-                public void ConnectorRemoved(UUID nodeUUID, Integer propIndex, NodeSocket connectorData) {
+                public void ConnectorRemoved(UUID nodeUUID, Integer propIndex, NodeSocket<?> connectorData) {
                     RemoveConnector(nodeUUID, propIndex, connectorData);
                 }
 
@@ -231,15 +232,15 @@ public class NodeEditor extends PSwingCanvas {
         outputLayoutNode.setOffset(nodeComponent.getPreferredSize().width - 35, 90);
 
         // Add and register all node connectors to the nComp
-        HashMap<Integer, List<NodeSocket>> nodePropsData =
+        HashMap<Integer, List<NodeSocket<?>>> nodePropsData =
                 nodeComponent.GetNode().getAllConnectorsData();
 
         // Create NodeConnectors
-        Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
+        Iterator<Map.Entry<Integer, List<NodeSocket<?>>>> it = nodePropsData.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Integer, List<NodeSocket>> pair = it.next();
-            List<NodeSocket> connectorDataList = pair.getValue();
-            for (NodeSocket data : connectorDataList)
+            Map.Entry<Integer, List<NodeSocket<?>>> pair = it.next();
+            List<NodeSocket<?>> connectorDataList = pair.getValue();
+            for (NodeSocket<?> data : connectorDataList)
                 AddConnector(nodeCompUUID, pair.getKey(), data);
             it.remove();
         }
@@ -282,6 +283,8 @@ public class NodeEditor extends PSwingCanvas {
              uuid1,
              uuid2) -> CreateConnection(uuid2, uuid1));
 
+        pNodeConnector.addAttribute("tooltip", connectorUUID.toString());
+
         pNodeConnector.addInputEventListener(new PBasicInputEventHandler() {
             @Override
             public void mouseClicked(PInputEvent event) {
@@ -313,8 +316,8 @@ public class NodeEditor extends PSwingCanvas {
             }
             @Override
             public void mouseExited(PInputEvent event) {
-                connector.Hover(false);
                 event.setHandled(false);
+                connector.Hover(false);
                 super.mouseExited(event);
             }
 
@@ -327,7 +330,7 @@ public class NodeEditor extends PSwingCanvas {
             @Override
             public void mouseDragged(PInputEvent event) {
                 super.mouseDragged(event);
-                event.setHandled(true);
+                event.setHandled(false);
                 if (props.getConnectorDraggingUUID() != connector.GetNodeSocket().getUUID() && props.getConnectorDraggingUUID() != null) return;
                 if(props.getConnectorDraggingUUID() == null)
                     MatchConnectorType(connector.GetNodeSocket());
@@ -339,7 +342,7 @@ public class NodeEditor extends PSwingCanvas {
             @Override
             public void mouseReleased(PInputEvent event) {
                 event.setHandled(false);
-                NotifyConnectorsDrop();
+                NotifyConnectorsDrop(connector.GetNodeSocket().getUUID());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.NONE);
                 ResetDataTypeMatch();
                 connector.Hover(false);
@@ -641,6 +644,12 @@ public class NodeEditor extends PSwingCanvas {
         root.addChild(gridLayer);
         camera.addLayer(gridLayer);
 
+        // setup tooltip
+        final PText tooltipNode = new PText();
+        tooltipNode.setTextPaint(new Color(144,144,144));
+        tooltipNode.setPickable(false);
+        camera.addChild(tooltipNode);
+
         // add constrains so that grid layers bounds always match cameras view
         // bounds. This makes it look like an infinite grid.
         camera.addPropertyChangeListener(PNode.PROPERTY_BOUNDS, evt -> {
@@ -650,6 +659,29 @@ public class NodeEditor extends PSwingCanvas {
             gridLayer.setBounds(camera.getViewBounds());
         });
 
+        // update camra tooltip
+        camera.addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseDragged(PInputEvent event) {
+                updateTooltip(event);
+            }
+
+            @Override
+            public void mouseMoved(PInputEvent event) {
+                updateTooltip(event);
+            }
+
+            public void updateTooltip(final PInputEvent event) {
+                final PNode pNode = event.getPickedNode();
+                final String tooltipStr = (String) pNode.getAttribute("tooltip");
+                final Point2D p = event.getCanvasPosition();
+
+                event.getPath().canvasToLocal(p, camera);
+
+                tooltipNode.setText(tooltipStr);
+                tooltipNode.setOffset(p.getX() + 8, p.getY() - 8);
+            }
+        });
 
         nsp = new NodeSelectorPanel(props.getRegisteredNodeClasses());
         pSelector = new PSwing(nsp);
@@ -731,13 +763,12 @@ public class NodeEditor extends PSwingCanvas {
         };
     }
 
-    public void NotifyConnectorsDrop() {
-        final NodeConnector nConn =
-                props.getNodeConnector(props.getConnectorDraggingUUID());
+    public void NotifyConnectorsDrop(UUID socketUUID) {
+        final NodeConnector nConn = props.getNodeConnector(socketUUID);
         if (nConn == null) return;
-        final NodeSocket nodeData = nConn.GetNodeSocket();
+        final NodeSocket socket = nConn.GetNodeSocket();
         for (NodeConnector connector : props.getAllNodeConnectors())
-            connector.ConnectorDropped(nConn, nodeData);
+            connector.ConnectorDropped(nConn, socket);
     }
 
     public void MatchConnectorType(NodeSocket nodeData) {
@@ -828,7 +859,6 @@ public class NodeEditor extends PSwingCanvas {
 
         Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
         Point2D curveEnd = props.getLastMousePosition();
-        System.out.println(curveEnd);
 
         if (curveOrigin == null || curveEnd == null) return;
 

@@ -45,7 +45,8 @@ public class SelectImageProperty extends PropertyBase {
                 // Notify for DataBinding
                 imageOut.fireOnBindingDataChanged();
                 // Hide control as it is not necessary
-                ref.get().setVisible(false);
+                //if (imageOut.evaluate())
+                    ref.get().setVisible(false);
                 // Notify Panel of change
                 FireControlUpdateEvent();
                 imageOut.evaluate();

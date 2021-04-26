@@ -146,7 +146,7 @@ public class NodeConnector
     public void ConnectorDropped(NodeConnector draggingConnector, NodeSocket socket) {
         if(!GetDisabled()) {
             if(mouseEntered) {
-                if (socket.props.addBinding(socket, false)) {
+                if (this.socket.props.addBinding(socket, false)) {
                     lastConnection = socket;
                     lastConnectionComp = draggingConnector;
                     FireOnConnectionCreated();

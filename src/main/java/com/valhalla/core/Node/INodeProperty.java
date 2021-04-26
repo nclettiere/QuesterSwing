@@ -12,13 +12,13 @@ public interface INodeProperty extends EventListener {
     Ref<JComponent> GetControl();
     void SetControl(Ref<JComponent> control);
 
-    List<NodeSocket> GetInputs();
-    List<NodeSocket> GetOutputs();
-    List<NodeSocket> GetIO();
+    List<NodeSocket<?>> GetInputs();
+    List<NodeSocket<?>> GetOutputs();
+    List<NodeSocket<?>> GetIO();
 
-    void AddInput(NodeSocket input);
+    void AddInput(NodeSocket<?> input);
     void RemoveInput(int index);
-    void AddOutput(NodeSocket output);
+    void AddOutput(NodeSocket<?> output);
     void RemoveOutput(int index);
 
     int GetInputCount();
@@ -28,6 +28,6 @@ public interface INodeProperty extends EventListener {
     void RemoveOnControlUpdateListener(PropertyEventListener listener);
 
     void FireControlUpdateEvent();
-    void FireConnectorAddedEvent(NodeSocket socket);
-    void FireConnectorRemovedEvent(NodeSocket socket);
+    void FireConnectorAddedEvent(NodeSocket<?> socket);
+    void FireConnectorRemovedEvent(NodeSocket<?> socket);
 }
