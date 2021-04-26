@@ -858,7 +858,7 @@ public class NodeEditor extends PSwingCanvas {
         if(draggingConnector == null || pNodeConnector == null) return;
 
         Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        Point2D curveEnd = props.getLastMousePosition();
+        Point2D curveEnd = getMousePosition(true);//props.getLastMousePosition();
 
         if (curveOrigin == null || curveEnd == null) return;
 

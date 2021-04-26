@@ -38,20 +38,31 @@ public class SelectImageProperty extends PropertyBase {
         ImageSocket imageOut = new ImageSocket(NodeSocket.SocketDirection.OUT);
 
         imageIn.addOnBindingEventListener(new SocketEventListener() {
+            protected boolean isOutBinded = false;
             @Override
             public void onBindingDataChanged(Object data) {
-                imageOut.setData(data);
-                imageOut.evaluate();
-                // Notify for DataBinding
-                imageOut.fireOnBindingDataChanged();
-                // Hide control as it is not necessary
-                ref.get().setVisible(false);
-                // Notify Panel of change
-                FireControlUpdateEvent();
+                if (!isOutBinded) {
+                    imageOut.setBind(imageIn);
+                    isOutBinded = true;
+                }
+                //imageOut.evaluate();
+                //// Notify for DataBinding
+                //imageOut.fireOnBindingDataChanged();
+                //// Hide control as it is not necessary
+                ref.get().setVisible(imageIn.getBindingCount() == 0);
+                //// Notify Panel of change
+                //FireControlUpdateEvent();
+                System.out.println("ImageIn binding data changed!\n"+imageIn.getUuid()+"\n");
             }
 
             @Override
             public void onBindingBreak() {
+                if (isOutBinded) {
+                    imageOut.removeBind(imageIn);
+                    isOutBinded = false;
+                }
+                ref.get().setVisible(imageIn.getBindingCount() == 0);
+                System.out.println("ImageIn breaking bindings!\n"+imageIn.getUuid()+"\n");
                 ref.get().setVisible(true);
             }
 

@@ -26,11 +26,13 @@ public class NodeSocket {
         resetDataDefaults();
     }
 
-    private void setBind(NodeSocket otherSocket) {
+    public void setBind(NodeSocket otherSocket) {
         SocketEventListener socEv = new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {
-                setData(data);
+                //setData(data);
+                NodeSocket.this.data = data;
+                fireOnBindingDataChanged();
             }
 
             @Override
@@ -75,6 +77,7 @@ public class NodeSocket {
         }else {
             otherSocket.setBind(NodeSocket.this);
         }
+        fireOnBindingDataChanged();
         evaluate();
 
         return true;
@@ -167,6 +170,12 @@ public class NodeSocket {
 
     public int getBindingCount() {
         return socketEventListeners.size();
+    }
+
+    public void removeBind(NodeSocket socket) {
+        if (this.socketEventListeners.containsKey(socket)) {
+            removeOnBindingEventListener(socketEventListeners.get(socket));
+        }
     }
 
     public class SocketState {
