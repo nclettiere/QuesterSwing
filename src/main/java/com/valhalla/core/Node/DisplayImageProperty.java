@@ -1,6 +1,7 @@
 package com.valhalla.core.Node;
 
 import com.valhalla.NodeEditor.ImageSocket;
+import com.valhalla.NodeEditor.IntegerSocket;
 import com.valhalla.NodeEditor.NodeSocket;
 import com.valhalla.NodeEditor.SocketEventListener;
 import com.valhalla.application.gui.ImagePanel;
@@ -27,7 +28,7 @@ public class DisplayImageProperty extends PropertyBase {
         id.addOnBindingEventListener(new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {
-                ((ImagePanel) ref.get()).addImage(id.props.getData());
+                ((ImagePanel) ref.get()).addImage((String) id.getData());
                 FireControlUpdateEvent();
             }
 
@@ -41,5 +42,6 @@ public class DisplayImageProperty extends PropertyBase {
             }
         });
         AddInput(id);
+        AddInput(new IntegerSocket(NodeSocket.SocketDirection.IN));
     }
 }

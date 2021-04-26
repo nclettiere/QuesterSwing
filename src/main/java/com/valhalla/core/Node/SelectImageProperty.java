@@ -34,29 +34,25 @@ public class SelectImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageSocket imageOut = new ImageSocket(NodeSocket.SocketDirection.OUT);
-        //IntegerData integerData = new IntegerData(this);
         ImageSocket imageIn =  new ImageSocket(NodeSocket.SocketDirection.IN);
+        ImageSocket imageOut = new ImageSocket(NodeSocket.SocketDirection.OUT);
 
         imageIn.addOnBindingEventListener(new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {
-                imageOut.props.setData((String) data);
+                imageOut.setData(data);
+                imageOut.evaluate();
                 // Notify for DataBinding
                 imageOut.fireOnBindingDataChanged();
                 // Hide control as it is not necessary
-                //if (imageOut.evaluate())
-                    ref.get().setVisible(false);
+                ref.get().setVisible(false);
                 // Notify Panel of change
                 FireControlUpdateEvent();
-                imageOut.evaluate();
             }
 
             @Override
             public void onBindingBreak() {
-                imageOut.props.setData((String) selectedData);
                 ref.get().setVisible(true);
-                imageOut.evaluate();
             }
 
             @Override
@@ -92,10 +88,10 @@ public class SelectImageProperty extends PropertyBase {
             // set the output data
             // update the control if needed
             selectedData = chooser.getSelectedFile().getAbsolutePath();
-            this.GetOutputs().get(0).props.setData(selectedData);
+            this.GetOutputs().get(0).setData(selectedData);
 
             // Notify for DataBinding
-            this.GetOutputs().get(0).fireOnBindingDataChanged();
+            //this.GetOutputs().get(0).fireOnBindingDataChanged();
             // Notify Panel of change
             FireControlUpdateEvent();
         }

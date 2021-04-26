@@ -1,56 +1,29 @@
 package com.valhalla.NodeEditor;
 
-import com.valhalla.application.gui.Utils;
-
 import java.awt.*;
-import java.io.File;
 
-public class ImageSocket extends NodeSocket<String> {
+public class ImageSocket extends NodeSocket {
     public ImageSocket(SocketDirection direction) {
-        super("", direction);
-        setSocketColor(new Color(144, 50, 50));
+        super(direction, String.class);
     }
 
     @Override
     public boolean evaluate() {
-        SocketState state = new SocketState(this.props.getDirection());
-        String dataFile = props.getData();
+        return super.evaluate();
+    }
 
-        boolean evaluationPassed = true;
+    @Override
+    public Color getSocketColor() {
+        return new Color(177, 24, 24);
+    }
 
-        if (dataFile != null) {
-            if (!dataFile.isEmpty() && !dataFile.isBlank()) {
-                File file = new File(dataFile);
-                if (file.isFile() && file.exists() && file.canRead()) {
-                    if (Utils.isImage(dataFile))
-                        state.setErrorLevel(StateErrorLevel.PASSING);
-                    else {
-                        state.setErrorLevel(StateErrorLevel.ERROR);
-                        state.setStateMessage("The file is not an image.");
-                        evaluationPassed = false;
-                    }
-                } else {
-                    state.setErrorLevel(StateErrorLevel.WARNING);
-                    state.setStateMessage("The file does not exist or cannot be read.");
-                    evaluationPassed = false;
-                }
-            }else {
-                state.setErrorLevel(StateErrorLevel.WARNING);
-                state.setStateMessage("File path is null or empty.");
-                evaluationPassed = false;
-            }
-        } else {
-            state.setErrorLevel(StateErrorLevel.WARNING);
-            state.setStateMessage("File path is null.");
-            evaluationPassed = false;
-        }
-        this.props.setState(state);
-
-        return evaluationPassed;
+    @Override
+    public void resetDataDefaults() {
+        setData("");
     }
 
     @Override
     public boolean isDataBindAvailable() {
-        return !(props.getBindingCount() > 0);
+        return !(socketEventListeners.size() > 0);
     }
 }

@@ -1,85 +1,121 @@
 package com.valhalla.NodeEditor;
 
-import com.valhalla.core.Node.PropertyBase;
-
 import javax.swing.event.EventListenerList;
 import java.awt.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.UUID;
 
-public class NodeSocket<T> {
-    public SocketProperties<T> props;
+public class NodeSocket {
+    protected UUID uuid;
+    protected Object data;
+    public Class<?> dataClass;
+    protected SocketDirection direction;
     protected EventListenerList listenerList;
-    protected PropertyBase parentProperty;
+    protected HashMap<NodeSocket, SocketEventListener> socketEventListeners;
     protected Color socketColor;
 
-    NodeSocket(T initialData, SocketDirection direction) {
+    public NodeSocket(SocketDirection direction, Class<?> dataClass) {
+        this.uuid = UUID.randomUUID();
         this.listenerList = new EventListenerList();
-        this.props = new SocketProperties<T>(this, direction);
-        this.props.setData(initialData);
+        this.direction = direction;
+        this.dataClass = dataClass;
         this.socketColor = Color.WHITE;
+        this.socketEventListeners = new HashMap<>();
+
+        resetDataDefaults();
     }
 
-    public Color getSocketColor() {
-        return socketColor;
+    private void setBind(NodeSocket otherSocket) {
+        SocketEventListener socEv = new SocketEventListener() {
+            @Override
+            public void onBindingDataChanged(Object data) {
+                setData(data);
+            }
+
+            @Override
+            public void onBindingBreak() {
+                otherSocket.removeOnBindingEventListener(this);
+            }
+
+            @Override
+            public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
+
+            }
+        };
+        socketEventListeners.put(otherSocket, socEv);
+        otherSocket.addOnBindingEventListener(socEv);
     }
 
-    public void setSocketColor(Color socketColor) {
-        this.socketColor = socketColor;
+    public boolean addBinding(NodeSocket otherSocket) {
+        if (otherSocket.uuid == this.uuid) return false;
+        if (!otherSocket.dataClass.isAssignableFrom(dataClass)) return false;
+
+        // if this socket is input, bind the data of otherSocket
+        // if not, bind this socket data to otherSocket
+        if (this.direction == com.valhalla.NodeEditor.NodeSocket.SocketDirection.IN) {
+            SocketEventListener socEv = new SocketEventListener() {
+                @Override
+                public void onBindingDataChanged(Object data) {
+                    setData(data);
+                }
+
+                @Override
+                public void onBindingBreak() {
+                    otherSocket.removeOnBindingEventListener(this);
+                }
+
+                @Override
+                public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
+
+                }
+            };
+            socketEventListeners.put(otherSocket, socEv);
+            otherSocket.addOnBindingEventListener(socEv);
+        }else {
+            otherSocket.setBind(NodeSocket.this);
+        }
+        evaluate();
+
+        return true;
     }
 
-    public void setDirection(SocketDirection direction) {
-        props.setDirection(direction);
-    }
-
-    public UUID getUUID() {
-        return props.getUuid();
-    }
-
-    public void addNewBinding(NodeSocket nodeSocket, SocketDirection direction) {
-        props.addBinding(nodeSocket, false);
-    }
-
-    public void removeBinding(NodeSocket nodeSocket) {
-        props.removeBinding(nodeSocket);
-    }
-
-    public boolean evaluate() {
+    public void breakBindings() {
+        for (SocketEventListener socEv : socketEventListeners.values())
+            removeOnBindingEventListener(socEv);
+        socketEventListeners.clear();
+        fireOnBindingBreak();
         fireOnBindingDataChanged();
-        return true;
     }
 
-    public boolean isDataBindAvailable() {
-        return true;
+    public boolean evaluate() {return true;}
+
+    public void resetDataDefaults() { this.data = null; }
+
+    public void addOnBindingEventListener(SocketEventListener listener) {
+        listenerList.add(SocketEventListener.class, listener);
     }
 
-    public boolean isDataBindAvailable(NodeSocket nodeSocket) {
-        if (!isDataBindAvailable()) return false;
-        if (nodeSocket.props.getData() == null) return true;
-        return !((nodeSocket.getUUID() == getUUID()) ||
-                nodeSocket.getDirection() == this.getDirection() ||
-                !(nodeSocket.props.getDataClass().isAssignableFrom(this.props.getDataClass())));
-    }
-
-    public SocketDirection getDirection() {
-        return props.getDirection();
+    public void removeOnBindingEventListener(SocketEventListener listener) {
+        listenerList.remove(SocketEventListener.class, listener);
     }
 
     public void fireOnBindingDataChanged() {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == SocketEventListener.class) {
-                ((SocketEventListener) listeners[i+1]).onBindingDataChanged(props.getData());
+                ((SocketEventListener) listeners[i+1]).onBindingDataChanged(data);
             }
         }
     }
 
     void fireOnEvaluationStateChanged() {
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = 0; i < listeners.length; i = i+2) {
-            if (listeners[i] == SocketEventListener.class) {
-                ((SocketEventListener) listeners[i+1]).onDataEvaluationChanged(this, props.getState());
-            }
-        }
+        //Object[] listeners = listenerList.getListenerList();
+        //for (int i = 0; i < listeners.length; i = i+2) {
+        //    if (listeners[i] == SocketEventListener.class) {
+        //        ((SocketEventListener) listeners[i+1]).onDataEvaluationChanged(this, getState());
+        //    }
+        //}
     }
 
     void fireOnBindingBreak() {
@@ -91,163 +127,70 @@ public class NodeSocket<T> {
         }
     }
 
-    public void addOnBindingEventListener(SocketEventListener listener) {
-        listenerList.add(SocketEventListener.class, listener);
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void removeOnBindingEventListener(SocketEventListener listener) {
-        listenerList.remove(SocketEventListener.class, listener);
+    public Class<?> getDataClass() {
+        return this.data.getClass();
     }
 
-    public void breakBindings() {
-        SocketEventListener[] listenerArr = listenerList.getListeners(SocketEventListener.class);
-        for (int i = listenerList.getListenerCount() - 1; i > 0; i--) {
-            listenerList.remove(SocketEventListener.class, listenerArr[i]);
-        }
-        props.clearBindingMap();
-        fireOnBindingBreak();
+    public SocketDirection getDirection() {
+        return direction;
     }
 
-    public class SocketProperties<T> {
-        protected UUID uuid;
-        protected Object data;
-        protected SocketDirection direction;
-        protected NodeSocket<T> socket;
-        protected SocketState state;
-        protected HashMap<NodeSocket<T>, SocketDirection> bindings;
+    public void setDirection(SocketDirection direction) {
+        this.direction = direction;
+    }
 
-        public SocketProperties(NodeSocket<T> socket) {
-            this.socket = socket;
-            this.uuid = UUID.randomUUID();
-            this.bindings = new HashMap<>();
-            data = null;
-        }
+    public Color getSocketColor() {
+        return socketColor;
+    }
 
-        public SocketProperties(NodeSocket<T> socket, SocketDirection direction) {
-            this.socket = socket;
-            this.direction = direction;
-            this.uuid = UUID.randomUUID();
-            this.bindings = new HashMap<>();
-            data = null;
-        }
+    public Object getData() {
+        return data;
+    }
 
-        public T getData() {
-            return (T) data;
-        }
+    public void setData(Object data) {
+        this.data = data;
+        fireOnBindingDataChanged();
+    }
 
-        public void setData(Object data) {
-            if (this.data != null && data != null) {
-                if (!data.getClass().isAssignableFrom(getDataClass()))
-                    return;
-            }
-            this.data = data;
-            socket.fireOnBindingDataChanged();
-        }
+    public boolean isDataBindAvailable(NodeSocket socket) {
+        if (!isDataBindAvailable()) return false;
+        return socket.dataClass.isAssignableFrom(this.dataClass);
+    }
 
-        public UUID getUuid() {
-            return uuid;
-        }
+    public boolean isDataBindAvailable() {
+        return true;
+    }
 
-        public Class<?> getDataClass() {
-            if (data == null) return null;
-            return data.getClass();
-        }
-
-        public void setBindings(HashMap<NodeSocket<T>, SocketDirection> bindings) {
-            this.bindings = bindings;
-        }
-
-        public boolean addBinding(NodeSocket<T> nodeSocket, boolean oneWay) {
-            if (nodeSocket.getUUID() == socket.getUUID() ||
-                    !nodeSocket.props.getDataClass().isAssignableFrom(getDataClass()))
-                return false;
-
-            this.bindings.put(nodeSocket, nodeSocket.getDirection());
-
-            if (direction == SocketDirection.IN) {
-                nodeSocket.addOnBindingEventListener(new SocketEventListener() {
-                    @Override
-                    public void onBindingDataChanged(Object data) {
-                        setData((T) data);
-                    }
-
-                    @Override
-                    public void onBindingBreak() {
-
-                    }
-
-                    @Override
-                    public void onDataEvaluationChanged(NodeSocket data, NodeSocket.SocketState socketState) {
-                        state = socketState;
-                        socket.fireOnEvaluationStateChanged();
-                    }
-                });
-                setData(nodeSocket.props.getData());
-            }
-
-            if (!oneWay) {
-                nodeSocket.props.addBinding(socket, true);
-            }
-
-            socket.fireOnBindingDataChanged();
-
-            return true;
-        }
-
-        public int getBindingCount() {
-            return bindings.size();
-        }
-
-        public SocketState getState() {
-            return state;
-        }
-
-        public void setState(SocketState state) {
-            this.state = state;
-            socket.fireOnEvaluationStateChanged();
-        }
-
-        public SocketDirection getDirection() {
-            return direction;
-        }
-
-        public void removeBinding(NodeSocket nodeSocket) {
-            if (bindings.containsKey(nodeSocket)) {
-                bindings.remove(nodeSocket);
-            }
-        }
-
-        public void setDirection(SocketDirection direction) {
-            this.direction = direction;
-        }
-
-        public void clearBindingMap() {
-            bindings.clear();
-        }
+    public int getBindingCount() {
+        return socketEventListeners.size();
     }
 
     public class SocketState {
-        public StateErrorLevel errorLevel;
+        public NodeSocket.StateErrorLevel errorLevel;
         public String stateMessage;
-        public SocketDirection direction;
+        public NodeSocket.SocketDirection direction;
 
-        public SocketState(SocketDirection direction) {
-            this.errorLevel = StateErrorLevel.PASSING;
+        public SocketState(NodeSocket.SocketDirection direction) {
+            this.errorLevel = NodeSocket.StateErrorLevel.PASSING;
             this.stateMessage = "";
             this.direction = direction;
         }
 
-        public SocketState(StateErrorLevel errorLevel, String stateMessage, SocketDirection direction) {
+        public SocketState(NodeSocket.StateErrorLevel errorLevel, String stateMessage, NodeSocket.SocketDirection direction) {
             this.errorLevel = errorLevel;
             this.stateMessage = stateMessage;
             this.direction = direction;
         }
 
-        public StateErrorLevel getErrorLevel() {
+        public NodeSocket.StateErrorLevel getErrorLevel() {
             return errorLevel;
         }
 
-        public void setErrorLevel(StateErrorLevel errorLevel) {
+        public void setErrorLevel(NodeSocket.StateErrorLevel errorLevel) {
             this.errorLevel = errorLevel;
         }
 
@@ -259,11 +202,11 @@ public class NodeSocket<T> {
             this.stateMessage = stateMessage;
         }
 
-        public SocketDirection getDirection() {
+        public NodeSocket.SocketDirection getDirection() {
             return direction;
         }
 
-        public void setDirection(SocketDirection direction) {
+        public void setDirection(NodeSocket.SocketDirection direction) {
             this.direction = direction;
         }
     }
@@ -277,4 +220,3 @@ public class NodeSocket<T> {
         ERROR
     }
 }
-

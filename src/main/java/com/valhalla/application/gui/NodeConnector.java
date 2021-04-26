@@ -56,7 +56,7 @@ public class NodeConnector
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == ConnectorEventListener.class) {
-                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this, lastConnectionComp, this.socket.getUUID(), lastConnection.getUUID());
+                ((ConnectorEventListener) listeners[i+1]).OnConnectionCreated(this, lastConnectionComp, this.socket.getUuid(), lastConnection.getUuid());
             }
         }
     }
@@ -71,8 +71,8 @@ public class NodeConnector
             SetDisabled(true);
             return;
         }
-        if(!this.socket.props.getDataClass().isAssignableFrom(
-                socket.props.getDataClass())) {
+        if(!this.socket.getDataClass().isAssignableFrom(
+                socket.getDataClass())) {
             SetDisabled(true);
             return;
         }
@@ -146,7 +146,7 @@ public class NodeConnector
     public void ConnectorDropped(NodeConnector draggingConnector, NodeSocket socket) {
         if(!GetDisabled()) {
             if(mouseEntered) {
-                if (this.socket.props.addBinding(socket, false)) {
+                if (this.socket.addBinding(socket)) {
                     lastConnection = socket;
                     lastConnectionComp = draggingConnector;
                     FireOnConnectionCreated();

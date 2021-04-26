@@ -90,8 +90,8 @@ public class NodeBase implements INode {
      * Loops through all properties connectors and assigns them an index
      * @return HashMap with an Integer representing the property index and the list of connectors data of each property.
      */
-    public HashMap<Integer, List<NodeSocket<?>>> getAllConnectorsData() {
-        HashMap<Integer, List<NodeSocket<?>>> connectorsData = new HashMap<>();
+    public HashMap<Integer, List<NodeSocket>> getAllConnectorsData() {
+        HashMap<Integer, List<NodeSocket>> connectorsData = new HashMap<>();
         int i = 0;
         for (PropertyBase prop : properties) {
             connectorsData.put(i, prop.GetIO());
