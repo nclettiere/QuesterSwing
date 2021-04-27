@@ -1,9 +1,6 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.NodeEditor.ImageSocket;
-import com.valhalla.NodeEditor.IntegerSocket;
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.NodeEditor.SocketEventListener;
+import com.valhalla.NodeEditor.*;
 import com.valhalla.application.gui.ImagePanel;
 import com.valhalla.core.Ref;
 
@@ -16,6 +13,9 @@ import java.util.UUID;
 
 public class DisplayImageProperty extends PropertyBase {
 
+    String imageSrc = "";
+    double imageAngle = 0d;
+
     public DisplayImageProperty(Integer propertyIndex, UUID nodeUUID) {
         super(propertyIndex, nodeUUID);
 
@@ -25,10 +25,29 @@ public class DisplayImageProperty extends PropertyBase {
         SetControl(ref);
 
         ImageSocket id = new ImageSocket(NodeSocket.SocketDirection.IN);
+        DoubleSocket integerIn = new DoubleSocket(NodeSocket.SocketDirection.IN);
         id.addOnBindingEventListener(new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {
-                ((ImagePanel) ref.get()).addImage((String) id.getData());
+                imageSrc = (String) data;
+                ((ImagePanel) ref.get()).addImage(imageSrc, imageAngle);
+                FireControlUpdateEvent();
+            }
+
+            @Override
+            public void onBindingBreak() {
+            }
+
+            @Override
+            public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
+
+            }
+        });
+        integerIn.addOnBindingEventListener(new SocketEventListener() {
+            @Override
+            public void onBindingDataChanged(Object data) {
+                imageAngle = (double) data;
+                ((ImagePanel) ref.get()).addImage(imageSrc, (double)data);
                 FireControlUpdateEvent();
             }
 
@@ -42,6 +61,6 @@ public class DisplayImageProperty extends PropertyBase {
             }
         });
         AddInput(id);
-        AddInput(new IntegerSocket(NodeSocket.SocketDirection.IN));
+        AddInput(integerIn);
     }
 }

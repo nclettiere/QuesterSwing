@@ -37,6 +37,7 @@ public class NodeEditor extends PSwingCanvas {
     protected NodeSelectorPanel nsp;
     protected PNode pSelector;
     protected boolean isDebugging;
+    protected PCamera camera;
 
     public NodeEditor(Class<? extends NodeComponent>[] nodeClasses) {
         this.editorUUID = UUID.randomUUID();
@@ -44,7 +45,7 @@ public class NodeEditor extends PSwingCanvas {
         this.props.registerNodeClasses(nodeClasses);
 
         final PRoot root = getRoot();
-        final PCamera camera = getCamera();
+        camera = getCamera();
 
         SetupCanvas(root, camera);
         SetupListeners();
@@ -866,7 +867,13 @@ public class NodeEditor extends PSwingCanvas {
         if(draggingConnector == null || pNodeConnector == null) return;
 
         Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        Point2D curveEnd = getMousePosition(true);//props.getLastMousePosition();
+        final Point2D p = getMousePosition(true);
+        final double scale = camera.getViewTransform().getScale();
+        props.getLastInputEvent().getPath().canvasToLocal(p, camera);
+        final double translationX = camera.getViewTransform().getTranslateX() + scale;
+        final double translationY = camera.getViewTransform().getTranslateY() + scale;
+
+        Point2D curveEnd = new Point2D.Double(p.getX() - translationX, p.getY() - translationY);
 
         if (curveOrigin == null || curveEnd == null) return;
 

@@ -1,13 +1,13 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.NodeEditor.ImageSocket;
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.NodeEditor.SocketEventListener;
+import com.valhalla.NodeEditor.*;
 import com.valhalla.application.gui.ImagePanel;
 import com.valhalla.core.Ref;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -24,18 +24,27 @@ public class SelectImageProperty extends PropertyBase {
     SelectImageProperty(Integer propertyIndex, UUID nodeUUID) {
         super(propertyIndex, nodeUUID);
 
-        Ref<JComponent> ref = new Ref<>(new JButton("Select Image"));
+        Ref<JComponent> ref = new Ref<>(new ImageAngleControl());
+        ImageAngleControl iac = ((ImageAngleControl)ref.get());
 
-        ((JButton)ref.get()).addActionListener(e -> {
+        iac.selectButton.addActionListener(e -> {
             selectImageActionPerformed(ref.get());
-            //addAction();
             FireControlUpdateEvent();
+        });
+
+        iac.angleSelector.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                double val = (double) ((JSpinner)e.getSource()).getValue();
+                angleChanged(val);
+            }
         });
 
         SetControl(ref);
 
         ImageSocket imageIn =  new ImageSocket(NodeSocket.SocketDirection.IN);
         ImageSocket imageOut = new ImageSocket(NodeSocket.SocketDirection.OUT);
+        DoubleSocket imageAngleSocket = new DoubleSocket(NodeSocket.SocketDirection.OUT);
 
         imageIn.addOnBindingEventListener(new SocketEventListener() {
             protected boolean isOutBinded = false;
@@ -66,7 +75,7 @@ public class SelectImageProperty extends PropertyBase {
 
         AddInput(imageIn);
         AddOutput(imageOut);
-        //AddOutput(integerData);
+        AddOutput(imageAngleSocket);
     }
 
     private void addAction() {
@@ -98,5 +107,10 @@ public class SelectImageProperty extends PropertyBase {
             // Notify Panel of change
             FireControlUpdateEvent();
         }
+    }
+
+    private void angleChanged(double value) {
+        this.GetOutputs().get(1).setData(value);
+        FireControlUpdateEvent();
     }
 }
