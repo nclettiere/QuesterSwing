@@ -36,16 +36,20 @@ public class ImagePanel extends JPanel {
     }
 
     public void addImage(String filename) {
+        if (filename.isBlank() || filename.isEmpty()) {
+            img = null;
+            repaint();
+            return;
+        }
+
         File file = new File(filename);
-        System.out.println("filename = "+filename);
         try {
             img = ImageIO.read(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        if(img != null)
-            repaint();
+        repaint();
     }
 
     public void SetCustomSize(Dimension customSize) {
@@ -57,21 +61,6 @@ public class ImagePanel extends JPanel {
     public Dimension GetCustomSize() {
         return this.customSize;
     }
-
-    //@Override
-    //public Dimension getPreferredSize() {
-    //    if(img != null) {
-    //        if(useCustomSize)
-    //            return GetCustomSize();
-    //        else
-    //            return new Dimension(((Image) img).getWidth(this), ((Image) img).getHeight(this));
-    //    }else {
-    //        if(useCustomSize)
-    //            return GetCustomSize();
-    //        else
-    //            return new Dimension(0, 0);
-    //    }
-    //}
 
     @Override
     protected void paintComponent(Graphics g) {

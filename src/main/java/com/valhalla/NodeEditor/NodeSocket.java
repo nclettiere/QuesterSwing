@@ -31,8 +31,6 @@ public class NodeSocket {
             @Override
             public void onBindingDataChanged(Object data) {
                 setData(data);
-                //NodeSocket.this.data = data;
-                //fireOnBindingDataChanged();
             }
 
             @Override
@@ -66,23 +64,18 @@ public class NodeSocket {
         return true;
     }
 
-    /*
-        if OUT connects to IN then => {
-            IN.SetListenDataFrom(OUT);
-        }
-     */
-
     public void breakBindings() {
         for (SocketEventListener socEv : socketEventListeners.values())
             removeOnBindingEventListener(socEv);
         socketEventListeners.clear();
+        resetDataDefaults();
         fireOnBindingBreak();
         fireOnBindingDataChanged();
     }
 
     public boolean evaluate() {return true;}
 
-    public void resetDataDefaults() { this.data = null; }
+    public void resetDataDefaults() { setData(null); }
 
     public void addOnBindingEventListener(SocketEventListener listener) {
         listenerList.add(SocketEventListener.class, listener);

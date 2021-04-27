@@ -45,14 +45,7 @@ public class SelectImageProperty extends PropertyBase {
                     imageOut.setBind(imageIn);
                     isOutBinded = true;
                 }
-                //imageOut.evaluate();
-                //// Notify for DataBinding
-                //imageOut.fireOnBindingDataChanged();
-                //// Hide control as it is not necessary
                 ref.get().setVisible(imageIn.getBindingCount() == 0);
-                //// Notify Panel of change
-                //FireControlUpdateEvent();
-                System.out.println("ImageIn binding data changed!\n"+imageIn.getUuid()+"\n");
             }
 
             @Override
@@ -62,7 +55,6 @@ public class SelectImageProperty extends PropertyBase {
                     isOutBinded = false;
                 }
                 ref.get().setVisible(imageIn.getBindingCount() == 0);
-                System.out.println("ImageIn breaking bindings!\n"+imageIn.getUuid()+"\n");
                 ref.get().setVisible(true);
             }
 
