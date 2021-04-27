@@ -312,14 +312,12 @@ public class NodeEditor extends PSwingCanvas {
             @Override
             public void mouseEntered(PInputEvent event) {
                 event.setHandled(false);
-                super.mouseEntered(event);
                 connector.Hover(true);
             }
             @Override
             public void mouseExited(PInputEvent event) {
                 event.setHandled(false);
                 connector.Hover(false);
-                super.mouseExited(event);
             }
 
             @Override
@@ -330,8 +328,7 @@ public class NodeEditor extends PSwingCanvas {
 
             @Override
             public void mouseDragged(PInputEvent event) {
-                super.mouseDragged(event);
-                event.setHandled(false);
+                event.setHandled(true);
                 if (props.getConnectorDraggingUUID() != connector.GetNodeSocket().getUuid() && props.getConnectorDraggingUUID() != null) return;
                 if(props.getConnectorDraggingUUID() == null)
                     MatchConnectorType(connector.GetNodeSocket());
@@ -339,7 +336,9 @@ public class NodeEditor extends PSwingCanvas {
                 props.setConnectorDraggingUUID(connector.GetNodeSocket().getUuid());
                 nodeComponent.GetNode().SetCurrentAction(NodeBase.NodeAction.CONNECTION_DRAGGING);
                 props.setLastMousePosition(event.getPositionRelativeTo(getLayer()));
+                super.mouseDragged(event);
             }
+
             @Override
             public void mouseReleased(PInputEvent event) {
                 event.setHandled(false);
@@ -721,7 +720,6 @@ public class NodeEditor extends PSwingCanvas {
                 final Rectangle2D clip = paintContext.getLocalClip();
 
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
                 g2.setColor(new Color(50, 50, 50));
 
@@ -866,14 +864,16 @@ public class NodeEditor extends PSwingCanvas {
 
         if(draggingConnector == null || pNodeConnector == null) return;
 
-        Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
-        final Point2D p = getMousePosition(true);
-        final double scale = camera.getViewTransform().getScale();
-        props.getLastInputEvent().getPath().canvasToLocal(p, camera);
-        final double translationX = camera.getViewTransform().getTranslateX() + scale;
-        final double translationY = camera.getViewTransform().getTranslateY() + scale;
+        //final Point2D p = getMousePosition(true);
+        //final double scale = camera.getViewTransform().getScale();
+        //props.getLastInputEvent().getPath().canvasToLocal(p, camera);
+        //final double translationX = camera.getViewTransform().getTranslateX() + scale;
+        //final double translationY = camera.getViewTransform().getTranslateY() + scale;
 
-        Point2D curveEnd = new Point2D.Double(p.getX() - translationX, p.getY() - translationY);
+        //Point2D curveEnd = new Point2D.Double(p.getX() - translationX, p.getY() - translationY);
+
+        Point2D curveOrigin = pNodeConnector.getGlobalBounds().getOrigin();
+        Point2D curveEnd = props.getLastMousePosition();
 
         if (curveOrigin == null || curveEnd == null) return;
 
