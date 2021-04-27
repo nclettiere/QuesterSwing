@@ -283,7 +283,7 @@ public class NodeEditor extends PSwingCanvas {
              uuid1,
              uuid2) -> CreateConnection(uuid2, uuid1));
 
-        pNodeConnector.addAttribute("tooltip", connectorUUID.toString());
+        pNodeConnector.addAttribute("tooltip", connectorUUID.toString() + "\ndata=> " + connector.GetNodeSocket().getData());
 
         pNodeConnector.addInputEventListener(new PBasicInputEventHandler() {
             @Override
@@ -673,7 +673,15 @@ public class NodeEditor extends PSwingCanvas {
 
             public void updateTooltip(final PInputEvent event) {
                 final PNode pNode = event.getPickedNode();
-                final String tooltipStr = (String) pNode.getAttribute("tooltip");
+                String tooltipStr = (String) pNode.getAttribute("tooltip");
+                if (pNode instanceof PSwing) {
+                    PSwing ps = (PSwing) pNode;
+                    if (ps.getComponent() instanceof NodeConnector) {
+                        NodeConnector nConn = (NodeConnector) ps.getComponent();
+                        NodeSocket socket = nConn.GetNodeSocket();
+                        tooltipStr = tooltipStr + socket.getData();
+                    }
+                }
                 final Point2D p = event.getCanvasPosition();
 
                 event.getPath().canvasToLocal(p, camera);

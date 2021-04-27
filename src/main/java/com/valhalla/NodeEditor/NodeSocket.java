@@ -30,9 +30,9 @@ public class NodeSocket {
         SocketEventListener socEv = new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {
-                //setData(data);
-                NodeSocket.this.data = data;
-                fireOnBindingDataChanged();
+                setData(data);
+                //NodeSocket.this.data = data;
+                //fireOnBindingDataChanged();
             }
 
             @Override
@@ -46,6 +46,7 @@ public class NodeSocket {
             }
         };
         socketEventListeners.put(otherSocket, socEv);
+        setData(otherSocket.data);
         otherSocket.addOnBindingEventListener(socEv);
     }
 
@@ -55,33 +56,21 @@ public class NodeSocket {
 
         // if this socket is input, bind the data of otherSocket
         // if not, bind this socket data to otherSocket
-        if (this.direction == com.valhalla.NodeEditor.NodeSocket.SocketDirection.IN) {
-            SocketEventListener socEv = new SocketEventListener() {
-                @Override
-                public void onBindingDataChanged(Object data) {
-                    setData(data);
-                }
-
-                @Override
-                public void onBindingBreak() {
-                    otherSocket.removeOnBindingEventListener(this);
-                }
-
-                @Override
-                public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
-
-                }
-            };
-            socketEventListeners.put(otherSocket, socEv);
-            otherSocket.addOnBindingEventListener(socEv);
-        }else {
+        if (this.direction == NodeSocket.SocketDirection.IN) {
+            this.setBind(otherSocket);
+        }else if(otherSocket.direction == NodeSocket.SocketDirection.IN) {
             otherSocket.setBind(NodeSocket.this);
         }
-        fireOnBindingDataChanged();
         evaluate();
 
         return true;
     }
+
+    /*
+        if OUT connects to IN then => {
+            IN.SetListenDataFrom(OUT);
+        }
+     */
 
     public void breakBindings() {
         for (SocketEventListener socEv : socketEventListeners.values())
