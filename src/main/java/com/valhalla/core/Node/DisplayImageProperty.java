@@ -24,8 +24,8 @@ public class DisplayImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageSocket id = new ImageSocket(NodeSocket.SocketDirection.IN);
-        DoubleSocket integerIn = new DoubleSocket(NodeSocket.SocketDirection.IN);
+        ImageSocket id = new ImageSocket(SocketDirection.IN);
+        DoubleSocket integerIn = new DoubleSocket(SocketDirection.IN);
         id.addOnBindingEventListener(new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {
@@ -39,7 +39,7 @@ public class DisplayImageProperty extends PropertyBase {
             }
 
             @Override
-            public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
+            public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
 
             }
         });
@@ -56,7 +56,7 @@ public class DisplayImageProperty extends PropertyBase {
             }
 
             @Override
-            public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
+            public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
 
             }
         });

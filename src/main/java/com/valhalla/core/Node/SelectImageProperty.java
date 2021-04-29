@@ -42,9 +42,9 @@ public class SelectImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageSocket imageIn =  new ImageSocket(NodeSocket.SocketDirection.IN);
-        ImageSocket imageOut = new ImageSocket(NodeSocket.SocketDirection.OUT);
-        DoubleSocket imageAngleSocket = new DoubleSocket(NodeSocket.SocketDirection.OUT);
+        ImageSocket imageIn =  new ImageSocket(SocketDirection.IN);
+        ImageSocket imageOut = new ImageSocket(SocketDirection.OUT);
+        DoubleSocket imageAngleSocket = new DoubleSocket(SocketDirection.OUT);
 
         imageIn.addOnBindingEventListener(new SocketEventListener() {
             protected boolean isOutBinded = false;
@@ -68,7 +68,7 @@ public class SelectImageProperty extends PropertyBase {
             }
 
             @Override
-            public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
+            public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
                 FireControlUpdateEvent();
             }
         });
@@ -79,7 +79,7 @@ public class SelectImageProperty extends PropertyBase {
     }
 
     private void addAction() {
-        ImageSocket imageIn = new ImageSocket(NodeSocket.SocketDirection.OUT);
+        ImageSocket imageIn = new ImageSocket(SocketDirection.OUT);
         AddOutput(imageIn);
         FireConnectorAddedEvent(imageIn);
     }

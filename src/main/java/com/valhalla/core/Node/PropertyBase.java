@@ -1,6 +1,7 @@
 package com.valhalla.core.Node;
 
 import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.SocketDirection;
 import com.valhalla.core.Ref;
 
 import javax.swing.*;
@@ -86,7 +87,7 @@ public class PropertyBase implements INodeProperty {
 
     @Override
     public void AddInput(NodeSocket input) {
-        input.setDirection(NodeSocket.SocketDirection.IN);
+        input.setDirection(SocketDirection.IN);
         inputs.add(input);
     }
 
@@ -97,7 +98,7 @@ public class PropertyBase implements INodeProperty {
 
     @Override
     public void AddOutput(NodeSocket output) {
-        output.setDirection(NodeSocket.SocketDirection.OUT);
+        output.setDirection(SocketDirection.OUT);
         outputs.add(output);
     }
 
@@ -136,7 +137,7 @@ public class PropertyBase implements INodeProperty {
 
     public int getIndexOf(NodeSocket data) {
         int i = 0;
-        if (data.getDirection() == NodeSocket.SocketDirection.IN) {
+        if (data.getDirection() == SocketDirection.IN) {
             for (NodeSocket nData : inputs) {
                 if (data == nData)
                     break;

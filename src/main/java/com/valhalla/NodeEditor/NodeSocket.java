@@ -54,9 +54,9 @@ public class NodeSocket {
 
         // if this socket is input, bind the data of otherSocket
         // if not, bind this socket data to otherSocket
-        if (this.direction == NodeSocket.SocketDirection.IN) {
+        if (this.direction == SocketDirection.IN) {
             this.setBind(otherSocket);
-        }else if(otherSocket.direction == NodeSocket.SocketDirection.IN) {
+        }else if(otherSocket.direction == SocketDirection.IN) {
             otherSocket.setBind(NodeSocket.this);
         }
         evaluate();
@@ -159,55 +159,5 @@ public class NodeSocket {
             removeOnBindingEventListener(socketEventListeners.get(socket));
         }
     }
-
-    public class SocketState {
-        public NodeSocket.StateErrorLevel errorLevel;
-        public String stateMessage;
-        public NodeSocket.SocketDirection direction;
-
-        public SocketState(NodeSocket.SocketDirection direction) {
-            this.errorLevel = NodeSocket.StateErrorLevel.PASSING;
-            this.stateMessage = "";
-            this.direction = direction;
-        }
-
-        public SocketState(NodeSocket.StateErrorLevel errorLevel, String stateMessage, NodeSocket.SocketDirection direction) {
-            this.errorLevel = errorLevel;
-            this.stateMessage = stateMessage;
-            this.direction = direction;
-        }
-
-        public NodeSocket.StateErrorLevel getErrorLevel() {
-            return errorLevel;
-        }
-
-        public void setErrorLevel(NodeSocket.StateErrorLevel errorLevel) {
-            this.errorLevel = errorLevel;
-        }
-
-        public String getStateMessage() {
-            return stateMessage;
-        }
-
-        public void setStateMessage(String stateMessage) {
-            this.stateMessage = stateMessage;
-        }
-
-        public NodeSocket.SocketDirection getDirection() {
-            return direction;
-        }
-
-        public void setDirection(NodeSocket.SocketDirection direction) {
-            this.direction = direction;
-        }
-    }
-    public enum SocketDirection {
-        IN,
-        OUT
-    }
-    public enum StateErrorLevel {
-        PASSING,
-        WARNING,
-        ERROR
-    }
 }
+

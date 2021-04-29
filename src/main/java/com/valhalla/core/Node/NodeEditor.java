@@ -1,8 +1,6 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.NodeEditor.NEditorMouseWheelZoomHandler;
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.NodeEditor.SocketEventListener;
+import com.valhalla.NodeEditor.*;
 import com.valhalla.application.gui.*;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
@@ -389,8 +387,8 @@ public class NodeEditor extends PSwingCanvas {
                 }
 
                 @Override
-                public void onDataEvaluationChanged(NodeSocket socket, NodeSocket.SocketState socketState) {
-                    if(socketState.errorLevel != NodeSocket.StateErrorLevel.PASSING) {
+                public void onDataEvaluationChanged(NodeSocket socket, SocketState socketState) {
+                    if(socketState.errorLevel != StateErrorLevel.PASSING) {
                         nComp.addMessage(socket.getUuid(), new NodeMessage(socketState));
                     }else {
                         nComp.removeMessage();
@@ -399,7 +397,7 @@ public class NodeEditor extends PSwingCanvas {
             });
             SetupConnectorListener(nComp, nConn, nConnPNode);
 
-            if (socket.getDirection() == NodeSocket.SocketDirection.IN) {
+            if (socket.getDirection() == SocketDirection.IN) {
                 PNode inputLayout = props.getNodeCompInputLayout(nodeComponentUUID);
                 if (inputLayout != null)
                     inputLayout.addChild(nConnPNode);
@@ -801,9 +799,9 @@ public class NodeEditor extends PSwingCanvas {
                     points.getConnector2UUID() == selectedNode.GetNode().GetUUID())
                 graphics.setColor(new Color(240, 175, 50));
             else
-                graphics.setColor(new Color(255, 255, 255, 180));
+                graphics.setColor(new Color(200,200,200));
         }else {
-            graphics.setColor(new Color(255, 255, 255, 180));
+            graphics.setColor(new Color(200,200,200));
         }
 
         graphics.setStroke(new BasicStroke(1.3f));
@@ -877,7 +875,7 @@ public class NodeEditor extends PSwingCanvas {
 
         if (curveOrigin == null || curveEnd == null) return;
 
-        graphics.setColor(new Color(255,255,255, 180));
+        graphics.setColor(new Color(200,200,200));
         graphics.setStroke(new BasicStroke(1.3f));
         //graphics.drawLine(dragOrigin.x, dragOrigin.y, getMousePosition().x, getMousePosition().y);
 
