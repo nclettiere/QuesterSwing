@@ -28,12 +28,14 @@ public class NodeBase implements INode {
     protected EventListenerList listenerList;
 
     protected boolean allowSelfBinding;
+    protected boolean isPureNode;
 
     NodeBase() {
         this.listenerList = new EventListenerList();
         this.properties = new ArrayList<>();
         this.nodeAction = NodeAction.NONE;
         this.allowSelfBinding = true;
+        this.isPureNode = true;
         SetUUID(UUID.randomUUID());
     }
 
@@ -111,6 +113,14 @@ public class NodeBase implements INode {
 
     public Iterable<PropertyBase> getProperties() {
         return properties;
+    }
+
+    public boolean isPureNode() {
+        return isPureNode;
+    }
+
+    public void setPureNode(boolean pureNode) {
+        isPureNode = pureNode;
     }
 
     @Override

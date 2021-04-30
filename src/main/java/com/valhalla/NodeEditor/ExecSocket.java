@@ -15,7 +15,7 @@ public class ExecSocket extends NodeSocket {
 
     @Override
     public Color getSocketColor() {
-        return new Color(177, 24, 24);
+        return new Color(177, 177, 177);
     }
 
     @Override
@@ -25,6 +25,6 @@ public class ExecSocket extends NodeSocket {
 
     @Override
     public boolean isDataBindAvailable() {
-        return !(socketEventListeners.size() > 0);
+        return true;
     }
 }

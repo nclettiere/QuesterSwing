@@ -236,6 +236,10 @@ public class NodeEditor extends PSwingCanvas {
 
         // Create NodeConnectors
         Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
+        if (nodeComponent.GetNode().isPureNode()) {
+            AddConnector(nodeCompUUID, 0, new ExecSocket(SocketDirection.IN));
+            AddConnector(nodeCompUUID, 0, new ExecSocket(SocketDirection.OUT));
+        }
         while (it.hasNext()) {
             Map.Entry<Integer, List<NodeSocket>> pair = it.next();
             List<NodeSocket> connectorDataList = pair.getValue();
