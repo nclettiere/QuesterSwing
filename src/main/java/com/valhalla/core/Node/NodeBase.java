@@ -35,7 +35,7 @@ public class NodeBase implements INode {
         this.properties = new ArrayList<>();
         this.nodeAction = NodeAction.NONE;
         this.allowSelfBinding = true;
-        this.isPureNode = true;
+        this.isPureNode = false;
         SetUUID(UUID.randomUUID());
     }
 

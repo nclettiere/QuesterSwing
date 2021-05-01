@@ -20,7 +20,7 @@ public class ExecSocket extends NodeSocket {
 
     @Override
     public void resetDataDefaults() {
-        setData(new Exec(direction));
+        setData(new Exec(uuid, direction));
     }
 
     @Override

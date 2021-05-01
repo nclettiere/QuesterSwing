@@ -65,7 +65,6 @@ public class NodeEditor extends PSwingCanvas {
         // Add nodes to the props list
         props.addNode(uuid, pNode);
         props.addComponent(nodeComp);
-        props.addToSelectableList(pNode);
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
@@ -115,6 +114,7 @@ public class NodeEditor extends PSwingCanvas {
             protected void startDrag(final PInputEvent event) {
                 super.startDrag(event);
                 pNode.raiseToTop();
+                SelectNode(nodeComp, true);
                 nodeStartPosition = pNode.getOffset();
             }
 
@@ -135,6 +135,7 @@ public class NodeEditor extends PSwingCanvas {
                     pNode.setOffset(dest.getX(), dest.getY());
                     UpdateConnectorPosition(finalNodeComp);
                 }
+                getLayer().repaint();
                 super.mouseDragged(event);
             }
 
@@ -237,9 +238,16 @@ public class NodeEditor extends PSwingCanvas {
 
         // Create NodeConnectors
         Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
-        if (nodeComponent.GetNode().isPureNode()) {
-            AddConnector(nodeCompUUID, 0, new ExecSocket(SocketDirection.IN));
-            AddConnector(nodeCompUUID, 0, new ExecSocket(SocketDirection.OUT));
+        if (!nodeComponent.GetNode().isPureNode()) {
+            ExecSocket execIn = new ExecSocket(SocketDirection.IN);
+            ExecSocket execOut = new ExecSocket(SocketDirection.OUT);
+            AddConnector(nodeCompUUID, 0, execIn);
+            AddConnector(nodeCompUUID, 0, execOut);
+
+            // Adds the execs objects to the list
+            // as they will be used for the execution bus mapping.
+            props.addExecData((Exec) execIn.getData());
+            props.addExecData((Exec) execOut.getData());
         }
         while (it.hasNext()) {
             Map.Entry<Integer, List<NodeSocket>> pair = it.next();
@@ -379,16 +387,22 @@ public class NodeEditor extends PSwingCanvas {
         NodeSocket socket1 = props.getNodeSocket(connector1);
         NodeSocket socket2 = props.getNodeSocket(connector2);
         if(socket1 != null && socket2 != null) {
-            if (socket1 instanceof ExecSocket &&
-                    socket2 instanceof ExecSocket) {
+            if (socket1 instanceof ExecSocket && socket2 instanceof ExecSocket) {
                 ExecSocket execSocket1 = (ExecSocket) socket1;
                 ExecSocket execSocket2 = (ExecSocket) socket2;
                 Exec exec1 = (Exec) execSocket1.getData();
                 Exec exec2 = (Exec) execSocket2.getData();
                 exec1.addNextConnector(connector2);
                 exec2.addPreviousConnector(connector1);
+
+                regenerateExecutionBusMapping();
             }
         }
+    }
+
+    private void regenerateExecutionBusMapping() {
+        Map<UUID, Iterable<UUID>> newExecutionBus = Exec.resolveConnections(props.getExecutionList());
+        System.out.println(newExecutionBus.toString());
     }
 
     protected void AddConnector(UUID nodeComponentUUID, Integer propertyIndex, NodeSocket socket) {
@@ -1025,7 +1039,8 @@ public class NodeEditor extends PSwingCanvas {
         protected HashMap<UUID, NodeComponent>              nodeComponents;
         protected List<Class<? extends NodeComponent>>      registeredNodes;
         protected List<NodeConnectionPoints>                connectionPoints;
-        protected ArrayList                                 selectablePNodes;
+        protected List<Exec>                                executionDataList;
+        protected Map<UUID, Iterable<UUID>>                 executionBus;
 
         // Editor Canvas props
         protected double      gridSpacing;
@@ -1048,10 +1063,11 @@ public class NodeEditor extends PSwingCanvas {
 
         NodeEditorProperties() {
             pNodesMap = new HashMap<>();
+            executionBus = new HashMap<>();
             connectorsMap = new HashMap<>();
             nodeComponents = new HashMap<>();
+            executionDataList = new ArrayList<>();
             registeredNodes = new ArrayList<>();
-            selectablePNodes = new ArrayList();
             connectionPoints = new ArrayList<>();
             lastMousePosition = new Point2D.Double(0,0);
             nodeReseted = true;
@@ -1162,6 +1178,29 @@ public class NodeEditor extends PSwingCanvas {
         public void setLastInputEvent(PInputEvent lastInputEvent) {
             if(lastInputEvent != null)
                 this.lastInputEvent = lastInputEvent;
+        }
+
+        public void addExecData(Exec exec) {
+            if (exec != null)
+                executionDataList.add(exec);
+        }
+
+        public void removeExecData(Exec exec) {
+            if (exec != null)
+                executionDataList.remove(exec);
+            regenerateExecutionBusMapping();
+        }
+
+        public Iterable<Exec> getExecutionList() {
+            return executionDataList;
+        }
+
+        public void setExecutionBus(Map<UUID, Iterable<UUID>> newExecutionBus) {
+            executionBus = newExecutionBus;
+        }
+
+        public Map<UUID, Iterable<UUID>> getExecutionBus() {
+            return executionBus;
         }
 
         public UUID getActionedNode() {
@@ -1301,18 +1340,6 @@ public class NodeEditor extends PSwingCanvas {
             if (connPointsToDelete != null) {
                 connectionPoints.remove(connPointsToDelete);
             }
-        }
-
-        public ArrayList getSelectablePNodes() {
-            return selectablePNodes;
-        }
-
-        public void addToSelectableList(PNode pNode) {
-            selectablePNodes.add(pNode);
-        }
-
-        public void removeFromSelectableList(PNode pNode) {
-            selectablePNodes.remove(pNode);
         }
 
         public int getPressedKeyCode() {

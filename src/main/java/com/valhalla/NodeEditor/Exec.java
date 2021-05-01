@@ -1,23 +1,22 @@
 package com.valhalla.NodeEditor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class Exec {
+    protected UUID uuid;
     protected List<UUID> nextConnections;
     protected List<UUID> previousConnections;
     protected SocketDirection direction;
 
-    public Exec(SocketDirection direction) {
-        nextConnections = new ArrayList<>();
-        previousConnections = new ArrayList<>();
+    public Exec(UUID uuid, SocketDirection direction) {
+        this.uuid = uuid;
+        this.nextConnections = new ArrayList<>();
+        this.previousConnections = new ArrayList<>();
         this.direction = direction;
     }
 
-    public Exec(SocketDirection direction, List<UUID> previousConnections, List<UUID> nextConnections) {
-        this(direction);
+    public Exec(UUID uuid, SocketDirection direction, List<UUID> previousConnections, List<UUID> nextConnections) {
+        this(uuid, direction);
         this.previousConnections = previousConnections;
         this.nextConnections = nextConnections;
     }
@@ -32,12 +31,10 @@ public class Exec {
 
     public void addNextConnector(UUID uuid) {
         nextConnections.add(uuid);
-        System.out.println("[next]"+nextConnections);
     }
 
     public void addPreviousConnector(UUID uuid) {
         previousConnections.add(uuid);
-        System.out.println("[prev]"+previousConnections);
     }
 
     public void removeNextConnector(UUID uuid) {
@@ -72,9 +69,29 @@ public class Exec {
         return previousConnections.contains(uuidToSearch);
     }
 
-    // TODO
-    public static Iterable<Map<UUID, UUID>> resolveConnections(Exec[] execs) {
-        return null;
+
+    public static Map<UUID, List<UUID>> resolveConnections(Exec[] execs) {
+        HashMap<UUID, List<UUID>> resolvedList = new HashMap<>();
+        for (Exec exec : execs) {
+            UUID execUuid = exec.uuid;
+            List<UUID> nextUuids = new ArrayList<>();
+            for (UUID uuid : exec.getAllNextConnections())
+                nextUuids.add(uuid);
+            resolvedList.put(execUuid, nextUuids);
+        }
+        return resolvedList;
+    }
+
+    public static Map<UUID, Iterable<UUID>> resolveConnections(Iterable<Exec> execs) {
+        HashMap<UUID, Iterable<UUID>> resolvedList = new HashMap<>();
+        for (Exec exec : execs) {
+            UUID execUuid = exec.uuid;
+            List<UUID> nextUuids = new ArrayList<>();
+            for (UUID uuid : exec.getAllNextConnections())
+                nextUuids.add(uuid);
+            resolvedList.put(execUuid, nextUuids);
+        }
+        return resolvedList;
     }
 
 }
