@@ -120,8 +120,8 @@ public class NodeEditor extends PSwingCanvas {
 
             @Override
             public void mouseDragged(PInputEvent event) {
-                if (props.isNodeDragging() && !props.isConnectorDragging()) {
-
+                event.setHandled(true);
+                if (!props.isConnectorDragging()) {
                     final Point2D start = getCamera().localToView(
                             (Point2D) getMousePressedCanvasPoint().clone());
                     final Point2D current = event.getPositionRelativeTo(getLayer());
@@ -135,6 +135,7 @@ public class NodeEditor extends PSwingCanvas {
                     pNode.setOffset(dest.getX(), dest.getY());
                     UpdateConnectorPosition(finalNodeComp);
                 }
+                super.mouseDragged(event);
             }
 
             @Override
@@ -368,7 +369,26 @@ public class NodeEditor extends PSwingCanvas {
                     connector2,
                     connector1Point,
                     connector2Point));
+
+        checkForExecSockets(connector1, connector2);
+
         repaint();
+    }
+
+    private void checkForExecSockets(UUID connector1, UUID connector2) {
+        NodeSocket socket1 = props.getNodeSocket(connector1);
+        NodeSocket socket2 = props.getNodeSocket(connector2);
+        if(socket1 != null && socket2 != null) {
+            if (socket1 instanceof ExecSocket &&
+                    socket2 instanceof ExecSocket) {
+                ExecSocket execSocket1 = (ExecSocket) socket1;
+                ExecSocket execSocket2 = (ExecSocket) socket2;
+                Exec exec1 = (Exec) execSocket1.getData();
+                Exec exec2 = (Exec) execSocket2.getData();
+                exec1.addNextConnector(connector2);
+                exec2.addPreviousConnector(connector1);
+            }
+        }
     }
 
     protected void AddConnector(UUID nodeComponentUUID, Integer propertyIndex, NodeSocket socket) {
@@ -1101,9 +1121,17 @@ public class NodeEditor extends PSwingCanvas {
             return nodeComponents.get(uuid);
         }
 
-        public NodeConnector getNodeConnector(UUID uuidConnector) {
-            if(!connectorsMap.containsKey(uuidConnector)) return null;
-            return connectorsMap.get(uuidConnector).getNodeConnector();
+        public NodeConnector getNodeConnector(UUID uuidSocket) {
+            if(!connectorsMap.containsKey(uuidSocket)) return null;
+            return connectorsMap.get(uuidSocket).getNodeConnector();
+        }
+
+        public NodeSocket getNodeSocket(UUID uuidSocket) {
+            if(!connectorsMap.containsKey(uuidSocket)) return null;
+            return connectorsMap
+                    .get(uuidSocket)
+                    .getNodeConnector()
+                    .GetNodeSocket();
         }
 
         public void registerNodeClasses(Class<? extends NodeComponent>[] nodeClasses) {

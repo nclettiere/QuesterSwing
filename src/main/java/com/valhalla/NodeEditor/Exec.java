@@ -32,10 +32,12 @@ public class Exec {
 
     public void addNextConnector(UUID uuid) {
         nextConnections.add(uuid);
+        System.out.println("[next]"+nextConnections);
     }
 
     public void addPreviousConnector(UUID uuid) {
         previousConnections.add(uuid);
+        System.out.println("[prev]"+previousConnections);
     }
 
     public void removeNextConnector(UUID uuid) {

@@ -43,6 +43,7 @@ public class NodeSocket {
 
             }
         };
+
         socketEventListeners.put(otherSocket, socEv);
         setData(otherSocket.data);
         otherSocket.addOnBindingEventListener(socEv);
