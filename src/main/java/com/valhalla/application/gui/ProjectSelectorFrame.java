@@ -1,5 +1,6 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.NodeEditor.EditorData;
 import com.valhalla.application.Quester;
 import com.valhalla.core.Node.DisplayImageComponent;
 import com.valhalla.core.Node.MiscComponent;
@@ -50,10 +51,13 @@ public class ProjectSelectorFrame
         JTabbedPane tabbedPane = new JTabbedPane();
         ImagePanel logoImage;
 
+        EditorData editorData = new EditorData("DialogueEditor");
+
         nEditor = new NodeEditor(new Class[]{
                 SelectImageComponent.class,
                 DisplayImageComponent.class,
-                MiscComponent.class});
+                MiscComponent.class},
+                editorData);
 
         //======== this ========
         setTitle("Quester");
@@ -84,9 +88,17 @@ public class ProjectSelectorFrame
                 //openMenuItem.addActionListener(e -> openActionPerformed());
                 fileMenu.add(openMenuItem);
 
+                //---- saveMenuItem ----
+                JMenuItem saveMenuItem = new JMenuItem();
+                saveMenuItem.setText("Save");
+                saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                saveMenuItem.setMnemonic('S');
+                saveMenuItem.addActionListener(e -> nEditor.saveState());
+                fileMenu.add(saveMenuItem);
+                fileMenu.addSeparator();
+
                 //---- saveAsMenuItem ----
                 saveAsMenuItem.setText("Save As...");
-                saveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                 saveAsMenuItem.setMnemonic('S');
                 //saveAsMenuItem.addActionListener(e -> saveAsActionPerformed());
                 fileMenu.add(saveAsMenuItem);

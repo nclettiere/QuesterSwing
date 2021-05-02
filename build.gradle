@@ -32,6 +32,8 @@ dependencies {
     provided group: 'org.piccolo2d', name: 'piccolo2d-core', version: '3.0.1'
     // https://mvnrepository.com/artifact/org.piccolo2d/piccolo2d-extras
     provided group: 'org.piccolo2d', name: 'piccolo2d-extras', version: '3.0.1'
+    // https://mvnrepository.com/artifact/org.yaml/snakeyaml
+    provided group: 'org.yaml', name: 'snakeyaml', version: '1.28'
 }
 
 application {

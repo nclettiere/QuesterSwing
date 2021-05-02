@@ -7,14 +7,11 @@ import org.piccolo2d.PLayer;
 import org.piccolo2d.PNode;
 import org.piccolo2d.PRoot;
 import org.piccolo2d.event.*;
-import org.piccolo2d.extras.event.PNotificationCenter;
-import org.piccolo2d.extras.event.PSelectionEventHandler;
 import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.nodes.PText;
 import org.piccolo2d.util.PBounds;
-import org.piccolo2d.util.PNodeFilter;
 import org.piccolo2d.util.PPaintContext;
 
 import java.awt.*;
@@ -37,9 +34,9 @@ public class NodeEditor extends PSwingCanvas {
     protected boolean isDebugging;
     protected PCamera camera;
 
-    public NodeEditor(Class<? extends NodeComponent>[] nodeClasses) {
+    public NodeEditor(Class<? extends NodeComponent>[] nodeClasses, EditorData editorData) {
         this.editorUUID = UUID.randomUUID();
-        this.props = new NodeEditorProperties();
+        this.props = new NodeEditorProperties(editorData);
         this.props.registerNodeClasses(nodeClasses);
 
         final PRoot root = getRoot();
@@ -1029,11 +1026,16 @@ public class NodeEditor extends PSwingCanvas {
         repaint();
     }
 
+    public boolean saveState() {
+        return props.saveState();
+    }
+
     public EditorAction getCurrentAction() {
         return props.getEditorCurrentAction();
     }
 
     public class NodeEditorProperties {
+        protected EditorData                                editorData;
         protected HashMap<UUID, PNode>                      pNodesMap;
         protected HashMap<UUID, ConnectorIdentifier>        connectorsMap;
         protected HashMap<UUID, NodeComponent>              nodeComponents;
@@ -1061,7 +1063,8 @@ public class NodeEditor extends PSwingCanvas {
         protected volatile Point2D catchedPoint;
 
 
-        NodeEditorProperties() {
+        NodeEditorProperties(EditorData editorData) {
+            this.editorData = editorData;
             pNodesMap = new HashMap<>();
             executionBus = new HashMap<>();
             connectorsMap = new HashMap<>();
@@ -1264,6 +1267,13 @@ public class NodeEditor extends PSwingCanvas {
             return nodeComponents.values();
         }
 
+        public Iterable<NodeBase> getAllNodes() {
+            ArrayList<NodeBase> nodeList = new ArrayList<>();
+            for(NodeComponent nComp : nodeComponents.values())
+                nodeList.add(nComp.GetNode());
+            return nodeList;
+        }
+
         public Iterable<? extends PNode> getAllPNodes() {
             return pNodesMap.values();
         }
@@ -1272,6 +1282,13 @@ public class NodeEditor extends PSwingCanvas {
             List<NodeConnector> connectorList = new ArrayList<>();
             for (ConnectorIdentifier connId : connectorsMap.values())
                 connectorList.add(connId.nodeConnector);
+            return connectorList;
+        }
+
+        public Iterable<NodeSocket> getAllNodeSockets() {
+            List<NodeSocket> connectorList = new ArrayList<>();
+            for (ConnectorIdentifier connId : connectorsMap.values())
+                connectorList.add(connId.nodeConnector.GetNodeSocket());
             return connectorList;
         }
 
@@ -1365,6 +1382,16 @@ public class NodeEditor extends PSwingCanvas {
         public void setEditorCurrentAction(EditorAction editorCurrentAction) {
             this.editorCurrentAction = editorCurrentAction;
             fireOnEditorPropertyChanged("CurrentAction", editorCurrentAction);
+        }
+
+        public boolean saveState() {
+            this.editorData.setNodeList(getAllNodes());
+            this.editorData.setSocketList(getAllNodeSockets());
+
+            NodeSerializer nodeSerializer = new NodeSerializer();
+            nodeSerializer.initialize(editorData);
+            return nodeSerializer.serialize();
+            //nodeSerializer.saveToFile("C:\\Users\\Percebe64\\Documents\\");
         }
     }
 

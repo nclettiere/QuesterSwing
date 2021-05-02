@@ -8,8 +8,8 @@ import java.util.UUID;
 
 public class NodeSocket {
     protected UUID uuid;
-    protected Object data;
-    public Class<?> dataClass;
+    public Object data;
+    private Class<?> dataClass;
     protected SocketDirection direction;
     protected EventListenerList listenerList;
     protected HashMap<NodeSocket, SocketEventListener> socketEventListeners;

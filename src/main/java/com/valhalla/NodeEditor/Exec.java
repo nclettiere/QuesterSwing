@@ -4,8 +4,8 @@ import java.util.*;
 
 public class Exec {
     protected UUID uuid;
-    protected List<UUID> nextConnections;
-    protected List<UUID> previousConnections;
+    public List<UUID> nextConnections;
+    public List<UUID> previousConnections;
     protected SocketDirection direction;
 
     public Exec(UUID uuid, SocketDirection direction) {
@@ -69,7 +69,6 @@ public class Exec {
         return previousConnections.contains(uuidToSearch);
     }
 
-
     public static Map<UUID, List<UUID>> resolveConnections(Exec[] execs) {
         HashMap<UUID, List<UUID>> resolvedList = new HashMap<>();
         for (Exec exec : execs) {
@@ -93,5 +92,4 @@ public class Exec {
         }
         return resolvedList;
     }
-
 }
