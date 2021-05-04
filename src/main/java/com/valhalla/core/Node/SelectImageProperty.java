@@ -78,6 +78,28 @@ public class SelectImageProperty extends PropertyBase {
         AddOutput(imageAngleSocket);
     }
 
+    SelectImageProperty(Integer propertyIndex, UUID nodeUUID, Iterable<NodeSocket> sockets) {
+        super(propertyIndex, nodeUUID, sockets);
+
+        Ref<JComponent> ref = new Ref<>(new ImageAngleControl());
+        ImageAngleControl iac = ((ImageAngleControl)ref.get());
+
+        iac.selectButton.addActionListener(e -> {
+            selectImageActionPerformed(ref.get());
+            FireControlUpdateEvent();
+        });
+
+        iac.angleSelector.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                double val = (double) ((JSpinner)e.getSource()).getValue();
+                angleChanged(val);
+            }
+        });
+
+        SetControl(ref);
+    }
+
     private void addAction() {
         ImageSocket imageIn = new ImageSocket(SocketDirection.OUT);
         AddOutput(imageIn);

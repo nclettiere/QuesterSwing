@@ -63,4 +63,13 @@ public class DisplayImageProperty extends PropertyBase {
         AddInput(id);
         AddInput(integerIn);
     }
+
+    public DisplayImageProperty(Integer propertyIndex, UUID nodeUUID, Iterable<NodeSocket> sockets) {
+        super(propertyIndex, nodeUUID, sockets);
+
+        Ref<JComponent> ref = new Ref<>(new ImagePanel());
+        ((ImagePanel)ref.get()).SetCustomSize(new Dimension(100,100));
+
+        SetControl(ref);
+    }
 }

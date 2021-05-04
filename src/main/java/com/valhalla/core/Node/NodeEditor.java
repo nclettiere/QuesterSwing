@@ -65,7 +65,7 @@ public class NodeEditor extends PSwingCanvas {
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
-        SetupNodeConnectors(uuid);
+        SetupNodeConnectors(uuid, false);
         // Add node listeners
         NodeComponent finalNodeComp = nodeComp;
 
@@ -182,12 +182,139 @@ public class NodeEditor extends PSwingCanvas {
         fireOnEditorPropertyChanged("NodeCount", props.getNodeCount());
     }
 
+    public void CreateNewNode(final NodeComponent nodeComp, Point2D position) {
+        final UUID uuid = nodeComp.GetNode().GetUUID();
+        // Create a new PNode for the NodeComponent
+        final PNode pNode = new PSwing(nodeComp);
+        // Add nodes to the props list
+        props.addNode(uuid, pNode);
+        props.addComponent(nodeComp);
+        // Set editor parent
+        nodeComp.SetParentEditor(this);
+        // Setup node connectors
+        SetupNodeConnectors(uuid, true);
+        // Add node listeners
+
+        for (PropertyBase nodeProperty : nodeComp.getAllProperties()) {
+            nodeProperty.AddOnControlUpdateListener(new PropertyEventListener() {
+                @Override
+                public void OnControlUpdate() {
+                    UpdateNode(nodeComp);
+                }
+
+                @Override
+                public void ConnectorAdded(UUID nodeUUID, Integer propIndex, NodeSocket connectorData) {
+                    AddConnector(nodeUUID, propIndex, connectorData);
+                }
+
+                @Override
+                public void ConnectorRemoved(UUID nodeUUID, Integer propIndex, NodeSocket connectorData) {
+                    RemoveConnector(nodeUUID, propIndex, connectorData);
+                }
+
+                @Override
+                public void OnConnect() {
+
+                }
+
+                @Override
+                public void OnDisconnect() {
+
+                }
+            });
+        }
+
+        nodeComp.AddNodeComponentUpdateEvent(nodeComponent -> {
+            PNode outputLayout = props.getNodeCompOutputLayout(nodeComponent.GetNode().GetUUID());
+            Point2D layOffset = outputLayout.getOffset();
+            int nComponentWidth = nodeComponent.getPreferredSize().width;
+            outputLayout.setOffset(nComponentWidth - 35, layOffset.getY());
+        });
+
+        pNode.addInputEventListener(new PDragSequenceEventHandler() {
+            protected Point2D nodeStartPosition;
+
+            protected void startDrag(final PInputEvent event) {
+                super.startDrag(event);
+                pNode.raiseToTop();
+                SelectNode(nodeComp, true);
+                nodeStartPosition = pNode.getOffset();
+            }
+
+            @Override
+            public void mouseDragged(PInputEvent event) {
+                event.setHandled(true);
+                if (!props.isConnectorDragging()) {
+                    final Point2D start = getCamera().localToView(
+                            (Point2D) getMousePressedCanvasPoint().clone());
+                    final Point2D current = event.getPositionRelativeTo(getLayer());
+                    final Point2D dest = new Point2D.Double();
+
+                    dest.setLocation(nodeStartPosition.getX() + current.getX() - start.getX(), nodeStartPosition.getY()
+                            + current.getY() - start.getY());
+
+                    dest.setLocation(dest.getX() - dest.getX() % props.getGridSpacing(), dest.getY() - dest.getY() % props.getGridSpacing());
+
+                    pNode.setOffset(dest.getX(), dest.getY());
+                    UpdateConnectorPosition(nodeComp);
+                }
+                getLayer().repaint();
+                super.mouseDragged(event);
+            }
+
+            @Override
+            public void setMinDragStartDistance(double minDistance) {
+                super.setMinDragStartDistance(100d);
+            }
+        });
+
+        nodeComp.GetNode().AddNodeActionListener(nodeAction -> {
+            switch (nodeAction) {
+                case NONE -> {
+                    props.resetNodeState();
+                    getLayer().repaint();
+                }
+                case CLICKED -> {
+                    SelectNode(nodeComp, true);
+                    props.setEditorCurrentAction(EditorAction.NODE_SELECTED);
+                }
+                case DRAGGING -> {
+                    props.setActionedNode(uuid);
+                    props.setNodeDragging(true);
+                    SelectNode(nodeComp, true);
+                    props.setEditorCurrentAction(EditorAction.DRAGGING_NODE);
+                    getLayer().repaint();
+                }
+                case PRESSED -> {
+                    props.setActionedNode(uuid);
+                    props.setNodePressed(true);
+                }
+                case CONNECTION_DRAGGING -> {
+                    props.setActionedNode(uuid);
+                    props.setConnectorDragging(true);
+                    props.setTriggerPointCatch(true);
+                    props.setEditorCurrentAction(EditorAction.DRAGGING_CONNECTOR);
+                    getLayer().repaint();
+                }
+            }
+        });
+        // Add node to the canvas
+        pNode.setOffset(position);
+        getLayer().addChild(pNode);
+        // ...
+        pSelector.setVisible(false);
+        nsp.reset();
+
+        fireOnEditorPropertyChanged("NodeCount", props.getNodeCount());
+    }
+
+
     protected void UpdateNode(NodeComponent nodeComponent) {
         nodeComponent.Update();
         //UpdateNodeConnectors(nodeComponent.GetNode().GetUUID(), false);
     }
 
-    protected void SetupNodeConnectors(UUID nodeCompUUID) {
+    protected void SetupNodeConnectors(UUID nodeCompUUID, boolean loadedState) {
         PNode pNode = props.getPNode(nodeCompUUID);
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
         if (pNode == null || nodeComponent == null) return;
@@ -235,7 +362,8 @@ public class NodeEditor extends PSwingCanvas {
 
         // Create NodeConnectors
         Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
-        if (!nodeComponent.GetNode().isPureNode()) {
+        if (!nodeComponent.GetNode().isPureNode() &&
+            ! loadedState) {
             ExecSocket execIn = new ExecSocket(SocketDirection.IN);
             ExecSocket execOut = new ExecSocket(SocketDirection.OUT);
             AddConnector(nodeCompUUID, 0, execIn);
@@ -246,6 +374,7 @@ public class NodeEditor extends PSwingCanvas {
             props.addExecData((Exec) execIn.getData());
             props.addExecData((Exec) execOut.getData());
         }
+
         while (it.hasNext()) {
             Map.Entry<Integer, List<NodeSocket>> pair = it.next();
             List<NodeSocket> connectorDataList = pair.getValue();
@@ -1040,11 +1169,20 @@ public class NodeEditor extends PSwingCanvas {
 
         while (itNodes.hasNext()) {
             Map.Entry<UUID, Class<? extends NodeComponent>> pair = itNodes.next();
-            NodeComponent nodeComp = null;
+            NodeComponent nodeComp;
+            UUID nodeUUID = pair.getKey();
+            Iterable<NodeSocket> nodeSockets =
+                    newEditorData.getSocketsOfNode(nodeUUID);
+            Point2D nodePosition = newEditorData.getPositionOfNode(nodeUUID);
             try {
-                nodeComp = (NodeComponent) pair.getValue().getConstructors()[1].newInstance(pair.getKey());
+                nodeComp = (NodeComponent) pair.getValue()
+                        .getConstructors()[1]
+                        .newInstance(nodeUUID, nodeSockets);
+                CreateNewNode(nodeComp, nodePosition);
                 System.out.println("Added Node: "+ nodeComp.GetNode().uuid);
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            } catch (IllegalAccessException |
+                    InstantiationException |
+                    InvocationTargetException e) {
                 e.printStackTrace();
             }
         }

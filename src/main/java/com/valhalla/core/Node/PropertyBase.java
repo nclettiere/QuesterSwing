@@ -27,6 +27,18 @@ public class PropertyBase implements INodeProperty {
         listenerList = new EventListenerList();
     }
 
+    PropertyBase(Integer propertyIndex, UUID nodeUUID, Iterable<NodeSocket> sockets) {
+        this(propertyIndex, nodeUUID);
+        for (NodeSocket socket : sockets) {
+            if (socket.propertyIndex == propertyIndex) {
+                if (socket.getDirection() == SocketDirection.IN)
+                    inputs.add(socket);
+                else
+                    outputs.add(socket);
+            }
+        }
+    }
+
     @Override
     public void FireControlUpdateEvent() {
         Object[] listeners = listenerList.getListenerList();

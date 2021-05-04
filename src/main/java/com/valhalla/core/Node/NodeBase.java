@@ -39,7 +39,7 @@ public class NodeBase implements INode, java.io.Serializable {
         this.uuid = UUID.randomUUID();
     }
 
-    NodeBase(UUID uuid) {
+    NodeBase(UUID uuid, Iterable<NodeSocket> sockets) {
         this();
         this.uuid = uuid;
     }

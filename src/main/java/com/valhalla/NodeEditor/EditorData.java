@@ -14,7 +14,7 @@ public class EditorData implements java.io.Serializable {
     public String editorName;
 
     private Map<UUID, Class<? extends NodeComponent>> nodeList;
-    private Map<? super NodeSocket, UUID> socketList;
+    private Map<NodeSocket, UUID> socketList;
     private Map<UUID, Point2D> nodePositions;
 
     public EditorData() {
@@ -32,7 +32,7 @@ public class EditorData implements java.io.Serializable {
         this.nodeList = nodeList;
     }
 
-    public void setSocketList(Map<? super NodeSocket, UUID> socketList) {
+    public void setSocketList(Map<NodeSocket, UUID> socketList) {
         this.socketList = socketList;
     }
 
@@ -40,7 +40,7 @@ public class EditorData implements java.io.Serializable {
         return nodeList;
     }
 
-    public Map<? super NodeSocket, UUID> getSocketList() {
+    public Map<? extends NodeSocket, UUID> getSocketList() {
         return socketList;
     }
 
@@ -64,12 +64,21 @@ public class EditorData implements java.io.Serializable {
         return nodeList.entrySet().iterator();
     }
 
-    public Iterator<? extends Map.Entry<? super NodeSocket, UUID>> getSocketListIterator() {
+    public Iterator<? extends Map.Entry<NodeSocket, UUID>> getSocketListIterator() {
         return socketList.entrySet().iterator();
     }
 
     public Iterator<Map.Entry<UUID, Point2D>> getPositionsListIterator() {
         return nodePositions.entrySet().iterator();
+    }
+
+    public Iterable<NodeSocket> getSocketsOfNode(UUID nodeUUID) {
+        List<NodeSocket> sockets = new ArrayList<>();
+        for (Map.Entry<NodeSocket, UUID> socEntry : socketList.entrySet()) {
+            if (socEntry.getValue().equals(nodeUUID))
+                sockets.add(socEntry.getKey());
+        }
+        return sockets;
     }
 
     @Override
@@ -164,4 +173,9 @@ public class EditorData implements java.io.Serializable {
     }
 
 
+    public Point2D getPositionOfNode(UUID nodeUUID) {
+        if (!nodePositions.containsKey(nodeUUID))
+            return new Point2D.Double(0,0);
+        return nodePositions.get(nodeUUID);
+    }
 }

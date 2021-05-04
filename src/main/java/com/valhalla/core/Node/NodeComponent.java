@@ -1,5 +1,6 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.NodeSocket;
 import com.valhalla.application.gui.*;
 import net.miginfocom.swing.MigLayout;
 import org.piccolo2d.PNode;
@@ -67,7 +68,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         repaint();
     }
 
-    NodeComponent(UUID uuid) {
+    NodeComponent(UUID uuid, Iterable<NodeSocket> sockets) {
         this();
     }
 
