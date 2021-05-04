@@ -2,28 +2,10 @@ package com.valhalla.NodeEditor;
 
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 public class NodeStateSerializer {
-    private EditorData editorData;
-
-    public void initialize(EditorData editorData) {
-        this.editorData = editorData;
-    }
-
-    public boolean serialize() {
-        //Yaml yaml = new Yaml();
-        //try {
-        //    String output = yaml.dump(editorData);
-        //    System.out.println(output);
-        //    return true;
-        //}catch (Exception e) {
-        //    System.out.println(e.getMessage());
-        //    return false;
-        //}
-
+    public boolean serialize(EditorData editorData) {
         try {
             FileOutputStream fileOut =
                     new FileOutputStream("C:\\tmp\\editorData.ed");
@@ -37,5 +19,23 @@ public class NodeStateSerializer {
             i.printStackTrace();
             return false;
         }
+    }
+
+    public EditorData deserialize() {
+        EditorData eData = null;
+        try {
+            FileInputStream fileIn = new FileInputStream("C:\\tmp\\editorData.ed");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            eData = (EditorData) in.readObject();
+            in.close();
+            fileIn.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        } catch (ClassNotFoundException c) {
+            System.out.println("EditorData class not found");
+            c.printStackTrace();
+        }
+
+        return eData;
     }
 }

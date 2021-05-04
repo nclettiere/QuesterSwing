@@ -1030,6 +1030,28 @@ public class NodeEditor extends PSwingCanvas {
         return props.saveState();
     }
 
+    public void loadState() {
+        NodeStateSerializer nodeStateSerializer = new NodeStateSerializer();
+        EditorData newEditorData = nodeStateSerializer.deserialize();
+
+        Iterator<Map.Entry<UUID, Class<? extends NodeComponent>>> itNodes = newEditorData.getNodeListIterator();
+        Iterator<? extends Map.Entry<? super NodeSocket, UUID>> itSockets = newEditorData.getSocketListIterator();
+        Iterator<Map.Entry<UUID, Point2D>> itPositions = newEditorData.getPositionsListIterator();
+
+        while (itNodes.hasNext()) {
+            Map.Entry<UUID, Class<? extends NodeComponent>> pair = itNodes.next();
+            NodeComponent nodeComp = null;
+            try {
+                nodeComp = (NodeComponent) pair.getValue().getConstructors()[1].newInstance(pair.getKey());
+                System.out.println("Added Node: "+ nodeComp.GetNode().uuid);
+            } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+
+        props.loadState(newEditorData);
+    }
+
     public EditorAction getCurrentAction() {
         return props.getEditorCurrentAction();
     }
@@ -1387,14 +1409,36 @@ public class NodeEditor extends PSwingCanvas {
         public boolean saveState() {
             Map<UUID, Class<? extends NodeComponent>> nodeList
                     = new HashMap<>();
-            for(NodeComponent nComp : getAllNodeComponents())
+            Iterator<Map.Entry<UUID, ConnectorIdentifier>> itSockets = getConnectorsMap().entrySet().iterator();
+            Iterator<Map.Entry<UUID, PNode>> itPNodes = pNodesMap.entrySet().iterator();
+
+            for(NodeComponent nComp : getAllNodeComponents()) {
+                UUID uuid = nComp.GetNode().GetUUID();
+                nodeList.put(uuid, nComp.getClass());
+            }
             this.editorData.setNodeList(nodeList);
-            this.editorData.setSocketList(getAllNodeSockets());
+
+            while (itSockets.hasNext()) {
+                Map.Entry<UUID, ConnectorIdentifier> pair = itSockets.next();
+                UUID nodeUUID = pair.getValue().getNodeCompUUID();
+                NodeSocket socket = pair.getValue().getNodeSocket();
+                this.editorData.addNodeSocket(socket, nodeUUID);
+                itSockets.remove();
+            }
+
+            while (itPNodes.hasNext()) {
+                Map.Entry<UUID, PNode> pair = itPNodes.next();
+                Point2D nodePosition = pair.getValue().getGlobalBounds().getOrigin();
+                this.editorData.addNodePosition(pair.getKey(), nodePosition);
+                itPNodes.remove();
+            }
 
             NodeStateSerializer nodeStateSerializer = new NodeStateSerializer();
-            nodeStateSerializer.initialize(editorData);
-            return nodeStateSerializer.serialize();
-            //nodeSerializer.saveToFile("C:\\Users\\Percebe64\\Documents\\");
+            return nodeStateSerializer.serialize(editorData);
+        }
+
+        public void loadState(EditorData editorData) {
+            System.out.println(editorData.toString());
         }
     }
 
@@ -1421,6 +1465,10 @@ public class NodeEditor extends PSwingCanvas {
 
         public NodeConnector getNodeConnector() {
             return nodeConnector;
+        }
+
+        public NodeSocket getNodeSocket() {
+            return nodeConnector.GetNodeSocket();
         }
 
         public void setNodeConnector(NodeConnector nodeConnector) {

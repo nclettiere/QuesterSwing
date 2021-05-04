@@ -2,26 +2,25 @@ package com.valhalla.NodeEditor;
 
 import com.valhalla.core.Node.NodeBase;
 import com.valhalla.core.Node.NodeComponent;
+import org.piccolo2d.PNode;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class EditorData implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     public String editorName;
-    public Long editorVersion;
 
-    private Iterable<Map<UUID, Class<? extends NodeComponent>>> nodeList;
-    private Iterable<? extends NodeSocket> socketList;
-    private Iterable<Point> nodeCompsLocations;
+    private Map<UUID, Class<? extends NodeComponent>> nodeList;
+    private Map<? super NodeSocket, UUID> socketList;
+    private Map<UUID, Point2D> nodePositions;
 
     public EditorData() {
-        this.editorVersion = 1L;
-        this.nodeList = new ArrayList<>();
-        this.socketList = new ArrayList<>();
+        this.nodeList = new HashMap<>();
+        this.socketList = new HashMap<>();
+        this.nodePositions = new HashMap<>();
     }
 
     public EditorData(String editorName) {
@@ -29,27 +28,140 @@ public class EditorData implements java.io.Serializable {
         this.editorName = editorName;
     }
 
-    public void setNodeList(Iterable<Map<UUID, Class<? extends NodeComponent>>> nodeList) {
+    public void setNodeList(Map<UUID, Class<? extends NodeComponent>> nodeList) {
         this.nodeList = nodeList;
     }
 
-    public void setSocketList(Iterable<? extends NodeSocket> socketList) {
+    public void setSocketList(Map<? super NodeSocket, UUID> socketList) {
         this.socketList = socketList;
     }
 
-    public Iterable<Map<UUID, Class<? extends NodeComponent>>> getNodeList() {
+    public Map<UUID, Class<? extends NodeComponent>> getNodeList() {
         return nodeList;
     }
 
-    public Iterable<? extends NodeSocket> getSocketList() {
+    public Map<? super NodeSocket, UUID> getSocketList() {
         return socketList;
     }
 
-    public Iterable<Point> getNodeCompsLocations() {
-        return nodeCompsLocations;
+    public Map<UUID, Point2D> getNodePositions() {
+        return nodePositions;
     }
 
-    public void setNodeCompsLocations(Iterable<Point> nodeCompsLocations) {
-        this.nodeCompsLocations = nodeCompsLocations;
+    public void setNodePositions(Map<UUID, Point2D> nodeCompsLocations) {
+        this.nodePositions = nodeCompsLocations;
     }
+
+    public void addNodePosition(UUID uuid, Point2D nodePosition) {
+        nodePositions.put(uuid, nodePosition);
+    }
+
+    public void addNodeSocket(NodeSocket socket, UUID nodeUUID) {
+        socketList.put(socket, nodeUUID);
+    }
+
+    public Iterator<Map.Entry<UUID, Class<? extends NodeComponent>>> getNodeListIterator() {
+        return nodeList.entrySet().iterator();
+    }
+
+    public Iterator<? extends Map.Entry<? super NodeSocket, UUID>> getSocketListIterator() {
+        return socketList.entrySet().iterator();
+    }
+
+    public Iterator<Map.Entry<UUID, Point2D>> getPositionsListIterator() {
+        return nodePositions.entrySet().iterator();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        Iterator<Map.Entry<UUID, Class<? extends NodeComponent>>> itNodes = getNodeListIterator();
+        Iterator<? extends Map.Entry<? super NodeSocket, UUID>> itSockets = getSocketListIterator();
+        Iterator<Map.Entry<UUID, Point2D>> itPositions = getPositionsListIterator();
+
+        str.append("\n*****************************\n");
+        str.append("data for editor: ");
+        str.append(editorName).append("\n");
+        str.append("version: ").append(serialVersionUID).append("\n\n");
+        str.append("[List of Registered Nodes]").append("\n");
+
+        str.append("i")
+            .append("\t")
+            .append("Node UUID")
+            .append("\t\t\t\t\t\t\t\t")
+            .append("Node Class")
+            .append("\n");
+
+        int index = 0;
+        while (itNodes.hasNext()) {
+            Map.Entry<UUID, Class<? extends NodeComponent>> pair = itNodes.next();
+            str.append(index)
+                .append("\t")
+                .append(pair.getKey())
+                .append("\t")
+                .append(pair.getValue())
+                .append("\n");
+            index++;
+            itNodes.remove();
+        }
+
+        str.append("\n\n");
+
+        str.append("[List of sockets]").append("\n");
+
+        str.append("i")
+                .append("\t")
+                .append("Socket UUID")
+                .append("\t\t\t\t\t\t\t\t")
+                .append("Node UUID")
+                .append("\t\t\t\t\t\t\t\t")
+                .append("Socket Class")
+                .append("\n");
+
+        index = 0;
+        while (itSockets.hasNext()) {
+            Map.Entry<? super NodeSocket, UUID> pair = itSockets.next();
+            NodeSocket nodeSocket = (NodeSocket) pair.getKey();
+            str.append(index)
+                    .append("\t")
+                    .append(nodeSocket.getUuid())
+                    .append("\t")
+                    .append(pair.getValue())
+                    .append("\t")
+                    .append(nodeSocket.getClass())
+                    .append("\n");
+            index++;
+            itSockets.remove();
+        }
+
+        str.append("\n\n");
+
+        str.append("[List of Node Positions]").append("\n");
+
+        str.append("i")
+                .append("\t")
+                .append("Node UUID")
+                .append("\t\t\t\t\t\t\t\t")
+                .append("Node Position")
+                .append("\n");
+
+        index = 0;
+        while (itPositions.hasNext()) {
+            Map.Entry<UUID, Point2D> pair = itPositions.next();
+            str.append(index)
+                    .append("\t")
+                    .append(pair.getKey())
+                    .append("\t")
+                    .append(pair.getValue())
+                    .append("\n");
+            index++;
+            itPositions.remove();
+        }
+
+        str.append("\n*****************************\n");
+
+        return str.toString();
+    }
+
+
 }

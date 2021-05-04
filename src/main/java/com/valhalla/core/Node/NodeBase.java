@@ -36,7 +36,12 @@ public class NodeBase implements INode, java.io.Serializable {
         this.nodeAction = NodeAction.NONE;
         this.allowSelfBinding = true;
         this.isPureNode = false;
-        SetUUID(UUID.randomUUID());
+        this.uuid = UUID.randomUUID();
+    }
+
+    NodeBase(UUID uuid) {
+        this();
+        this.uuid = uuid;
     }
 
     public NodeAction GetCurrentAction() {

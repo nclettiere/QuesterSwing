@@ -9,11 +9,11 @@ import java.util.UUID;
 public class NodeSocket implements java.io.Serializable {
     protected UUID uuid;
     public Object data;
-    private Class<?> dataClass;
+    private final Class<?> dataClass;
     protected SocketDirection direction;
-    protected EventListenerList listenerList;
-    protected HashMap<NodeSocket, SocketEventListener> socketEventListeners;
-    protected Color socketColor;
+    transient protected EventListenerList listenerList;
+    transient protected HashMap<NodeSocket, SocketEventListener> socketEventListeners;
+    transient protected Color socketColor;
 
     public NodeSocket(SocketDirection direction, Class<?> dataClass) {
         this.uuid = UUID.randomUUID();

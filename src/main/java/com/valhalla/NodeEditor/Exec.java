@@ -2,7 +2,7 @@ package com.valhalla.NodeEditor;
 
 import java.util.*;
 
-public class Exec {
+public class Exec implements java.io.Serializable{
     protected UUID uuid;
     public List<UUID> nextConnections;
     public List<UUID> previousConnections;

@@ -67,6 +67,10 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         repaint();
     }
 
+    NodeComponent(UUID uuid) {
+        this();
+    }
+
     public String GetGroup() {
         return Node.groupName;
     }

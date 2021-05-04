@@ -85,7 +85,7 @@ public class ProjectSelectorFrame
                 openMenuItem.setText("Open...");
                 openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                 openMenuItem.setMnemonic('O');
-                //openMenuItem.addActionListener(e -> openActionPerformed());
+                openMenuItem.addActionListener(e -> nEditor.loadState());
                 fileMenu.add(openMenuItem);
 
                 //---- saveMenuItem ----
