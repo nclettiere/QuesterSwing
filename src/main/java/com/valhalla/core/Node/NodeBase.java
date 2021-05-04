@@ -5,7 +5,7 @@ import com.valhalla.NodeEditor.NodeSocket;
 import javax.swing.event.EventListenerList;
 import java.util.*;
 
-public class NodeBase implements INode {
+public class NodeBase implements INode, java.io.Serializable {
     public enum NodeAction {
         NONE,
         CLICKED,

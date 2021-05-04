@@ -1385,12 +1385,15 @@ public class NodeEditor extends PSwingCanvas {
         }
 
         public boolean saveState() {
-            this.editorData.setNodeList(getAllNodes());
+            Map<UUID, Class<? extends NodeComponent>> nodeList
+                    = new HashMap<>();
+            for(NodeComponent nComp : getAllNodeComponents())
+            this.editorData.setNodeList(nodeList);
             this.editorData.setSocketList(getAllNodeSockets());
 
-            NodeSerializer nodeSerializer = new NodeSerializer();
-            nodeSerializer.initialize(editorData);
-            return nodeSerializer.serialize();
+            NodeStateSerializer nodeStateSerializer = new NodeStateSerializer();
+            nodeStateSerializer.initialize(editorData);
+            return nodeStateSerializer.serialize();
             //nodeSerializer.saveToFile("C:\\Users\\Percebe64\\Documents\\");
         }
     }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.UUID;
 
-public class NodeSocket {
+public class NodeSocket implements java.io.Serializable {
     protected UUID uuid;
     public Object data;
     private Class<?> dataClass;

@@ -1,6 +1,6 @@
 package com.valhalla.core;
 
-public class Ref<T> {
+public class Ref<T> implements java.io.Serializable {
 
     private T value;
 

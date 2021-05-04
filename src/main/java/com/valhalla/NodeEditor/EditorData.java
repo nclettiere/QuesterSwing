@@ -1,6 +1,7 @@
 package com.valhalla.NodeEditor;
 
 import com.valhalla.core.Node.NodeBase;
+import com.valhalla.core.Node.NodeComponent;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -9,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class EditorData {
+public class EditorData implements java.io.Serializable {
     public String editorName;
     public Long editorVersion;
 
-    private Iterable<? extends NodeBase> nodeList;
+    private Iterable<Map<UUID, Class<? extends NodeComponent>>> nodeList;
     private Iterable<? extends NodeSocket> socketList;
     private Iterable<Point> nodeCompsLocations;
 
@@ -28,7 +29,7 @@ public class EditorData {
         this.editorName = editorName;
     }
 
-    public void setNodeList(Iterable<? extends NodeBase> nodeList) {
+    public void setNodeList(Iterable<Map<UUID, Class<? extends NodeComponent>>> nodeList) {
         this.nodeList = nodeList;
     }
 
@@ -36,7 +37,7 @@ public class EditorData {
         this.socketList = socketList;
     }
 
-    public Iterable<? extends NodeBase> getNodeList() {
+    public Iterable<Map<UUID, Class<? extends NodeComponent>>> getNodeList() {
         return nodeList;
     }
 
