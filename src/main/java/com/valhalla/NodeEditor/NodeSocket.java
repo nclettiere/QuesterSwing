@@ -13,7 +13,7 @@ public class NodeSocket implements java.io.Serializable {
     protected SocketDirection direction;
     public Integer propertyIndex;
     public Integer laneIndex;
-    transient protected EventListenerList listenerList;
+    protected EventListenerList listenerList;
     transient protected HashMap<NodeSocket, SocketEventListener> socketEventListeners;
     transient protected Color socketColor;
 

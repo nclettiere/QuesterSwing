@@ -65,7 +65,7 @@ public class NodeEditor extends PSwingCanvas {
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
-        SetupNodeConnectors(uuid, false);
+        SetupNodeConnectors(uuid);
         // Add node listeners
         NodeComponent finalNodeComp = nodeComp;
 
@@ -182,7 +182,7 @@ public class NodeEditor extends PSwingCanvas {
         fireOnEditorPropertyChanged("NodeCount", props.getNodeCount());
     }
 
-    public void CreateNewNode(final NodeComponent nodeComp, Point2D position) {
+    public void CreateNewNode(final NodeComponent nodeComp, Point2D position, Iterable<NodeSocket> sockets) {
         final UUID uuid = nodeComp.GetNode().GetUUID();
         // Create a new PNode for the NodeComponent
         final PNode pNode = new PSwing(nodeComp);
@@ -192,7 +192,7 @@ public class NodeEditor extends PSwingCanvas {
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
-        SetupNodeConnectors(uuid, true);
+        SetupNodeConnectors(uuid, sockets);
         // Add node listeners
 
         for (PropertyBase nodeProperty : nodeComp.getAllProperties()) {
@@ -314,7 +314,7 @@ public class NodeEditor extends PSwingCanvas {
         //UpdateNodeConnectors(nodeComponent.GetNode().GetUUID(), false);
     }
 
-    protected void SetupNodeConnectors(UUID nodeCompUUID, boolean loadedState) {
+    protected void SetupNodeConnectors(UUID nodeCompUUID) {
         PNode pNode = props.getPNode(nodeCompUUID);
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
         if (pNode == null || nodeComponent == null) return;
@@ -362,8 +362,7 @@ public class NodeEditor extends PSwingCanvas {
 
         // Create NodeConnectors
         Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
-        if (!nodeComponent.GetNode().isPureNode() &&
-            ! loadedState) {
+        if (!nodeComponent.GetNode().isPureNode()) {
             ExecSocket execIn = new ExecSocket(SocketDirection.IN);
             ExecSocket execOut = new ExecSocket(SocketDirection.OUT);
             AddConnector(nodeCompUUID, 0, execIn);
@@ -382,6 +381,83 @@ public class NodeEditor extends PSwingCanvas {
                 AddConnector(nodeCompUUID, pair.getKey(), data);
             it.remove();
         }
+
+        // Remove all handled input events from the IO layout to preventing
+        // an override of connectors PNode's events.
+        inputLayoutNode.addInputEventListener(new PBasicInputEventHandler() {
+            @Override
+            public void mouseDragged(PInputEvent event) {
+                event.setHandled(false);
+            }
+
+            @Override
+            public void mouseEntered(PInputEvent event) {
+                event.setHandled(false);
+            }
+
+            @Override
+            public void mouseExited(PInputEvent event) {
+                event.setHandled(false);
+            }
+
+            @Override
+            public void mouseMoved(PInputEvent event) {
+                event.setHandled(false);
+            }
+        });
+        inputLayoutNode.setPickable(false);
+        outputLayoutNode.setPickable(false);
+    }
+
+    protected void SetupNodeConnectors(UUID nodeCompUUID, Iterable<NodeSocket> sockets) {
+        PNode pNode = props.getPNode(nodeCompUUID);
+        NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
+        if (pNode == null || nodeComponent == null) return;
+
+        // Create IO layout PNodes
+        // This code enables the PNode to stack the connectors PNodes.
+        // Acting as a BoxLayout from top to bottom.
+        final PNode inputLayoutNode = new PNode() {
+            public void layoutChildren() {
+                final double xOffset = 0;
+                double yOffset = 0;
+
+                final Iterator i = getChildrenIterator();
+                while (i.hasNext()) {
+                    final PNode each = (PNode) i.next();
+                    each.setOffset(xOffset, yOffset - each.getY());
+                    yOffset += each.getHeight() + 7;
+                }
+            }
+        };
+
+        final PNode outputLayoutNode = new PNode() {
+            public void layoutChildren() {
+                final double xOffset = 0;
+                double yOffset = 0;
+
+                final Iterator i = getChildrenIterator();
+                while (i.hasNext()) {
+                    final PNode each = (PNode) i.next();
+                    each.setOffset(xOffset, yOffset - each.getY());
+                    yOffset += each.getHeight() + 7;
+                }
+            }
+        };
+
+        // Add the IO layout as child of the NodeComponent's PNode.
+        pNode.addChild(inputLayoutNode);
+        pNode.addChild(outputLayoutNode);
+        inputLayoutNode.setOffset(20, 90);
+        outputLayoutNode.setOffset(nodeComponent.getPreferredSize().width - 35, 90);
+
+        // Add and register all node connectors to the nComp
+        HashMap<Integer, List<NodeSocket>> nodePropsData =
+                nodeComponent.GetNode().getAllConnectorsData();
+
+        // Create NodeConnectors
+            for (NodeSocket socket : sockets)
+                AddConnector(nodeCompUUID, socket.propertyIndex, socket);
 
         // Remove all handled input events from the IO layout to preventing
         // an override of connectors PNode's events.
@@ -1178,7 +1254,7 @@ public class NodeEditor extends PSwingCanvas {
                 nodeComp = (NodeComponent) pair.getValue()
                         .getConstructors()[1]
                         .newInstance(nodeUUID, nodeSockets);
-                CreateNewNode(nodeComp, nodePosition);
+                CreateNewNode(nodeComp, nodePosition, nodeSockets);
                 System.out.println("Added Node: "+ nodeComp.GetNode().uuid);
             } catch (IllegalAccessException |
                     InstantiationException |
