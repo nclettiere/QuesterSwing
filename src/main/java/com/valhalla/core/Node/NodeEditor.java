@@ -182,7 +182,7 @@ public class NodeEditor extends PSwingCanvas {
         fireOnEditorPropertyChanged("NodeCount", props.getNodeCount());
     }
 
-    public void CreateNewNode(final NodeComponent nodeComp, Point2D position, Iterable<NodeSocket> sockets) {
+    public void CreateNewNode(final NodeComponent nodeComp, Point2D position, Iterable<NodeSocket> inSockets, Iterable<NodeSocket> outSockets) {
         final UUID uuid = nodeComp.GetNode().GetUUID();
         // Create a new PNode for the NodeComponent
         final PNode pNode = new PSwing(nodeComp);
@@ -192,7 +192,18 @@ public class NodeEditor extends PSwingCanvas {
         // Set editor parent
         nodeComp.SetParentEditor(this);
         // Setup node connectors
-        SetupNodeConnectors(uuid, sockets);
+
+        System.out.println("[IN]");
+        for (NodeSocket nSoc : inSockets) {
+            System.out.println(nSoc.getClass());
+        }
+        System.out.println("[OUT]");
+        for (NodeSocket nSoc : outSockets) {
+            System.out.println(nSoc.getClass());
+        }
+
+        SetupNodeConnectors(uuid, inSockets);
+        SetupNodeConnectors(uuid, outSockets);
         // Add node listeners
 
         for (PropertyBase nodeProperty : nodeComp.getAllProperties()) {
@@ -317,6 +328,8 @@ public class NodeEditor extends PSwingCanvas {
     protected void SetupNodeConnectors(UUID nodeCompUUID) {
         PNode pNode = props.getPNode(nodeCompUUID);
         NodeComponent nodeComponent = props.getNodeComponent(nodeCompUUID);
+        NodeBase nodeBase = nodeComponent.GetNode();
+
         if (pNode == null || nodeComponent == null) return;
 
         // Create IO layout PNodes
@@ -357,16 +370,19 @@ public class NodeEditor extends PSwingCanvas {
         outputLayoutNode.setOffset(nodeComponent.getPreferredSize().width - 35, 90);
 
         // Add and register all node connectors to the nComp
-        HashMap<Integer, List<NodeSocket>> nodePropsData =
-                nodeComponent.GetNode().getAllConnectorsData();
+        HashMap<Integer, List<NodeSocket>> nodePropsData = nodeBase.getAllSockets();
 
         // Create NodeConnectors
         Iterator<Map.Entry<Integer, List<NodeSocket>>> it = nodePropsData.entrySet().iterator();
-        if (!nodeComponent.GetNode().isPureNode()) {
+        if (!nodeBase.isPureNode()) {
             ExecSocket execIn = new ExecSocket(SocketDirection.IN);
             ExecSocket execOut = new ExecSocket(SocketDirection.OUT);
+
             AddConnector(nodeCompUUID, 0, execIn);
             AddConnector(nodeCompUUID, 0, execOut);
+
+            nodeBase.addExecSocket(execIn);
+            nodeBase.addExecSocket(execOut);
 
             // Adds the execs objects to the list
             // as they will be used for the execution bus mapping.
@@ -453,7 +469,7 @@ public class NodeEditor extends PSwingCanvas {
 
         // Add and register all node connectors to the nComp
         HashMap<Integer, List<NodeSocket>> nodePropsData =
-                nodeComponent.GetNode().getAllConnectorsData();
+                nodeComponent.GetNode().getAllSockets();
 
         // Create NodeConnectors
             for (NodeSocket socket : sockets)
@@ -1247,14 +1263,18 @@ public class NodeEditor extends PSwingCanvas {
             Map.Entry<UUID, Class<? extends NodeComponent>> pair = itNodes.next();
             NodeComponent nodeComp;
             UUID nodeUUID = pair.getKey();
-            Iterable<NodeSocket> nodeSockets =
-                    newEditorData.getSocketsOfNode(nodeUUID);
+
+            Iterable<NodeSocket> inputSockets =
+                    newEditorData.getInputSocketsOfNode(nodeUUID);
+            Iterable<NodeSocket> outputSockets =
+                    newEditorData.getOutputSocketsOfNode(nodeUUID);
+
             Point2D nodePosition = newEditorData.getPositionOfNode(nodeUUID);
             try {
                 nodeComp = (NodeComponent) pair.getValue()
                         .getConstructors()[1]
-                        .newInstance(nodeUUID, nodeSockets);
-                CreateNewNode(nodeComp, nodePosition, nodeSockets);
+                        .newInstance(nodeUUID, inputSockets);
+                CreateNewNode(nodeComp, nodePosition, inputSockets, outputSockets);
                 System.out.println("Added Node: "+ nodeComp.GetNode().uuid);
             } catch (IllegalAccessException |
                     InstantiationException |
@@ -1623,22 +1643,28 @@ public class NodeEditor extends PSwingCanvas {
         public boolean saveState() {
             Map<UUID, Class<? extends NodeComponent>> nodeList
                     = new HashMap<>();
-            Iterator<Map.Entry<UUID, ConnectorIdentifier>> itSockets = getConnectorsMap().entrySet().iterator();
+            //Iterator<Map.Entry<UUID, ConnectorIdentifier>> itSockets = getConnectorsMap().entrySet().iterator();
             Iterator<Map.Entry<UUID, PNode>> itPNodes = pNodesMap.entrySet().iterator();
 
             for(NodeComponent nComp : getAllNodeComponents()) {
-                UUID uuid = nComp.GetNode().GetUUID();
+                NodeBase nodeBase = nComp.GetNode();
+                UUID uuid = nodeBase.GetUUID();
                 nodeList.put(uuid, nComp.getClass());
+
+                for (NodeSocket nodeSocket : nodeBase.getInputs())
+                    this.editorData.addNodeSocket(nodeSocket, uuid);
+                for (NodeSocket nodeSocket : nodeBase.getOutputs())
+                    this.editorData.addNodeSocket(nodeSocket, uuid);
             }
             this.editorData.setNodeList(nodeList);
 
-            while (itSockets.hasNext()) {
-                Map.Entry<UUID, ConnectorIdentifier> pair = itSockets.next();
-                UUID nodeUUID = pair.getValue().getNodeCompUUID();
-                NodeSocket socket = pair.getValue().getNodeSocket();
-                this.editorData.addNodeSocket(socket, nodeUUID);
-                itSockets.remove();
-            }
+            //while (itSockets.hasNext()) {
+            //    Map.Entry<UUID, ConnectorIdentifier> pair = itSockets.next();
+            //    UUID nodeUUID = pair.getValue().getNodeCompUUID();
+            //    NodeSocket socket = pair.getValue().getNodeSocket();
+            //    this.editorData.addNodeSocket(socket, nodeUUID);
+            //    itSockets.remove();
+            //}
 
             while (itPNodes.hasNext()) {
                 Map.Entry<UUID, PNode> pair = itPNodes.next();

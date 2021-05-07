@@ -3,8 +3,8 @@ package com.valhalla.NodeEditor;
 import java.awt.*;
 
 public class IntegerSocket extends NodeSocket {
-    public IntegerSocket(SocketDirection direction) {
-        super(direction, Integer.class);
+    public IntegerSocket(SocketDirection direction, Integer propertyIndex) {
+        super(direction, propertyIndex, Integer.class);
     }
 
     @Override

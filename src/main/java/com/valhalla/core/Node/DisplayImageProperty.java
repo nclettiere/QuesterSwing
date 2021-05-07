@@ -24,8 +24,8 @@ public class DisplayImageProperty extends PropertyBase {
 
         SetControl(ref);
 
-        ImageSocket id = new ImageSocket(SocketDirection.IN);
-        DoubleSocket integerIn = new DoubleSocket(SocketDirection.IN);
+        ImageSocket id = new ImageSocket(SocketDirection.IN, this.propertyIndex);
+        DoubleSocket integerIn = new DoubleSocket(SocketDirection.IN, this.propertyIndex);
         id.addOnBindingEventListener(new SocketEventListener() {
             @Override
             public void onBindingDataChanged(Object data) {

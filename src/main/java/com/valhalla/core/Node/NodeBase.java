@@ -1,6 +1,8 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.ExecSocket;
 import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.SocketDirection;
 
 import javax.swing.event.EventListenerList;
 import java.util.*;
@@ -93,11 +95,25 @@ public class NodeBase implements INode, java.io.Serializable {
         listenerList.remove(NodeActionListener.class, listener);
     }
 
+    public Stack<NodeSocket> getInputs() {
+        Stack<NodeSocket> sockets = new Stack<>();
+        for (PropertyBase prop : properties)
+            sockets.addAll(prop.GetInputs());
+        return sockets;
+    }
+
+    public Stack<NodeSocket> getOutputs() {
+        Stack<NodeSocket> sockets = new Stack<>();
+        for (PropertyBase prop : properties)
+            sockets.addAll(prop.GetOutputs());
+        return sockets;
+    }
+
     /**
      * Loops through all properties connectors and assigns them an index
      * @return HashMap with an Integer representing the property index and the list of connectors data of each property.
      */
-    public HashMap<Integer, List<NodeSocket>> getAllConnectorsData() {
+    public HashMap<Integer, List<NodeSocket>> getAllSockets() {
         HashMap<Integer, List<NodeSocket>> connectorsData = new HashMap<>();
         int i = 0;
         for (PropertyBase prop : properties) {
@@ -114,6 +130,14 @@ public class NodeBase implements INode, java.io.Serializable {
                 ((NodeActionListener) listeners[i+1]).OnNodeActionChanged(GetCurrentAction());
             }
         }
+    }
+
+    public void addExecSocket(ExecSocket execSocket) {
+        if (properties.size() == 0) return;
+        if (execSocket.getDirection().equals(SocketDirection.IN))
+            properties.get(0).AddInput(execSocket);
+        else
+            properties.get(0).AddOutput(execSocket);
     }
 
     public Iterable<PropertyBase> getProperties() {

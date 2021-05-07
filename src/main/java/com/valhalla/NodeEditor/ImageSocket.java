@@ -1,10 +1,12 @@
 package com.valhalla.NodeEditor;
 
 import java.awt.*;
+import java.util.HashMap;
 
 public class ImageSocket extends NodeSocket {
-    public ImageSocket(SocketDirection direction) {
-        super(direction, String.class);
+
+    public ImageSocket(SocketDirection direction, Integer propertyIndex) {
+        super(direction, propertyIndex, String.class);
     }
 
     @Override
@@ -24,6 +26,8 @@ public class ImageSocket extends NodeSocket {
 
     @Override
     public boolean isDataBindAvailable() {
+        if (socketEventListeners == null)
+            socketEventListeners = new HashMap<>();
         return !(socketEventListeners.size() > 0);
     }
 }

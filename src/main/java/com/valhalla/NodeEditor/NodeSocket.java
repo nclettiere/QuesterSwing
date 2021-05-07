@@ -3,7 +3,7 @@ package com.valhalla.NodeEditor;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.UUID;
 
 public class NodeSocket implements java.io.Serializable {
@@ -14,12 +14,13 @@ public class NodeSocket implements java.io.Serializable {
     public Integer propertyIndex;
     public Integer laneIndex;
     protected EventListenerList listenerList;
-    transient protected HashMap<NodeSocket, SocketEventListener> socketEventListeners;
+    transient protected Map<NodeSocket, SocketEventListener> socketEventListeners;
     transient protected Color socketColor;
 
-    public NodeSocket(SocketDirection direction, Class<?> dataClass) {
+    public NodeSocket(SocketDirection direction, Integer propertyIndex, Class<?> dataClass) {
         this.uuid = UUID.randomUUID();
         this.listenerList = new EventListenerList();
+        this.propertyIndex = propertyIndex;
         this.direction = direction;
         this.dataClass = dataClass;
         this.socketColor = Color.WHITE;
@@ -45,6 +46,9 @@ public class NodeSocket implements java.io.Serializable {
 
             }
         };
+
+        if (socketEventListeners == null)
+            socketEventListeners = new HashMap<>();
 
         socketEventListeners.put(otherSocket, socEv);
         setData(otherSocket.data);

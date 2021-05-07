@@ -81,6 +81,26 @@ public class EditorData implements java.io.Serializable {
         return sockets;
     }
 
+    public Iterable<NodeSocket> getInputSocketsOfNode(UUID nodeUUID) {
+        List<NodeSocket> sockets = new ArrayList<>();
+        for (Map.Entry<NodeSocket, UUID> socEntry : socketList.entrySet()) {
+            if (socEntry.getValue().equals(nodeUUID) &&
+                    socEntry.getKey().getDirection().equals(SocketDirection.IN))
+                sockets.add(socEntry.getKey());
+        }
+        return sockets;
+    }
+
+    public Iterable<NodeSocket> getOutputSocketsOfNode(UUID nodeUUID) {
+        List<NodeSocket> sockets = new ArrayList<>();
+        for (Map.Entry<NodeSocket, UUID> socEntry : socketList.entrySet()) {
+            if (socEntry.getValue().equals(nodeUUID) &&
+                    socEntry.getKey().getDirection().equals(SocketDirection.OUT))
+                sockets.add(socEntry.getKey());
+        }
+        return sockets;
+    }
+
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
@@ -171,7 +191,6 @@ public class EditorData implements java.io.Serializable {
 
         return str.toString();
     }
-
 
     public Point2D getPositionOfNode(UUID nodeUUID) {
         if (!nodePositions.containsKey(nodeUUID))

@@ -5,7 +5,7 @@ import java.awt.*;
 public class ExecSocket extends NodeSocket {
 
     public ExecSocket(SocketDirection direction) {
-        super(direction, Exec.class);
+        super(direction, 0, Exec.class);
     }
 
     @Override

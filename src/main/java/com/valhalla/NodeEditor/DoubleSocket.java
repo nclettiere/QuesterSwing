@@ -3,8 +3,8 @@ package com.valhalla.NodeEditor;
 import java.awt.*;
 
 public class DoubleSocket extends NodeSocket {
-    public DoubleSocket(SocketDirection direction) {
-        super(direction, Double.class);
+    public DoubleSocket(SocketDirection direction, Integer propertyIndex) {
+        super(direction, propertyIndex, Double.class);
     }
 
     @Override

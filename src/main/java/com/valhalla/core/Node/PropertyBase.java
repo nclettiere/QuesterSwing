@@ -10,8 +10,8 @@ import java.util.*;
 
 public class PropertyBase implements INodeProperty {
     protected Ref<JComponent>   control;
-    protected List<NodeSocket>  inputs;
-    protected List<NodeSocket>  outputs;
+    protected Stack<NodeSocket>  inputs;
+    protected Stack<NodeSocket>  outputs;
     protected EventListenerList listenerList;
 
     protected Integer propertyIndex;
@@ -22,21 +22,25 @@ public class PropertyBase implements INodeProperty {
     PropertyBase(Integer propertyIndex, UUID nodeUUID) {
         this.propertyIndex = propertyIndex;
         this.nodeUUID = nodeUUID;
-        inputs = new ArrayList<>();
-        outputs = new ArrayList<>();
+        inputs = new Stack<>();
+        outputs = new Stack<>();
         listenerList = new EventListenerList();
     }
 
     PropertyBase(Integer propertyIndex, UUID nodeUUID, Iterable<NodeSocket> sockets) {
         this(propertyIndex, nodeUUID);
+
         for (NodeSocket socket : sockets) {
-            if (socket.propertyIndex == propertyIndex) {
-                if (socket.getDirection() == SocketDirection.IN)
-                    inputs.add(socket);
+            if (socket.propertyIndex.equals(propertyIndex)) {
+                if (socket.getDirection().equals(SocketDirection.IN))
+                    inputs.push(socket);
                 else
-                    outputs.add(socket);
+                    outputs.push(socket);
             }
         }
+
+        System.out.println("UPDATED INPUT STACK: "+ inputs.size());
+        System.out.println("UPDATED OUTPUT STACK: "+ outputs.size());
     }
 
     @Override
@@ -80,18 +84,18 @@ public class PropertyBase implements INodeProperty {
     }
 
     @Override
-    public List<NodeSocket> GetInputs() {
+    public Stack<NodeSocket> GetInputs() {
         return inputs;
     }
 
     @Override
-    public List<NodeSocket> GetOutputs() {
+    public Stack<NodeSocket> GetOutputs() {
         return outputs;
     }
 
     @Override
-    public List<NodeSocket> GetIO() {
-        List<NodeSocket> IO = new ArrayList<>();
+    public Stack<NodeSocket> GetIO() {
+        Stack<NodeSocket> IO = new Stack<>();
         IO.addAll(inputs);
         IO.addAll(outputs);
         return IO;
