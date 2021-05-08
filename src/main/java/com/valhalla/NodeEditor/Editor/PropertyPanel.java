@@ -1,8 +1,7 @@
-package com.valhalla.application.gui;
+package com.valhalla.NodeEditor.Editor;
 
 import com.valhalla.NodeEditor.INodeProperty;
 import com.valhalla.NodeEditor.NodeBase;
-import com.valhalla.NodeEditor.Editor.NodeComponent;
 import com.valhalla.NodeEditor.Sockets.NodeSocket;
 import net.miginfocom.swing.MigLayout;
 

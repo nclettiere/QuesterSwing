@@ -1,4 +1,4 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Sockets;
 
 import com.valhalla.NodeEditor.Sockets.ISocketData;
 

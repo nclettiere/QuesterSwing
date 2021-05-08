@@ -1,18 +1,16 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.NodeEditor.EditorData;
+import com.valhalla.NodeEditor.Editor.EditorData;
 import com.valhalla.application.Quester;
-import com.valhalla.core.Node.DisplayImageComponent;
-import com.valhalla.core.Node.MiscComponent;
-import com.valhalla.core.Node.NodeEditor;
-import com.valhalla.core.Node.SelectImageComponent;
+import com.valhalla.NodeEditor.Primitive.DisplayImageComponent;
+import com.valhalla.NodeEditor.Primitive.MiscComponent;
+import com.valhalla.NodeEditor.Editor.NodeEditor;
+import com.valhalla.NodeEditor.Primitive.SelectImageComponent;
 import net.miginfocom.swing.MigLayout;
-import org.piccolo2d.extras.PFrame;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 public class ProjectSelectorFrame
     extends JFrame {

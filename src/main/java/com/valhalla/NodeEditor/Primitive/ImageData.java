@@ -1,17 +1,15 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Primitive;
 
 import com.valhalla.application.gui.Utils;
+import com.valhalla.NodeEditor.Sockets.ISocketData;
+import com.valhalla.NodeEditor.Sockets.SocketData;
+import com.valhalla.NodeEditor.PropertyBase;
 
-import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.io.File;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
-public class ImageData extends NodeDataBase {
+public class ImageData extends SocketData {
 
     public ImageData(PropertyBase parentProperty) {
         super(parentProperty);
@@ -27,7 +25,7 @@ public class ImageData extends NodeDataBase {
     }
 
     @Override
-    public boolean isDataBindAvailable(INodeData nodeData) {
+    public boolean isDataBindAvailable(ISocketData nodeData) {
         return !(bindingMap.size() > 0);
     }
 

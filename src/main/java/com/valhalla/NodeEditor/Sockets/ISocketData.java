@@ -1,10 +1,13 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Sockets;
+
+import com.valhalla.core.Node.ConnectorMode;
+import com.valhalla.NodeEditor.PropertyBase;
 
 import java.awt.*;
 import java.lang.reflect.Type;
 import java.util.UUID;
 
-public interface INodeData {
+public interface ISocketData {
     void          SetUUID(UUID uuid);
     UUID          GetUUID();
     ConnectorMode GetMode();
@@ -20,13 +23,13 @@ public interface INodeData {
     void          SetDataColor(Color color);
     boolean       GetMultipleBindingAllowed();
     void          SetMultipleBindingAllowed(boolean allowed);
-    PropertyBase  getParentProperty();
+    PropertyBase getParentProperty();
     int           getDataPropertyIndex();
     boolean       evaluate();
-    boolean       isDataBindAvailable(INodeData nodeData);
+    boolean       isDataBindAvailable(ISocketData nodeData);
     boolean       IsBinded();
-    INodeData     GetBinding(UUID uuid);
-    boolean       SetBinding(INodeData nData);
+    ISocketData GetBinding(UUID uuid);
+    boolean       SetBinding(ISocketData nData);
     void          breakBindings();
     void          AddOnBindingEventListener(BindingEventListener listener);
     void          RemoveOnBindingEventListener(BindingEventListener listener);

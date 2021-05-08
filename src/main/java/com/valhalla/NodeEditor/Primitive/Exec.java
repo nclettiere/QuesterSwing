@@ -1,4 +1,6 @@
-package com.valhalla.NodeEditor;
+package com.valhalla.NodeEditor.Primitive;
+
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
 
 import java.util.*;
 

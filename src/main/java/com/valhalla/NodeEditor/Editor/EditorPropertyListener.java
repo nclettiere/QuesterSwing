@@ -1,4 +1,4 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Editor;
 
 import com.valhalla.NodeEditor.NodeBase;
 

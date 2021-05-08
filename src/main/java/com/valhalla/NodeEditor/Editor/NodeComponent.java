@@ -1,10 +1,9 @@
-package com.valhalla.NodeEditor;
+package com.valhalla.NodeEditor.Editor;
 
+import com.valhalla.NodeEditor.NodeBase;
+import com.valhalla.NodeEditor.NodeMessage;
+import com.valhalla.NodeEditor.PropertyBase;
 import com.valhalla.NodeEditor.Sockets.NodeSocket;
-import com.valhalla.application.gui.*;
-import com.valhalla.core.Node.NodeComponentEventListener;
-import com.valhalla.NodeEditor.Editor.NodeEditor;
-import com.valhalla.core.Node.NodeMessage;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -15,7 +14,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 public class NodeComponent extends JComponent implements MouseInputListener {
-    protected NodeBase                 Node;
+    protected NodeBase Node;
     protected String                   NodeName;
     protected String                   NodeSubtitle;
     protected Color                    NodeColor;
@@ -68,7 +67,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     }
 
     public String GetGroup() {
-        return Node.groupName;
+        return Node.getGroupName();
     }
 
     public void CreateNodeStructure() {

@@ -1,21 +1,18 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Primitive;
 
 import com.valhalla.NodeEditor.*;
-import com.valhalla.application.gui.ImagePanel;
-import com.valhalla.core.Ref;
-import org.w3c.dom.Node;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
+import com.valhalla.NodeEditor.Sockets.SocketEventListener;
+import com.valhalla.NodeEditor.Sockets.SocketState;
+import com.valhalla.NodeEditor.PropertyBase;
+import com.valhalla.NodeEditor.Ref;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 public class SelectImageProperty extends PropertyBase {

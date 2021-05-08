@@ -1,4 +1,4 @@
-package com.valhalla.NodeEditor;
+package com.valhalla.NodeEditor.Sockets;
 
 import javax.swing.event.EventListenerList;
 import java.awt.*;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class NodeSocket implements java.io.Serializable {
+public class NodeSocket implements java.io.Serializable, Comparable<NodeSocket> {
     protected UUID uuid;
     public Object data;
     private final Class<?> dataClass;
@@ -165,6 +165,19 @@ public class NodeSocket implements java.io.Serializable {
         if (this.socketEventListeners.containsKey(socket)) {
             removeOnBindingEventListener(socketEventListeners.get(socket));
         }
+    }
+
+    public Integer getLaneIndex() {
+        return laneIndex;
+    }
+
+    public void setLaneIndex(Integer laneIndex) {
+        this.laneIndex = laneIndex;
+    }
+
+    @Override
+    public int compareTo(NodeSocket o) {
+        return this.laneIndex - o.laneIndex;
     }
 }
 

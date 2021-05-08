@@ -1,6 +1,7 @@
-package com.valhalla.NodeEditor.Sockets;
+package com.valhalla.NodeEditor.Primitive;
 
 import com.valhalla.NodeEditor.PropertyBase;
+import com.valhalla.NodeEditor.Sockets.SocketData;
 
 import java.awt.*;
 

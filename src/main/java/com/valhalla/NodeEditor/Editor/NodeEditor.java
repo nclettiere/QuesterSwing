@@ -1,11 +1,11 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Editor;
 
 import com.valhalla.NodeEditor.*;
-import com.valhalla.NodeEditor.Editor.EditorData;
 import com.valhalla.NodeEditor.Primitive.Exec;
 import com.valhalla.NodeEditor.Primitive.ExecSocket;
 import com.valhalla.NodeEditor.Sockets.*;
 import com.valhalla.application.gui.*;
+import com.valhalla.NodeEditor.NodeMessage;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;
 import org.piccolo2d.PNode;
@@ -471,13 +471,15 @@ public class NodeEditor extends PSwingCanvas {
         inputLayoutNode.setOffset(20, 90);
         outputLayoutNode.setOffset(nodeComponent.getPreferredSize().width - 35, 90);
 
-        // Add and register all node connectors to the nComp
-        HashMap<Integer, List<NodeSocket>> nodePropsData =
-                nodeComponent.GetNode().getAllSockets();
-
         // Create NodeConnectors
-            for (NodeSocket socket : sockets)
+        for (NodeSocket socket : sockets) {
+            if (socket.getDataClass().isAssignableFrom(Exec.class))
                 AddConnector(nodeCompUUID, socket.propertyIndex, socket);
+        }
+        for (NodeSocket socket : sockets) {
+            if (!socket.getDataClass().isAssignableFrom(Exec.class))
+                AddConnector(nodeCompUUID, socket.propertyIndex, socket);
+        }
 
         // Remove all handled input events from the IO layout to preventing
         // an override of connectors PNode's events.
@@ -1279,7 +1281,7 @@ public class NodeEditor extends PSwingCanvas {
                         .getConstructors()[1]
                         .newInstance(nodeUUID, inputSockets);
                 CreateNewNode(nodeComp, nodePosition, inputSockets, outputSockets);
-                System.out.println("Added Node: "+ nodeComp.GetNode().uuid);
+                System.out.println("Added Node: "+ nodeComp.GetNode().GetUUID());
             } catch (IllegalAccessException |
                     InstantiationException |
                     InvocationTargetException e) {
@@ -1655,20 +1657,43 @@ public class NodeEditor extends PSwingCanvas {
                 UUID uuid = nodeBase.GetUUID();
                 nodeList.put(uuid, nComp.getClass());
 
-                for (NodeSocket nodeSocket : nodeBase.getInputs())
-                    this.editorData.addNodeSocket(nodeSocket, uuid);
-                for (NodeSocket nodeSocket : nodeBase.getOutputs())
-                    this.editorData.addNodeSocket(nodeSocket, uuid);
+                int i = 0;
+                // First check execs sockets
+                for (NodeSocket nodeSocket : nodeBase.getInputs()) {
+                    if (!nodeSocket.getDataClass().isAssignableFrom(Exec.class)) {
+                        nodeSocket.laneIndex = i;
+                        this.editorData.addNodeSocket(nodeSocket, uuid);
+                        i++;
+                    }
+                }
+                // Continue with normal sockets
+                for (NodeSocket nodeSocket : nodeBase.getInputs()) {
+                    if (nodeSocket.getDataClass().isAssignableFrom(Exec.class)) {
+                        nodeSocket.laneIndex = i;
+                        this.editorData.addNodeSocket(nodeSocket, uuid);
+                        i++;
+                    }
+                }
+
+                i = 0;
+                // First check execs sockets
+                for (NodeSocket nodeSocket : nodeBase.getOutputs()) {
+                    if (!nodeSocket.getDataClass().isAssignableFrom(Exec.class)) {
+                        nodeSocket.laneIndex = i;
+                        this.editorData.addNodeSocket(nodeSocket, uuid);
+                        i++;
+                    }
+                }
+                // Continue with normal sockets
+                for (NodeSocket nodeSocket : nodeBase.getOutputs()) {
+                    if (nodeSocket.getDataClass().isAssignableFrom(Exec.class)) {
+                        nodeSocket.laneIndex = i;
+                        this.editorData.addNodeSocket(nodeSocket, uuid);
+                        i++;
+                    }
+                }
             }
             this.editorData.setNodeList(nodeList);
-
-            //while (itSockets.hasNext()) {
-            //    Map.Entry<UUID, ConnectorIdentifier> pair = itSockets.next();
-            //    UUID nodeUUID = pair.getValue().getNodeCompUUID();
-            //    NodeSocket socket = pair.getValue().getNodeSocket();
-            //    this.editorData.addNodeSocket(socket, nodeUUID);
-            //    itSockets.remove();
-            //}
 
             while (itPNodes.hasNext()) {
                 Map.Entry<UUID, PNode> pair = itPNodes.next();

@@ -1,6 +1,6 @@
-package com.valhalla.application.gui;
+package com.valhalla.NodeEditor.Editor;
 
-import com.valhalla.NodeEditor.Editor.NodeComponent;
+import com.valhalla.application.gui.Utils;
 import com.valhalla.core.Node.NodeSelectorItem;
 import net.miginfocom.swing.MigLayout;
 

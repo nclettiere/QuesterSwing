@@ -5,8 +5,9 @@ import javax.swing.*;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.util.SystemInfo;
+import com.valhalla.NodeEditor.Editor.NodeEditorInspector;
 import com.valhalla.application.gui.*;
-import com.valhalla.core.Node.NodeEditor;
+import com.valhalla.NodeEditor.Editor.NodeEditor;
 
 import java.awt.*;
 

@@ -1,4 +1,4 @@
-package com.valhalla.NodeEditor;
+package com.valhalla.NodeEditor.Editor;
 
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PCanvas;

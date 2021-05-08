@@ -1,10 +1,8 @@
-package com.valhalla.NodeEditor;
+package com.valhalla.NodeEditor.Editor;
 
-import com.valhalla.core.Node.NodeBase;
-import com.valhalla.core.Node.NodeComponent;
-import org.piccolo2d.PNode;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
 
-import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.List;
@@ -72,32 +70,35 @@ public class EditorData implements java.io.Serializable {
         return nodePositions.entrySet().iterator();
     }
 
-    public Iterable<NodeSocket> getSocketsOfNode(UUID nodeUUID) {
+    public List<NodeSocket> getSocketsOfNode(UUID nodeUUID) {
         List<NodeSocket> sockets = new ArrayList<>();
         for (Map.Entry<NodeSocket, UUID> socEntry : socketList.entrySet()) {
             if (socEntry.getValue().equals(nodeUUID))
                 sockets.add(socEntry.getKey());
         }
+        Collections.sort(sockets);
         return sockets;
     }
 
-    public Iterable<NodeSocket> getInputSocketsOfNode(UUID nodeUUID) {
+    public List<NodeSocket> getInputSocketsOfNode(UUID nodeUUID) {
         List<NodeSocket> sockets = new ArrayList<>();
         for (Map.Entry<NodeSocket, UUID> socEntry : socketList.entrySet()) {
             if (socEntry.getValue().equals(nodeUUID) &&
                     socEntry.getKey().getDirection().equals(SocketDirection.IN))
                 sockets.add(socEntry.getKey());
         }
+        Collections.sort(sockets);
         return sockets;
     }
 
-    public Iterable<NodeSocket> getOutputSocketsOfNode(UUID nodeUUID) {
+    public List<NodeSocket> getOutputSocketsOfNode(UUID nodeUUID) {
         List<NodeSocket> sockets = new ArrayList<>();
         for (Map.Entry<NodeSocket, UUID> socEntry : socketList.entrySet()) {
             if (socEntry.getValue().equals(nodeUUID) &&
                     socEntry.getKey().getDirection().equals(SocketDirection.OUT))
                 sockets.add(socEntry.getKey());
         }
+        Collections.sort(sockets);
         return sockets;
     }
 

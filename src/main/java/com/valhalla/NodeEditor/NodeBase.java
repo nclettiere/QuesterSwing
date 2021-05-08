@@ -1,4 +1,4 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor;
 
 import com.valhalla.NodeEditor.Primitive.ExecSocket;
 import com.valhalla.NodeEditor.Sockets.NodeSocket;
@@ -32,7 +32,7 @@ public class NodeBase implements INode, java.io.Serializable {
     protected boolean allowSelfBinding;
     protected boolean isPureNode;
 
-    NodeBase() {
+    public NodeBase() {
         this.listenerList = new EventListenerList();
         this.properties = new ArrayList<>();
         this.nodeAction = NodeAction.NONE;
@@ -41,7 +41,7 @@ public class NodeBase implements INode, java.io.Serializable {
         this.uuid = UUID.randomUUID();
     }
 
-    NodeBase(UUID uuid, Iterable<NodeSocket> sockets) {
+    public NodeBase(UUID uuid, Iterable<NodeSocket> sockets) {
         this();
         this.uuid = uuid;
     }
@@ -138,6 +138,14 @@ public class NodeBase implements INode, java.io.Serializable {
             properties.get(0).AddInput(execSocket);
         else
             properties.get(0).AddOutput(execSocket);
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public Iterable<PropertyBase> getProperties() {

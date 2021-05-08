@@ -1,4 +1,4 @@
-package com.valhalla.core;
+package com.valhalla.NodeEditor;
 
 public class Ref<T> implements java.io.Serializable {
 

@@ -1,9 +1,6 @@
-package com.valhalla.NodeEditor;
-
-import com.valhalla.core.Node.INodeData;
+package com.valhalla.NodeEditor.Sockets;
 
 import java.util.EventListener;
-import java.util.Map;
 
 public interface SocketEventListener extends EventListener {
     void onBindingDataChanged(Object data);

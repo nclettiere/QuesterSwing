@@ -1,5 +1,10 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.Editor.EditorPropertyListener;
+import com.valhalla.NodeEditor.Editor.NodeEditor;
+import com.valhalla.NodeEditor.NodeActionListener;
+import com.valhalla.NodeEditor.NodeBase;
+
 import javax.swing.table.AbstractTableModel;
 
 public class NodeTableModel extends AbstractTableModel {

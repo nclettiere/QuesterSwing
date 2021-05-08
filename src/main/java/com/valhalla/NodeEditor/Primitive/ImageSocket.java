@@ -1,4 +1,7 @@
-package com.valhalla.NodeEditor;
+package com.valhalla.NodeEditor.Primitive;
+
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
 
 import java.awt.*;
 import java.util.HashMap;

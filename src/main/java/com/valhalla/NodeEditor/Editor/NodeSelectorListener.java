@@ -1,4 +1,4 @@
-package com.valhalla.application.gui;
+package com.valhalla.NodeEditor.Editor;
 
 import com.valhalla.NodeEditor.Editor.NodeComponent;
 

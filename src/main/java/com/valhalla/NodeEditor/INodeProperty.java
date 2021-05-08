@@ -1,7 +1,6 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor;
 
 import com.valhalla.NodeEditor.Sockets.NodeSocket;
-import com.valhalla.core.Ref;
 
 import javax.swing.*;
 import java.util.EventListener;

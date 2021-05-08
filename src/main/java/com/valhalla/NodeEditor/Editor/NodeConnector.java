@@ -1,4 +1,4 @@
-package com.valhalla.application.gui;
+package com.valhalla.NodeEditor.Editor;
 
 import com.valhalla.NodeEditor.Sockets.ConnectorEventListener;
 import com.valhalla.NodeEditor.Sockets.NodeSocket;

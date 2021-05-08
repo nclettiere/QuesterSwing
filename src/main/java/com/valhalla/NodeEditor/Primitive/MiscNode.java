@@ -1,4 +1,6 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Primitive;
+
+import com.valhalla.NodeEditor.NodeBase;
 
 public class MiscNode extends NodeBase {
 

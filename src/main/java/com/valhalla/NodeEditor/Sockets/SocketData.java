@@ -1,24 +1,27 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Sockets;
+
+import com.valhalla.core.Node.ConnectorMode;
+import com.valhalla.NodeEditor.PropertyBase;
 
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.lang.reflect.Type;
 import java.util.*;
 
-public class NodeDataBase implements INodeData {
+public class SocketData implements ISocketData {
 
     protected UUID                     uuid;
-    protected HashMap<UUID, INodeData> bindingMap;
-    protected ConnectorMode            mode;
+    protected HashMap<UUID, ISocketData> bindingMap;
+    protected ConnectorMode mode;
     protected String                   name;
     protected String                   displayName;
     protected boolean                  multipleAllowed;
     protected Object                   data;
     protected Color                    color;
     protected EventListenerList        listenerList;
-    protected PropertyBase             parentProperty;
+    protected PropertyBase parentProperty;
 
-    public NodeDataBase(PropertyBase parentProperty) {
+    public SocketData(PropertyBase parentProperty) {
         this.bindingMap = new HashMap<>();
         this.listenerList = new EventListenerList();
         this.parentProperty = parentProperty;
@@ -121,7 +124,7 @@ public class NodeDataBase implements INodeData {
     }
 
     @Override
-    public boolean isDataBindAvailable(INodeData nodeData) {
+    public boolean isDataBindAvailable(ISocketData nodeData) {
         return true;
     }
 
@@ -131,13 +134,13 @@ public class NodeDataBase implements INodeData {
     }
 
     @Override
-    public INodeData GetBinding(UUID uuid) {
+    public ISocketData GetBinding(UUID uuid) {
         if(!bindingMap.containsKey(uuid)) return null;
         return bindingMap.get(uuid);
     }
 
     @Override
-    public boolean SetBinding(INodeData nData) {
+    public boolean SetBinding(ISocketData nData) {
         if(bindingMap.containsKey(nData.GetUUID())) return false;
 
         if(nData.GetUUID() != this.GetUUID()) {
@@ -176,7 +179,7 @@ public class NodeDataBase implements INodeData {
         return false;
     }
 
-    private void FireOnBindingDataChanged() {
+    public void FireOnBindingDataChanged() {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {
@@ -185,7 +188,7 @@ public class NodeDataBase implements INodeData {
         }
     }
 
-    private void FireOnEvaluationStateChanged(Map.Entry<Boolean, String> state) {
+    public void FireOnEvaluationStateChanged(Map.Entry<Boolean, String> state) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {

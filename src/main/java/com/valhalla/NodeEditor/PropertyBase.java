@@ -1,8 +1,7 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor;
 
 import com.valhalla.NodeEditor.Sockets.NodeSocket;
 import com.valhalla.NodeEditor.Sockets.SocketDirection;
-import com.valhalla.core.Ref;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -19,7 +18,7 @@ public class PropertyBase implements INodeProperty {
 
     protected boolean allowSelfBinding;
 
-    PropertyBase(Integer propertyIndex, UUID nodeUUID) {
+    public PropertyBase(Integer propertyIndex, UUID nodeUUID) {
         this.propertyIndex = propertyIndex;
         this.nodeUUID = nodeUUID;
         inputs = new Stack<>();
@@ -27,7 +26,7 @@ public class PropertyBase implements INodeProperty {
         listenerList = new EventListenerList();
     }
 
-    PropertyBase(Integer propertyIndex, UUID nodeUUID, Iterable<NodeSocket> sockets) {
+    public PropertyBase(Integer propertyIndex, UUID nodeUUID, Iterable<NodeSocket> sockets) {
         this(propertyIndex, nodeUUID);
 
         for (NodeSocket socket : sockets) {

@@ -1,6 +1,7 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Primitive;
 
-import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.NodeBase;
 
 import java.util.UUID;
 

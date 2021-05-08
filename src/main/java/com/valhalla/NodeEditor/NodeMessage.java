@@ -1,4 +1,4 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor;
 
 import com.valhalla.NodeEditor.Sockets.SocketDirection;
 import com.valhalla.NodeEditor.Sockets.SocketState;

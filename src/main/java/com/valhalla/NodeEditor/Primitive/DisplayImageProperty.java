@@ -1,14 +1,15 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Primitive;
 
-import com.valhalla.NodeEditor.*;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
+import com.valhalla.NodeEditor.Sockets.SocketEventListener;
+import com.valhalla.NodeEditor.Sockets.SocketState;
 import com.valhalla.application.gui.ImagePanel;
-import com.valhalla.core.Ref;
+import com.valhalla.NodeEditor.PropertyBase;
+import com.valhalla.NodeEditor.Ref;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.Map;
 import java.util.UUID;
 
 public class DisplayImageProperty extends PropertyBase {
