@@ -1,13 +1,10 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor.Sockets;
 
-import javax.swing.event.EventListenerList;
+import com.valhalla.NodeEditor.PropertyBase;
+
 import java.awt.*;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.UUID;
 
-public class IntegerData extends NodeDataBase {
+public class IntegerData extends SocketData {
 
     public IntegerData(PropertyBase parentProperty) {
         super(parentProperty);

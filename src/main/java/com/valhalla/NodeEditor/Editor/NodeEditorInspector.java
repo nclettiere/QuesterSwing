@@ -1,17 +1,12 @@
 package com.valhalla.application.gui;
 
+import com.valhalla.NodeEditor.Editor.NodeEditor;
 import com.valhalla.core.Node.*;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.EventListenerList;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import java.awt.*;
 
 public class NodeEditorInspector
     extends JFrame {

@@ -1,18 +1,12 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.core.Node.*;
-import org.piccolo2d.PNode;
+import com.valhalla.NodeEditor.Sockets.ConnectorEventListener;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
 import org.piccolo2d.event.PInputEventListener;
-import org.piccolo2d.extras.pswing.PSwing;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Map;
-import java.util.UUID;
 
 
 public class NodeConnector

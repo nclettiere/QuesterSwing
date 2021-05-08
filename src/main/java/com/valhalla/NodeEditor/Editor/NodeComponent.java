@@ -1,23 +1,18 @@
-package com.valhalla.core.Node;
+package com.valhalla.NodeEditor;
 
-import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
 import com.valhalla.application.gui.*;
+import com.valhalla.core.Node.NodeComponentEventListener;
+import com.valhalla.NodeEditor.Editor.NodeEditor;
+import com.valhalla.core.Node.NodeMessage;
 import net.miginfocom.swing.MigLayout;
-import org.piccolo2d.PNode;
-import org.piccolo2d.extras.pswing.PSwing;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.EventListenerList;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.geom.AffineTransform;
 import java.util.*;
-import java.util.List;
 
 public class NodeComponent extends JComponent implements MouseInputListener {
     protected NodeBase                 Node;
@@ -27,7 +22,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
     protected JPanel                   Content;
     protected ArrayList<PropertyPanel> propPanelList;
     protected ArrayList<NodeConnector> connectors;
-    protected NodeEditor               editorParent;
+    protected NodeEditor editorParent;
     protected boolean                  selected;
 
     protected double zoomFactor = 1.0f;
@@ -41,7 +36,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
 
     protected JPanel messagePanel;
 
-    NodeComponent() {
+    public NodeComponent() {
         this.NodeName = "Default";
         this.NodeSubtitle = "Default";
 
@@ -68,7 +63,7 @@ public class NodeComponent extends JComponent implements MouseInputListener {
         repaint();
     }
 
-    NodeComponent(UUID uuid, Iterable<NodeSocket> sockets) {
+    public NodeComponent(UUID uuid, Iterable<NodeSocket> sockets) {
         this();
     }
 

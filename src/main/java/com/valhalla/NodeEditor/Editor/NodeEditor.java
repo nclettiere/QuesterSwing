@@ -1,6 +1,10 @@
 package com.valhalla.core.Node;
 
 import com.valhalla.NodeEditor.*;
+import com.valhalla.NodeEditor.Editor.EditorData;
+import com.valhalla.NodeEditor.Primitive.Exec;
+import com.valhalla.NodeEditor.Primitive.ExecSocket;
+import com.valhalla.NodeEditor.Sockets.*;
 import com.valhalla.application.gui.*;
 import org.piccolo2d.PCamera;
 import org.piccolo2d.PLayer;

@@ -1,19 +1,17 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.core.Node.*;
+import com.valhalla.NodeEditor.INodeProperty;
+import com.valhalla.NodeEditor.NodeBase;
+import com.valhalla.NodeEditor.Editor.NodeComponent;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
 import net.miginfocom.swing.MigLayout;
-import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.MouseInputListener;
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class PropertyPanel
         extends JPanel

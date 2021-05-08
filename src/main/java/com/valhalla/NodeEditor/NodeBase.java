@@ -1,8 +1,8 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.NodeEditor.ExecSocket;
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.NodeEditor.SocketDirection;
+import com.valhalla.NodeEditor.Primitive.ExecSocket;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
 
 import javax.swing.event.EventListenerList;
 import java.util.*;

@@ -1,15 +1,12 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.NodeEditor.NodeSocket;
-import com.valhalla.NodeEditor.SocketDirection;
-import com.valhalla.NodeEditor.SocketState;
-import com.valhalla.NodeEditor.StateErrorLevel;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
+import com.valhalla.NodeEditor.Sockets.SocketState;
+import com.valhalla.NodeEditor.Sockets.StateErrorLevel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.util.Map;
 
 public class NodeMessage extends JPanel {
 

@@ -1,6 +1,6 @@
 package com.valhalla.application.gui;
 
-import com.valhalla.core.Node.NodeComponent;
+import com.valhalla.NodeEditor.Editor.NodeComponent;
 
 import java.util.EventListener;
 

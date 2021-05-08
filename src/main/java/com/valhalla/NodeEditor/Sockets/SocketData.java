@@ -176,7 +176,7 @@ public class NodeDataBase implements INodeData {
         return false;
     }
 
-    void FireOnBindingDataChanged() {
+    private void FireOnBindingDataChanged() {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {
@@ -185,7 +185,7 @@ public class NodeDataBase implements INodeData {
         }
     }
 
-    void FireOnEvaluationStateChanged(Map.Entry<Boolean, String> state) {
+    private void FireOnEvaluationStateChanged(Map.Entry<Boolean, String> state) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i = i+2) {
             if (listeners[i] == BindingEventListener.class) {

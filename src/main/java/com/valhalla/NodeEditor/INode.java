@@ -1,5 +1,7 @@
 package com.valhalla.core.Node;
 
+import com.valhalla.NodeEditor.PropertyBase;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;

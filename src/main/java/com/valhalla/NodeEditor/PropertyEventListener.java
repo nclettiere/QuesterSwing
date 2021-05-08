@@ -1,6 +1,6 @@
 package com.valhalla.core.Node;
 
-import com.valhalla.NodeEditor.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
 
 import java.util.EventListener;
 import java.util.UUID;

@@ -1,5 +1,8 @@
 package com.valhalla.NodeEditor;
 
+import com.valhalla.NodeEditor.Sockets.NodeSocket;
+import com.valhalla.NodeEditor.Sockets.SocketDirection;
+
 import java.awt.*;
 
 public class DoubleSocket extends NodeSocket {
